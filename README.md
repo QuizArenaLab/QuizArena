@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QuizArena Foundation
+
+A production-grade Micro SaaS platform for government exam aspirants.
+
+## Tech Stack
+
+- **Frontend:** Next.js 15 (App Router), TypeScript, Tailwind CSS
+- **ORM:** Prisma
+- **Database:** Supabase (PostgreSQL)
+- **Auth:** Auth.js (v5)
+- **State Management:** Zustand
+- **Icons:** Lucide React
+- **Utilities:** clsx, tailwind-merge
 
 ## Getting Started
 
-First, run the development server:
+### 1. Prerequisites
+- Node.js (Latest LTS)
+- Supabase Project
 
+### 2. Environment Setup
+Copy `.env.example` to `.env` and fill in the values:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 3. Installation
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Database Setup
+Once environment variables are set, run:
+```bash
+npx prisma generate
+npx prisma migrate dev --name init
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 5. Development Workflow
+```bash
+npm run dev
+```
 
-## Learn More
+## Folder Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+ ├── app/         # Next.js App Router (pages & layouts)
+ ├── components/  # Shared UI components
+ ├── features/    # Domain-specific features
+ ├── lib/         # Shared libraries (prisma, supabase)
+ ├── services/    # External service integrations
+ ├── hooks/       # Custom React hooks
+ ├── store/       # Zustand store definitions
+ ├── types/       # Global TypeScript types
+ ├── utils/       # Helper functions
+ ├── styles/      # Global styles
+ └── config/      # Application configuration
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Commands
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run dev`: Start development server
+- `npm run build`: Build for production
+- `npx prisma studio`: Open Prisma GUI
+- `npx prisma migrate dev`: Run database migrations
