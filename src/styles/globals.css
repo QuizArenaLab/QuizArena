@@ -85,10 +85,10 @@
 
   /* Typography utilities for consistent sizing */
   .text-hero {
-    @apply text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight;
+    @apply text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] sm:leading-[1.05];
   }
   .text-section {
-    @apply text-2xl sm:text-3xl font-bold tracking-tight;
+    @apply text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight;
   }
   .text-dashboard {
     @apply text-xl font-semibold tracking-tight;

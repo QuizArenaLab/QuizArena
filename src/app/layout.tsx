@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: "The ultimate platform for government exam aspirants to compete and grow.",
 };
 
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -23,7 +26,11 @@ export default function RootLayout({
       lang="en"
       className={`${hankenGrotesk.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        <Navbar />
+        {children}
+        <Footer />
+      </body>
     </html>
   );
 }
