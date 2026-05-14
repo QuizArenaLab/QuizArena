@@ -1,0 +1,46 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "QuizArena User API",
+    "version": "1.0.0",
+    "description": "API for retrieving full user profile data."
+  },
+  "paths": {
+    "/api/user/me": {
+      "get": {
+        "summary": "Get full user profile",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["success", "data"],
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "required": ["id", "email", "role"],
+                      "properties": {
+                        "id": { "type": "string" },
+                        "name": { "type": "string", "nullable": true },
+                        "email": { "type": "string" },
+                        "role": { "type": "string" },
+                        "onboardingCompleted": { "type": "boolean" },
+                        "image": { "type": "string", "nullable": true }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+  }
+}

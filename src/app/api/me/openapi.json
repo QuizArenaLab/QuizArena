@@ -1,0 +1,43 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "QuizArena Auth API",
+    "version": "1.0.0",
+    "description": "API for checking authentication status and retrieving basic user info."
+  },
+  "paths": {
+    "/api/me": {
+      "get": {
+        "summary": "Check current auth status",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["authenticated", "user"],
+                  "properties": {
+                    "authenticated": { "type": "boolean" },
+                    "user": {
+                      "type": "object",
+                      "required": ["id", "email"],
+                      "properties": {
+                        "id": { "type": "string" },
+                        "name": { "type": "string", "nullable": true },
+                        "email": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+  }
+}

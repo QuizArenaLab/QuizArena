@@ -15,28 +15,35 @@ A production-grade Micro SaaS platform for government exam aspirants.
 ## Getting Started
 
 ### 1. Prerequisites
+
 - Node.js (Latest LTS)
 - Supabase Project
 
 ### 2. Environment Setup
+
 Copy `.env.example` to `.env` and fill in the values:
+
 ```bash
 cp .env.example .env
 ```
 
 ### 3. Installation
+
 ```bash
 npm install
 ```
 
 ### 4. Database Setup
+
 Once environment variables are set, run:
+
 ```bash
 npx prisma generate
 npx prisma migrate dev --name init
 ```
 
 ### 5. Development Workflow
+
 ```bash
 npm run dev
 ```
