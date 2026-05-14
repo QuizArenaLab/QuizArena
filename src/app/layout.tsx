@@ -22,10 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${hankenGrotesk.variable} h-full antialiased relative`}
-    >
+    <html lang="en" className={`${hankenGrotesk.variable} h-full antialiased relative`}>
       <body className="min-h-full flex flex-col font-sans relative">
         <Navbar />
         {children}

@@ -3,12 +3,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/lib/prisma";
 import { authConfig } from "./auth.config";
 
-export const {
-  handlers,
-  auth,
-  signIn,
-  signOut,
-} = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
   session: {
@@ -18,7 +13,10 @@ export const {
   },
   cookies: {
     sessionToken: {
-      name: process.env.NODE_ENV === "production" ? "__Secure-authjs.session-token" : "authjs.session-token",
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-authjs.session-token"
+          : "authjs.session-token",
       options: {
         httpOnly: true,
         sameSite: "lax",
@@ -28,7 +26,5 @@ export const {
     },
   },
   // Place providers here when implementing them in future phases
-  providers: [
-    ...authConfig.providers,
-  ]
+  providers: [...authConfig.providers],
 });

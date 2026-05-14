@@ -24,11 +24,11 @@ export function Navbar() {
       <motion.div
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ 
-          type: "spring", 
-          stiffness: 100, 
+        transition={{
+          type: "spring",
+          stiffness: 100,
           damping: 20,
-          delay: 0.1 
+          delay: 0.1,
         }}
         className={`w-full pointer-events-auto transition-all duration-500 ${
           scrolled
@@ -37,15 +37,14 @@ export function Navbar() {
         }`}
       >
         <div className="container-base flex items-center justify-between">
-          
           {/* Left: Brand Identity */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3, type: "spring" }}
           >
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               onClick={(e) => {
                 if (window.location.pathname === "/") {
                   e.preventDefault();
@@ -54,9 +53,9 @@ export function Navbar() {
               }}
               className="flex items-center group z-50 cursor-pointer"
             >
-              <img 
-                src="/logo-header.png" 
-                alt="QuizArena" 
+              <img
+                src="/logo-header.png"
+                alt="QuizArena"
                 className="h-16 sm:h-22 md:h-28 w-auto object-contain transition-all duration-500 group-hover:scale-105 drop-shadow-sm"
               />
             </Link>
@@ -69,7 +68,7 @@ export function Navbar() {
                 key={item}
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + (i * 0.1), type: "spring" }}
+                transition={{ delay: 0.4 + i * 0.1, type: "spring" }}
               >
                 <Link
                   href={`#${item.toLowerCase()}`}
@@ -132,7 +131,7 @@ export function Navbar() {
         {mobileMenuOpen && (
           <>
             {/* Backdrop */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -150,9 +149,13 @@ export function Navbar() {
             >
               <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
                 <Link href="/" onClick={() => setMobileMenuOpen(false)}>
-                  <img src="/logo.png" alt="QuizArena Icon" className="h-16 w-auto object-contain drop-shadow-sm scale-110 origin-left" />
+                  <img
+                    src="/logo.png"
+                    alt="QuizArena Icon"
+                    className="h-16 w-auto object-contain drop-shadow-sm scale-110 origin-left"
+                  />
                 </Link>
-                <button 
+                <button
                   onClick={() => setMobileMenuOpen(false)}
                   className="p-2.5 -mr-2 text-navy bg-gray-50 hover:bg-gray-100 active:scale-90 hover:rotate-90 transition-all duration-500 rounded-full focus:outline-none"
                   aria-label="Close menu"
@@ -162,14 +165,16 @@ export function Navbar() {
               </div>
 
               <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col">
-                <div className="text-[10px] font-black uppercase tracking-widest text-navy/40 mb-6">Navigation</div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-navy/40 mb-6">
+                  Navigation
+                </div>
                 <nav className="flex flex-col gap-6">
                   {navItems.map((item, i) => (
                     <motion.div
                       key={item}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.2 + (i * 0.1) }}
+                      transition={{ delay: 0.2 + i * 0.1 }}
                     >
                       <Link
                         href={`#${item.toLowerCase()}`}
@@ -178,7 +183,7 @@ export function Navbar() {
                       >
                         <span>{item}</span>
                         <span className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
-                           <ArrowRight className="w-4 h-4 text-primary" />
+                          <ArrowRight className="w-4 h-4 text-primary" />
                         </span>
                       </Link>
                     </motion.div>
@@ -192,7 +197,8 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="group w-full py-4 rounded-xl bg-primary hover:bg-primary/90 text-white text-center font-bold text-lg shadow-lg shadow-primary/30 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2"
                 >
-                  Start Free Trial <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  Start Free Trial{" "}
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link
                   href="/login"
@@ -209,4 +215,3 @@ export function Navbar() {
     </header>
   );
 }
-

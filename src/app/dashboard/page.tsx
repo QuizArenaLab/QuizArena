@@ -35,10 +35,18 @@ export default async function DashboardPage() {
             <div className="flex items-center space-x-5">
               <div className="shrink-0">
                 {session.user.image ? (
-                  <img className="h-16 w-16 rounded-full" src={session.user.image} alt="User Avatar" />
+                  <img
+                    className="h-16 w-16 rounded-full"
+                    src={session.user.image}
+                    alt="User Avatar"
+                  />
                 ) : (
                   <span className="inline-block h-16 w-16 overflow-hidden rounded-full bg-gray-100">
-                    <svg className="h-full w-full text-gray-300" fill="currentColor" viewBox="0 0 24 24">
+                    <svg
+                      className="h-full w-full text-gray-300"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
                   </span>
@@ -49,7 +57,7 @@ export default async function DashboardPage() {
                 <p className="text-sm font-medium text-gray-500">{session.user.email}</p>
               </div>
             </div>
-            
+
             <div className="mt-8 border-t border-gray-200 pt-5">
               <h4 className="text-md font-semibold text-gray-900 mb-4">Session Data</h4>
               <div className="rounded-md bg-gray-50 p-4 border border-gray-200 overflow-auto">

@@ -1,43 +1,135 @@
-import { signIn } from "@/auth/auth";
-import { AuthError } from "next-auth";
+"use client";
 
-export default async function LoginPage(props: {
-  searchParams: Promise<{ error?: string }>;
-}) {
-  const searchParams = await props.searchParams;
-  const errorMessage = searchParams?.error;
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
+
+export default function LoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const error = searchParams?.get("error");
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleCredentialsLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+    setLoading(true);
+
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
+
+      if (result?.error) {
+        setAuthError("Invalid email or password");
+        setLoading(false);
+        return;
+      }
+
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setAuthError("An error occurred. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    await signIn("google", { redirectTo: "/dashboard" });
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-10 shadow-lg border border-gray-100">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold tracking-tight text-gray-900">
-            Sign in to QuizArena
+            Welcome to QuizArena
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Continue your competitive exam preparation.
+            Sign in to continue your exam preparation.
           </p>
         </div>
 
-        <form
-          action={async () => {
-            "use server";
-            try {
-              await signIn("google", {
-                redirectTo: "/dashboard",
-              });
-            } catch (error) {
-              if (error instanceof AuthError) {
-                // Return or handle specific auth errors if needed
-              }
-              throw error; // Rethrow to allow Next.js redirect to work
-            }
-          }}
-          className="mt-8 space-y-6"
-        >
-          <div className="flex flex-col gap-4">
+        <div className="space-y-6">
+          {/* Email/Password Login Form */}
+          <form onSubmit={handleCredentialsLogin} className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+                placeholder="Enter your email"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 pr-10 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+            </div>
+
             <button
               type="submit"
+              disabled={loading}
+              className="group relative flex w-full justify-center rounded-md bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading ? "Signing in..." : "Sign in with Email"}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white px-2 text-gray-500">Or continue with</span>
+            </div>
+          </div>
+
+          {/* Google Sign In */}
+          <div>
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
               className="group relative flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
             >
               <span className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -60,22 +152,29 @@ export default async function LoginPage(props: {
                   />
                 </svg>
               </span>
-              Sign in with Google
+              Continue with Google
             </button>
           </div>
-          
-          {errorMessage && (
-            <div className="mt-4 text-center text-sm text-red-600">
-              {errorMessage === "OAuthSignin" && "Error starting OAuth sign-in. Please try again."}
-              {errorMessage === "OAuthCallback" && "Error completing OAuth sign-in. Please try again."}
-              {errorMessage === "OAuthCreateAccount" && "Could not create an account at this time."}
-              {errorMessage === "EmailCreateAccount" && "Could not create an account with this email."}
-              {errorMessage === "Callback" && "Error during OAuth callback."}
-              {errorMessage === "Default" && "An authentication error occurred. Please try again."}
-              {!["OAuthSignin", "OAuthCallback", "OAuthCreateAccount", "EmailCreateAccount", "Callback", "Default"].includes(errorMessage) && "Authentication error: " + errorMessage}
+
+          {/* Error Messages */}
+          {(authError || error) && (
+            <div className="rounded-md bg-red-50 p-3 text-sm text-red-600 border border-red-200">
+              {authError ||
+                (error === "OAuthSignin" && "Error starting OAuth sign-in. Please try again.")}
+              {error === "OAuthCallback" && "Error completing OAuth sign-in. Please try again."}
+              {error === "OAuthCreateAccount" && "Could not create an account at this time."}
+              {error === "Default" && "An authentication error occurred. Please try again."}
             </div>
           )}
-        </form>
+
+          {/* Register Link */}
+          <div className="text-center text-sm text-gray-600">
+            Don&apos;t have an account?{" "}
+            <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
+              Create one
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
