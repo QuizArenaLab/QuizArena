@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 /**
  * QuizArena — Login Page
  *
@@ -48,6 +49,11 @@ function LoginForm() {
       callbackUrl: callbackUrl || ROUTES.PROTECTED.DASHBOARD,
     });
   };
+=======
+export default async function LoginPage(props: { searchParams: Promise<{ error?: string }> }) {
+  const searchParams = await props.searchParams;
+  const errorMessage = searchParams?.error;
+>>>>>>> wholesale-school
 
   return (
     <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
@@ -80,6 +86,7 @@ function LoginForm() {
             />
           </div>
 
+<<<<<<< HEAD
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
               Password
@@ -105,6 +112,26 @@ function LoginForm() {
               >
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
+=======
+          {errorMessage && (
+            <div className="mt-4 text-center text-sm text-red-600">
+              {errorMessage === "OAuthSignin" && "Error starting OAuth sign-in. Please try again."}
+              {errorMessage === "OAuthCallback" &&
+                "Error completing OAuth sign-in. Please try again."}
+              {errorMessage === "OAuthCreateAccount" && "Could not create an account at this time."}
+              {errorMessage === "EmailCreateAccount" &&
+                "Could not create an account with this email."}
+              {errorMessage === "Callback" && "Error during OAuth callback."}
+              {errorMessage === "Default" && "An authentication error occurred. Please try again."}
+              {![
+                "OAuthSignin",
+                "OAuthCallback",
+                "OAuthCreateAccount",
+                "EmailCreateAccount",
+                "Callback",
+                "Default",
+              ].includes(errorMessage) && "Authentication error: " + errorMessage}
+>>>>>>> wholesale-school
             </div>
           </div>
 

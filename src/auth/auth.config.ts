@@ -23,6 +23,7 @@ export const authConfig = {
           name: profile.name,
           email: profile.email,
           image: profile.picture,
+<<<<<<< HEAD
           role: "USER",
           onboardingCompleted: false,
         };
@@ -90,6 +91,12 @@ export const authConfig = {
           return null;
         }
       },
+=======
+          role: "USER", // Default role
+          onboardingCompleted: false, // Default onboarding state
+        };
+      },
+>>>>>>> wholesale-school
     }),
   ],
   pages: {

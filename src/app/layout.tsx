@@ -23,6 +23,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const session = await getServerSession();
 
   return (
+<<<<<<< HEAD
     <html lang="en" className={hanken.variable}>
       <body className="antialiased min-h-screen bg-background font-sans text-navy flex flex-col">
         <SecureClientAuthProvider>
@@ -35,6 +36,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           {/* Main Application Content */}
           <main className="flex-1 w-full">{children}</main>
         </SecureClientAuthProvider>
+=======
+    <html lang="en" className={`${hankenGrotesk.variable} h-full antialiased relative`}>
+      <body className="min-h-full flex flex-col font-sans relative">
+        <Navbar />
+        {children}
+        <Footer />
+>>>>>>> wholesale-school
       </body>
     </html>
   );
