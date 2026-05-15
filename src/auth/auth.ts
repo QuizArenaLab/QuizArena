@@ -10,7 +10,18 @@ import type { User as PrismaUser } from "@prisma/client";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
-  adapter: PrismaAdapter(prisma),
+  adapter: {
+    ...PrismaAdapter(prisma),
+    async getUser(id) {
+      try {
+        return await PrismaAdapter(prisma).getUser!(id);
+      } catch (error) {
+        console.error("Database connectivity error in Auth.js:", error);
+        throw new Error("Database offline. Please check your connection.");
+      }
+    },
+    // We could wrap more methods if needed, but the primary failure point is usually during user lookup
+  },
   providers: [
     ...authConfig.providers,
     Credentials({
@@ -87,4 +98,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     ...authConfig.callbacks,
   },
+  trustHost: true,
+  debug: process.env.NODE_ENV === "development",
 });

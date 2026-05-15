@@ -113,4 +113,12 @@
   .glass-panel {
     @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-sm rounded-xl;
   }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
 }
