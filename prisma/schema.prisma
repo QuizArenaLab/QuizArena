@@ -89,7 +89,9 @@ model VerificationToken {
 
 enum UserRole {
   USER
+  MODERATOR
   ADMIN
+  SUPER_ADMIN
 }
 
 enum ChallengeDifficulty {

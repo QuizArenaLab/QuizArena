@@ -30,22 +30,23 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const fullPath = headersList.get("x-invoke-path") || "";
   const isOnboarding = fullPath.startsWith("/onboarding");
   const isHomePage = fullPath === "/";
+  const isLoggedIn = !!session;
 
   return (
     <html lang="en" className={hanken.variable}>
       <body className="antialiased min-h-screen bg-background font-sans text-navy flex flex-col">
         <SecureClientAuthProvider>
-          {/* Global Desktop Navbar - Only visible on home page */}
-          {isHomePage && !isOnboarding && <Navbar session={session} />}
+          {/* Global Desktop Navbar - Visible only when not logged in */}
+          {!isLoggedIn && !isOnboarding && <Navbar session={session} />}
 
-          {/* Global Mobile Navigation Drawer - Only visible on home page */}
-          {isHomePage && !isOnboarding && <MobileNav session={session} />}
+          {/* Global Mobile Navigation Drawer - Visible only when not logged in */}
+          {!isLoggedIn && !isOnboarding && <MobileNav session={session} />}
 
           {/* Main Application Content */}
           <main className={!isOnboarding ? "flex-1 w-full" : "flex-1 w-full"}>{children}</main>
 
-          {/* Global Footer - Only visible on home page */}
-          {isHomePage && !isOnboarding && <Footer />}
+          {/* Global Footer - Visible only when not logged in */}
+          {!isLoggedIn && !isOnboarding && <Footer />}
         </SecureClientAuthProvider>
       </body>
     </html>

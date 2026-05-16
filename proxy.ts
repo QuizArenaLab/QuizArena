@@ -2,23 +2,67 @@ import { NextRequest, NextResponse } from "next/server";
 import NextAuth from "next-auth";
 import { authConfig } from "@/auth/auth.config";
 import { ROUTES } from "@/lib/routes";
+import { ROLE, toRole, type Role } from "@/auth/roles/role-types";
+import { hasMinimumRole, hasRole } from "@/auth/roles/role-hierarchy";
 
 const { auth } = NextAuth(authConfig);
 
 /**
- * QuizArena — Production-Grade Middleware
+ * QuizArena — Production-Grade RBAC Middleware
  *
  * Handles:
  * - Route protection (authenticated vs public)
+ * - Role-based access control
  * - Redirect management (no loops)
  * - Auth callback pass-through
  * - Static asset bypass
  * - Onboarding flow gating
- * - Standardized Next.js middleware implementation
+ * - Hierarchical role enforcement
+ * - Deny-by-default security
  */
 
-// Routes that require authentication
-const PROTECTED_ROUTES: string[] = [
+const PUBLIC_ROUTES = [
+  "/",
+  "/about",
+  "/contact",
+  "/login",
+  "/register",
+  "/forgot-password",
+];
+
+const AUTH_ONLY_ROUTES = ["/login", "/register"];
+
+const PUBLIC_API_PREFIXES = ["/api/auth", "/api/webhooks", "/api/me", "/api/user"];
+
+const MODERATOR_ROUTES = [
+  "/moderator",
+  "/dashboard/manage-challenges",
+  "/dashboard/manage-questions",
+  "/dashboard/create-challenge",
+  "/dashboard/content",
+  "/dashboard/questions",
+];
+
+const ADMIN_ROUTES = [
+  "/admin",
+  "/dashboard/admin",
+  "/dashboard/users",
+  "/dashboard/moderators",
+  "/dashboard/performance",
+  "/dashboard/approve",
+  "/dashboard/reports",
+];
+
+const SUPER_ADMIN_ROUTES = [
+  "/super-admin",
+  "/dashboard/platform",
+  "/dashboard/settings",
+  "/dashboard/financials",
+  "/dashboard/payouts",
+  "/dashboard/system",
+];
+
+const PROTECTED_ROUTES = [
   ROUTES.PROTECTED.DASHBOARD,
   ROUTES.PROTECTED.PROFILE,
   ROUTES.PROTECTED.SETTINGS,
@@ -27,13 +71,14 @@ const PROTECTED_ROUTES: string[] = [
   ROUTES.PROTECTED.ANALYTICS,
   ROUTES.PROTECTED.SUBSCRIPTION,
   ROUTES.ONBOARDING.ROOT,
+  ...MODERATOR_ROUTES,
+  ...ADMIN_ROUTES,
+  ...SUPER_ADMIN_ROUTES,
 ];
 
-// Routes that should redirect logged-in users away
-const AUTH_ONLY_ROUTES: string[] = [ROUTES.AUTH.SIGN_IN, ROUTES.AUTH.SIGN_UP];
-
-// API prefixes that should pass through
-const PUBLIC_API_PREFIXES = ["/api/auth", "/api/webhooks", "/api/me", "/api/user"];
+function isPublicRoute(pathname: string): boolean {
+  return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(route + "/"));
+}
 
 function isProtectedRoute(pathname: string): boolean {
   return PROTECTED_ROUTES.some((route) => pathname === route || pathname.startsWith(route + "/"));
@@ -56,9 +101,36 @@ function isStaticAsset(pathname: string): boolean {
   );
 }
 
-/**
- * Safe redirect URL — prevents open redirect attacks
- */
+function isModeratorRoute(pathname: string): boolean {
+  return MODERATOR_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
+}
+
+function isAdminRoute(pathname: string): boolean {
+  return ADMIN_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
+}
+
+function isSuperAdminRoute(pathname: string): boolean {
+  return SUPER_ADMIN_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
+}
+
+function getRequiredRoleForRoute(pathname: string): Role | null {
+  if (isSuperAdminRoute(pathname)) return ROLE.SUPER_ADMIN;
+  if (isAdminRoute(pathname)) return ROLE.ADMIN;
+  if (isModeratorRoute(pathname)) return ROLE.MODERATOR;
+  return null;
+}
+
+function canAccessRoute(userRole: Role, requiredRole: Role | null): boolean {
+  if (!requiredRole) return true;
+  return hasMinimumRole(userRole, requiredRole);
+}
+
 function getSafeRedirectUrl(request: NextRequest, defaultRoute: string): string {
   const url = request.nextUrl;
   const callbackUrl = url.searchParams.get("callbackUrl");
@@ -66,7 +138,6 @@ function getSafeRedirectUrl(request: NextRequest, defaultRoute: string): string 
   if (callbackUrl) {
     try {
       const parsed = new URL(callbackUrl, url.origin);
-      // Ensure origin matches and it's NOT an auth-only route (to prevent loops)
       if (parsed.origin === url.origin && !isAuthOnlyRoute(parsed.pathname)) {
         return callbackUrl;
       }
@@ -80,62 +151,59 @@ function getSafeRedirectUrl(request: NextRequest, defaultRoute: string): string 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Bypass static assets and internal paths
   if (isStaticAsset(pathname)) {
     return NextResponse.next();
   }
 
-  // Bypass public API routes
   if (isPublicApiRoute(pathname)) {
     return NextResponse.next();
   }
 
-  // Get session
+  if (isPublicRoute(pathname)) {
+    return NextResponse.next();
+  }
+
   const session = await auth();
   const isAuthenticated = !!session?.user;
   const isOnboardingCompleted = session?.user?.onboardingCompleted ?? false;
+  const userRole = toRole(session?.user?.role ?? "USER");
 
-  // Protected route guard (for unauthenticated users)
-  if (isProtectedRoute(pathname) && !isAuthenticated) {
-    const loginUrl = new URL(ROUTES.AUTH.SIGN_IN, request.url);
-    const intendedDestination = pathname + request.nextUrl.search;
-    const safeRedirect = getSafeRedirectUrl(request, intendedDestination);
-    loginUrl.searchParams.set("callbackUrl", safeRedirect);
-    return NextResponse.redirect(loginUrl);
+  if (!isAuthenticated) {
+    if (isProtectedRoute(pathname)) {
+      const loginUrl = new URL(ROUTES.AUTH.SIGN_IN, request.url);
+      const intendedDestination = pathname + request.nextUrl.search;
+      loginUrl.searchParams.set("callbackUrl", getSafeRedirectUrl(request, intendedDestination));
+      return NextResponse.redirect(loginUrl);
+    }
+    return NextResponse.next();
   }
 
-  // Authenticated user logic
-  if (isAuthenticated) {
-    // Auth-only routes (login/register) -> redirect to dashboard
-    if (isAuthOnlyRoute(pathname)) {
+  if (isAuthOnlyRoute(pathname)) {
+    const redirectUrl = getSafeRedirectUrl(request, ROUTES.PROTECTED.DASHBOARD);
+    return NextResponse.redirect(new URL(redirectUrl, request.url));
+  }
+
+  const isOnboardingRoute = pathname.startsWith(ROUTES.ONBOARDING.ROOT);
+  if (isOnboardingRoute) {
+    if (isOnboardingCompleted) {
       const redirectUrl = getSafeRedirectUrl(request, ROUTES.PROTECTED.DASHBOARD);
       return NextResponse.redirect(new URL(redirectUrl, request.url));
     }
+    return NextResponse.next();
+  }
 
-    // Onboarding routes
-    const isOnboardingRoute = pathname.startsWith(ROUTES.ONBOARDING.ROOT);
-    if (isOnboardingRoute) {
-      // If onboarding is complete, redirect to dashboard
-      if (isOnboardingCompleted) {
-        const redirectUrl = getSafeRedirectUrl(request, ROUTES.PROTECTED.DASHBOARD);
-        return NextResponse.redirect(new URL(redirectUrl, request.url));
-      }
-      // Otherwise, allow access to onboarding flow
-      return NextResponse.next();
-    }
+  if (!isOnboardingCompleted && isProtectedRoute(pathname)) {
+    const onboardingUrl = new URL(ROUTES.ONBOARDING.ROOT, request.url);
+    const intendedDestination = pathname + request.nextUrl.search;
+    onboardingUrl.searchParams.set("callbackUrl", getSafeRedirectUrl(request, intendedDestination));
+    return NextResponse.redirect(onboardingUrl);
+  }
 
-    // For all other protected routes (dashboard, profile, etc.)
-    // Redirect to onboarding if not completed
-    if (isProtectedRoute(pathname) && !isOnboardingCompleted) {
-      const onboardingUrl = new URL(ROUTES.ONBOARDING.ROOT, request.url);
-      // Preserve the original intended destination as a callbackUrl for after onboarding
-      const intendedDestination = pathname + request.nextUrl.search;
-      onboardingUrl.searchParams.set(
-        "callbackUrl",
-        getSafeRedirectUrl(request, intendedDestination)
-      );
-      return NextResponse.redirect(onboardingUrl);
-    }
+  const requiredRole = getRequiredRoleForRoute(pathname);
+  if (requiredRole && !canAccessRoute(userRole, requiredRole)) {
+    const dashboardUrl = new URL(ROUTES.PROTECTED.DASHBOARD, request.url);
+    dashboardUrl.searchParams.set("unauthorized", "true");
+    return NextResponse.redirect(dashboardUrl);
   }
 
   return NextResponse.next();
@@ -143,7 +211,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Run middleware on all routes except static files
     "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };

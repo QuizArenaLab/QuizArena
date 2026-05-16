@@ -1,4 +1,5 @@
 import { type DefaultSession } from "next-auth";
+import type { UserRole } from "@/auth/roles/role-types";
 
 export type ExamCategory = "SSC" | "BANKING" | "RAILWAYS" | "STATE_PSC";
 export type PreparationLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
@@ -7,7 +8,7 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-      role?: string;
+      role?: UserRole;
       onboardingCompleted?: boolean;
       examCategory?: ExamCategory | null;
       preparationLevel?: PreparationLevel | null;
@@ -16,7 +17,7 @@ declare module "next-auth" {
   }
 
   interface User {
-    role?: string;
+    role?: UserRole;
     onboardingCompleted?: boolean;
     examCategory?: ExamCategory | null;
     preparationLevel?: PreparationLevel | null;
@@ -25,7 +26,7 @@ declare module "next-auth" {
 
   interface JWT {
     id?: string;
-    role?: string;
+    role?: UserRole;
     onboardingCompleted?: boolean;
     examCategory?: ExamCategory | null;
     preparationLevel?: PreparationLevel | null;

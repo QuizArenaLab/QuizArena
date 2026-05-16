@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
 import type { ExamCategory, PreparationLevel } from "@/types/next-auth";
+import type { UserRole } from "@/auth/roles/role-types";
 import Google from "next-auth/providers/google";
 
 export const authConfig = {
@@ -92,7 +93,7 @@ export const authConfig = {
     async session({ session, token }) {
       if (session.user && token) {
         session.user.id = (token.id || token.sub || "") as string;
-        session.user.role = token.role as string | undefined;
+        session.user.role = token.role as UserRole | undefined;
         session.user.onboardingCompleted = token.onboardingCompleted as boolean | undefined;
         session.user.examCategory = token.examCategory as ExamCategory | null | undefined;
         session.user.preparationLevel = token.preparationLevel as

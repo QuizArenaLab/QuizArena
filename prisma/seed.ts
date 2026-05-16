@@ -1,8 +1,34 @@
 import { PrismaClient } from "../src/generated/prisma";
+import { hashPassword } from "../src/lib/password";
 
 const prisma = new PrismaClient();
 
 async function main() {
+  // Create admin user from environment variables
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (adminEmail && adminPassword) {
+    const hashedPassword = await hashPassword(adminPassword);
+    await prisma.user.upsert({
+      where: { email: adminEmail },
+      update: {
+        password: hashedPassword,
+        role: "ADMIN",
+        name: "QuizArena Admin",
+        onboardingCompleted: true,
+      },
+      create: {
+        email: adminEmail,
+        password: hashedPassword,
+        name: "QuizArena Admin",
+        role: "ADMIN",
+        onboardingCompleted: true,
+      },
+    });
+    console.log(`Admin user created: ${adminEmail} with role ADMIN`);
+  }
+
   const questions = await Promise.all([
     prisma.question.create({
       data: {

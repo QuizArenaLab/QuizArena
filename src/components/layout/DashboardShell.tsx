@@ -18,22 +18,72 @@ import {
   Menu,
   Target,
   GraduationCap,
+  FileText,
+  Users,
+  Shield,
+  Settings2,
+  DollarSign,
+  FolderCog,
+  ClipboardList,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Image from "next/image";
 import { EXAM_CATEGORY_LABELS, PREPARATION_LEVEL_LABELS } from "@/lib/onboarding";
+import { ROLES } from "@/lib/rbac/roles";
 
 interface DashboardShellProps {
   children: React.ReactNode;
 }
 
-const navItems = [
+const userNavItems = [
   { href: "/dashboard/home", label: "Dashboard", icon: LayoutDashboard },
   { href: "/challenges", label: "Challenges", icon: Trophy },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/profile", label: "Profile", icon: User },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
+
+const moderatorNavItems = [
+  { href: "/dashboard/home", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/manage-challenges", label: "Manage Challenges", icon: Trophy },
+  { href: "/dashboard/questions", label: "Question Bank", icon: FileText },
+  { href: "/dashboard/content", label: "Content Queue", icon: ClipboardList },
+  { href: "/profile", label: "Profile", icon: User },
+  { href: "/settings", label: "Settings", icon: Settings },
+];
+
+const adminNavItems = [
+  { href: "/dashboard/home", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/users", label: "Users", icon: Users },
+  { href: "/dashboard/moderators", label: "Moderators", icon: Users },
+  { href: "/dashboard/reports", label: "Reports", icon: ClipboardList },
+  { href: "/dashboard/performance", label: "Performance", icon: BarChart3 },
+  { href: "/profile", label: "Profile", icon: User },
+  { href: "/settings", label: "Settings", icon: Settings },
+];
+
+const superAdminNavItems = [
+  { href: "/dashboard/home", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/financials", label: "Revenue", icon: DollarSign },
+  { href: "/dashboard/platform", label: "Platform", icon: Settings2 },
+  { href: "/dashboard/users", label: "Users", icon: Users },
+  { href: "/dashboard/roles", label: "Role Management", icon: Shield },
+  { href: "/profile", label: "Profile", icon: User },
+  { href: "/settings", label: "Settings", icon: Settings },
+];
+
+function getNavItemsForRole(role: string | undefined) {
+  switch (role) {
+    case ROLES.SUPER_ADMIN:
+      return superAdminNavItems;
+    case ROLES.ADMIN:
+      return adminNavItems;
+    case ROLES.MODERATOR:
+      return moderatorNavItems;
+    default:
+      return userNavItems;
+  }
+}
 
 export function DashboardShell({ children }: DashboardShellProps) {
   const { data: session, status } = useSession();
@@ -43,6 +93,8 @@ export function DashboardShell({ children }: DashboardShellProps) {
   const sidebarRef = useRef<HTMLElement>(null);
 
   const user = session?.user;
+  const role = user?.role ?? ROLES.USER;
+  const navItems = getNavItemsForRole(role);
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return "?";
@@ -53,6 +105,19 @@ export function DashboardShell({ children }: DashboardShellProps) {
       .join("")
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case ROLES.SUPER_ADMIN:
+        return "Super Admin";
+      case ROLES.ADMIN:
+        return "Admin";
+      case ROLES.MODERATOR:
+        return "Moderator";
+      default:
+        return "Aspirant";
+    }
   };
 
   if (status === "loading") {
@@ -91,14 +156,14 @@ export function DashboardShell({ children }: DashboardShellProps) {
         <div className="w-8" />
       </header>
 
-      {/* Desktop Sidebar - Full Flex Architecture */}
+      {/* Desktop Sidebar */}
       <aside
         ref={sidebarRef}
         className={`hidden md:flex flex-col fixed left-0 top-0 bottom-0 bg-white border-r border-gray-100 z-30 ${
           collapsed ? "w-[72px]" : "w-[256px]"
         } transition-[width] duration-220 ease-out`}
       >
-        {/* HEADER: Logo - PRESERVED IN COLLAPSED STATE */}
+        {/* HEADER */}
         <div className="h-16 flex items-center justify-center border-b border-gray-100 shrink-0">
           <Link href="/dashboard/home" className="flex items-center gap-2.5">
             <Image
@@ -142,13 +207,20 @@ export function DashboardShell({ children }: DashboardShellProps) {
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-navy truncate">{user?.name || "User"}</p>
-                <p className="text-xs text-gray-500 truncate">@{user?.username || "aspirant"}</p>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-gray-500 truncate">@{user?.username || "aspirant"}</span>
+                  {role !== ROLES.USER && (
+                    <span className="text-xs px-1.5 py-0.5 bg-primary/10 text-primary rounded font-medium">
+                      {getRoleLabel(role)}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* EXAM CONTEXT - Only when expanded */}
+        {/* EXAM CONTEXT */}
         {!collapsed && user?.examCategory && (
           <div className="px-4 py-3 border-b border-gray-100 shrink-0">
             <div className="flex items-center gap-2 p-2.5 bg-primary/5 rounded-lg border border-gray-100/50">
@@ -173,7 +245,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
           </div>
         )}
 
-        {/* NAVIGATION - Flexible grow */}
+        {/* NAVIGATION */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto">
           <div className="space-y-1">
             {navItems.map((item) => {
@@ -190,17 +262,15 @@ export function DashboardShell({ children }: DashboardShellProps) {
                   } ${collapsed ? "justify-center" : ""}`}
                   title={collapsed ? item.label : undefined}
                 >
-                  {/* Active state border indicator */}
                   {isActive && (
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-r-full" />
                   )}
-                  <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-primary" : ""}`} />
+                  <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-primary" : ""} ${role !== ROLES.USER && item.href.includes('dashboard') ? 'text-amber-500' : ''}`} />
                   {!collapsed && (
                     <span className={`text-sm font-medium ${isActive ? "text-primary" : ""}`}>
                       {item.label}
                     </span>
                   )}
-                  {/* Tooltip for collapsed state */}
                   {collapsed && (
                     <div className="absolute left-full ml-2 px-2 py-1 bg-navy text-white text-xs font-medium rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none">
                       {item.label}
@@ -215,7 +285,6 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
         {/* BOTTOM UTILITY SECTION */}
         <div className="shrink-0 border-t border-gray-100">
-          {/* Settings & Logout */}
           <div className={`p-3 space-y-1 ${collapsed ? "flex justify-center" : ""}`}>
             {collapsed ? (
               <>
@@ -254,7 +323,6 @@ export function DashboardShell({ children }: DashboardShellProps) {
             )}
           </div>
 
-          {/* Collapse Toggle */}
           <div className={`p-3 pt-0 ${collapsed ? "flex justify-center" : ""}`}>
             <button
               onClick={() => setCollapsed(!collapsed)}
@@ -275,11 +343,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
         </div>
       </aside>
 
-      {/* Mobile Drawer - Full Screen Overlay */}
+      {/* Mobile Drawer */}
       <AnimatePresence>
         {sidebarOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -289,7 +356,6 @@ export function DashboardShell({ children }: DashboardShellProps) {
               onClick={() => setSidebarOpen(false)}
             />
 
-            {/* Drawer */}
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
@@ -325,7 +391,14 @@ export function DashboardShell({ children }: DashboardShellProps) {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-navy">{user?.name || "User"}</p>
-                    <p className="text-xs text-gray-500">@{user?.username || "aspirant"}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-xs text-gray-500">@{user?.username || "aspirant"}</p>
+                      {role !== ROLES.USER && (
+                        <span className="text-xs px-1.5 py-0.5 bg-primary/10 text-primary rounded font-medium">
+                          {getRoleLabel(role)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
