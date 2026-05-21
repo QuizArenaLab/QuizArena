@@ -19,6 +19,12 @@ export default async function DashboardHomePage() {
   }
 
   const role = session.user.role as string;
+  const email = session.user.email;
+  const adminEmail = process.env.ADMIN_EMAIL || "quizarenadev@gmail.com";
+
+  if ((role === ROLES.SUPER_ADMIN || role === ROLES.ADMIN) && email !== adminEmail) {
+    return <UserDashboardView user={session.user} />;
+  }
 
   switch (role) {
     case ROLES.SUPER_ADMIN:

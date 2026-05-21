@@ -8,6 +8,7 @@ import {
   Server,
   AlertTriangle,
 } from "lucide-react";
+import Link from "next/link";
 
 export async function SuperAdminDashboardView() {
   return (
@@ -79,8 +80,8 @@ export async function SuperAdminDashboardView() {
 
       {/* Control Panels */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <a
-          href="/dashboard/financials"
+        <Link
+          href="/dashboard/super-admin/monitoring?tab=trends"
           className="flex items-center gap-4 p-5 bg-white rounded-xl border border-gray-100 hover:border-primary/30 hover:shadow-sm transition-all"
         >
           <div className="p-3 bg-green-50 rounded-lg">
@@ -90,10 +91,10 @@ export async function SuperAdminDashboardView() {
             <p className="font-semibold text-navy">Revenue & Payouts</p>
             <p className="text-sm text-gray-500">Financial analytics and payments</p>
           </div>
-        </a>
+        </Link>
 
-        <a
-          href="/dashboard/platform"
+        <Link
+          href="/dashboard/super-admin/monitoring"
           className="flex items-center gap-4 p-5 bg-white rounded-xl border border-gray-100 hover:border-primary/30 hover:shadow-sm transition-all"
         >
           <div className="p-3 bg-blue-50 rounded-lg">
@@ -103,10 +104,10 @@ export async function SuperAdminDashboardView() {
             <p className="font-semibold text-navy">Platform Settings</p>
             <p className="text-sm text-gray-500">System configuration</p>
           </div>
-        </a>
+        </Link>
 
-        <a
-          href="/dashboard/roles"
+        <Link
+          href="/dashboard/super-admin/roles"
           className="flex items-center gap-4 p-5 bg-white rounded-xl border border-gray-100 hover:border-primary/30 hover:shadow-sm transition-all"
         >
           <div className="p-3 bg-purple-50 rounded-lg">
@@ -116,10 +117,10 @@ export async function SuperAdminDashboardView() {
             <p className="font-semibold text-navy">Role Management</p>
             <p className="text-sm text-gray-500">Assign and manage roles</p>
           </div>
-        </a>
+        </Link>
 
-        <a
-          href="/dashboard/users"
+        <Link
+          href="/dashboard/admin/users"
           className="flex items-center gap-4 p-5 bg-white rounded-xl border border-gray-100 hover:border-primary/30 hover:shadow-sm transition-all"
         >
           <div className="p-3 bg-amber-50 rounded-lg">
@@ -129,10 +130,10 @@ export async function SuperAdminDashboardView() {
             <p className="font-semibold text-navy">User Administration</p>
             <p className="text-sm text-gray-500">Full user control</p>
           </div>
-        </a>
+        </Link>
 
-        <a
-          href="/dashboard/system"
+        <Link
+          href="/dashboard/super-admin/monitoring"
           className="flex items-center gap-4 p-5 bg-white rounded-xl border border-gray-100 hover:border-primary/30 hover:shadow-sm transition-all"
         >
           <div className="p-3 bg-gray-100 rounded-lg">
@@ -142,10 +143,10 @@ export async function SuperAdminDashboardView() {
             <p className="font-semibold text-navy">Infrastructure</p>
             <p className="text-sm text-gray-500">System health and logs</p>
           </div>
-        </a>
+        </Link>
 
-        <a
-          href="/dashboard/audit"
+        <Link
+          href="/dashboard/super-admin/monitoring?tab=activity"
           className="flex items-center gap-4 p-5 bg-white rounded-xl border border-gray-100 hover:border-primary/30 hover:shadow-sm transition-all"
         >
           <div className="p-3 bg-red-50 rounded-lg">
@@ -155,7 +156,7 @@ export async function SuperAdminDashboardView() {
             <p className="font-semibold text-navy">Audit Logs</p>
             <p className="text-sm text-gray-500">Track all admin actions</p>
           </div>
-        </a>
+        </Link>
       </div>
 
       {/* Revenue Section Placeholder */}

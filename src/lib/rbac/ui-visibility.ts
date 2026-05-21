@@ -116,6 +116,8 @@ export const COMPONENT_VISIBILITY: Record<Permission, Role[]> = {
   "content.approve": [ROLES.ADMIN, ROLES.SUPER_ADMIN],
   "financials.manage": [ROLES.SUPER_ADMIN],
   "platform.settings": [ROLES.SUPER_ADMIN],
+  "platform.operational_settings": [ROLES.ADMIN, ROLES.SUPER_ADMIN],
+  "platform.intelligence": [ROLES.ADMIN, ROLES.SUPER_ADMIN],
   "admin.create": [ROLES.SUPER_ADMIN],
 };
 

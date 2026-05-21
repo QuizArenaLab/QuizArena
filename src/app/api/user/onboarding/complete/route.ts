@@ -67,9 +67,14 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // 4. Atomic Update
+    // 4. Atomic Update by unique email
+    const userEmail = sessionUser.email;
+    if (!userEmail) {
+      return NextResponse.json({ error: "User email not found in session" }, { status: 400 });
+    }
+
     const updatedUser = await prisma.user.update({
-      where: { id: sessionUser.id },
+      where: { email: userEmail },
       data: {
         username: normalizeUsername(username),
         examCategory: examCategory,
@@ -78,7 +83,7 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
-    console.log(`[Onboarding] Success for user ${sessionUser.id}`);
+    console.log(`[Onboarding] Success for user ${updatedUser.id} (${userEmail})`);
 
     return NextResponse.json({
       success: true,

@@ -28,8 +28,13 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
+    const userEmail = typedUser.email;
+    if (!userEmail) {
+      return NextResponse.json({ error: "User email not found in session" }, { status: 400 });
+    }
+
     const updatedUser = await prisma.user.update({
-      where: { id: typedUser.id },
+      where: { email: userEmail },
       data: {
         name: name ?? typedUser.name,
         username: username ? normalizeUsername(username) : typedUser.username,

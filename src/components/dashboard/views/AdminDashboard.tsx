@@ -1,4 +1,5 @@
 import { Users, ClipboardList, BarChart3, Shield, AlertTriangle, CheckCircle } from "lucide-react";
+import Link from "next/link";
 
 export async function AdminDashboardView() {
   // We don't need requireMinimumRole here as it's checked by the dispatcher
@@ -61,8 +62,8 @@ export async function AdminDashboardView() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <a
-          href="/dashboard/users"
+        <Link
+          href="/dashboard/admin/users"
           className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-100 hover:border-primary/30 hover:shadow-sm transition-all"
         >
           <Users className="w-5 h-5 text-gray-400" />
@@ -70,10 +71,10 @@ export async function AdminDashboardView() {
             <p className="font-semibold text-navy">Manage Users</p>
             <p className="text-xs text-gray-500">View and moderate users</p>
           </div>
-        </a>
+        </Link>
 
-        <a
-          href="/dashboard/moderators"
+        <Link
+          href="/dashboard/admin/moderators"
           className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-100 hover:border-primary/30 hover:shadow-sm transition-all"
         >
           <Shield className="w-5 h-5 text-gray-400" />
@@ -81,10 +82,10 @@ export async function AdminDashboardView() {
             <p className="font-semibold text-navy">Moderator Oversight</p>
             <p className="text-xs text-gray-500">Manage moderator permissions</p>
           </div>
-        </a>
+        </Link>
 
-        <a
-          href="/dashboard/reports"
+        <Link
+          href="/dashboard/admin/monitoring?tab=failures"
           className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-100 hover:border-primary/30 hover:shadow-sm transition-all"
         >
           <ClipboardList className="w-5 h-5 text-gray-400" />
@@ -92,7 +93,7 @@ export async function AdminDashboardView() {
             <p className="font-semibold text-navy">Review Reports</p>
             <p className="text-xs text-gray-500">Process user reports</p>
           </div>
-        </a>
+        </Link>
       </div>
 
       {/* Platform Overview */}

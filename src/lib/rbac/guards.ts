@@ -50,6 +50,16 @@ export const requireRole = async (
   const user = await requireAuth(redirectTo);
   const userRole = (user?.role as Role) ?? ROLES.USER;
 
+  const adminEmail = process.env.ADMIN_EMAIL || "quizarenadev@gmail.com";
+  const isTargetingAdmin =
+    requiredRole === ROLES.ADMIN ||
+    requiredRole === ROLES.SUPER_ADMIN ||
+    userRole === ROLES.ADMIN ||
+    userRole === ROLES.SUPER_ADMIN;
+  if (isTargetingAdmin && user?.email !== adminEmail) {
+    redirect("/dashboard/home");
+  }
+
   if (!hasRole(userRole, requiredRole)) {
     redirect(redirectTo);
   }
@@ -62,6 +72,16 @@ export const requireMinimumRole = async (
 ): Promise<AuthUser> => {
   const user = await requireAuth(redirectTo);
   const userRole = (user?.role as Role) ?? ROLES.USER;
+
+  const adminEmail = process.env.ADMIN_EMAIL || "quizarenadev@gmail.com";
+  const isTargetingAdmin =
+    minimumRole === ROLES.ADMIN ||
+    minimumRole === ROLES.SUPER_ADMIN ||
+    userRole === ROLES.ADMIN ||
+    userRole === ROLES.SUPER_ADMIN;
+  if (isTargetingAdmin && user?.email !== adminEmail) {
+    redirect("/dashboard/home");
+  }
 
   if (!hasMinimumRole(userRole, minimumRole)) {
     redirect(redirectTo);
@@ -135,7 +155,16 @@ export const checkRole = async (
   if (!user) {
     return { authorized: false, user: null };
   }
+  const adminEmail = process.env.ADMIN_EMAIL || "quizarenadev@gmail.com";
   const userRole = (user?.role as Role) ?? ROLES.USER;
+  const isTargetingAdmin =
+    requiredRole === ROLES.ADMIN ||
+    requiredRole === ROLES.SUPER_ADMIN ||
+    userRole === ROLES.ADMIN ||
+    userRole === ROLES.SUPER_ADMIN;
+  if (isTargetingAdmin && user.email !== adminEmail) {
+    return { authorized: false, user };
+  }
   return {
     authorized: hasRole(userRole, requiredRole),
     user,
@@ -149,7 +178,16 @@ export const checkMinimumRole = async (
   if (!user) {
     return { authorized: false, user: null };
   }
+  const adminEmail = process.env.ADMIN_EMAIL || "quizarenadev@gmail.com";
   const userRole = (user?.role as Role) ?? ROLES.USER;
+  const isTargetingAdmin =
+    minimumRole === ROLES.ADMIN ||
+    minimumRole === ROLES.SUPER_ADMIN ||
+    userRole === ROLES.ADMIN ||
+    userRole === ROLES.SUPER_ADMIN;
+  if (isTargetingAdmin && user.email !== adminEmail) {
+    return { authorized: false, user };
+  }
   return {
     authorized: hasMinimumRole(userRole, minimumRole),
     user,
@@ -178,14 +216,35 @@ export const canAccessRoute = async (pathname: string): Promise<boolean> => {
   const requiredRole = getRequiredRoleForRoute(pathname);
 
   if (!requiredRole) return true;
+
+  const adminEmail = process.env.ADMIN_EMAIL || "quizarenadev@gmail.com";
+  const isRouteTargetingAdmin =
+    requiredRole === ROLES.ADMIN ||
+    requiredRole === ROLES.SUPER_ADMIN ||
+    userRole === ROLES.ADMIN ||
+    userRole === ROLES.SUPER_ADMIN;
+  if (isRouteTargetingAdmin && user.email !== adminEmail) {
+    return false;
+  }
+
   return hasMinimumRole(userRole, requiredRole);
 };
 
 export const getRequiredRoleForRoute = (pathname: string): Role | null => {
-  if (pathname.startsWith("/super-admin") || pathname.startsWith("/dashboard/platform")) {
+  if (
+    pathname.startsWith("/super-admin") ||
+    pathname.startsWith("/dashboard/platform") ||
+    pathname.startsWith("/dashboard/super-admin/settings") ||
+    pathname.startsWith("/dashboard/super-admin/intelligence")
+  ) {
     return ROLES.SUPER_ADMIN;
   }
-  if (pathname.startsWith("/admin") || pathname.startsWith("/dashboard/admin")) {
+  if (
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/dashboard/admin") ||
+    pathname.startsWith("/dashboard/super-admin/monitoring") ||
+    pathname.startsWith("/dashboard/admin/intelligence")
+  ) {
     return ROLES.ADMIN;
   }
   if (pathname.startsWith("/moderator") || pathname.startsWith("/dashboard/manage")) {

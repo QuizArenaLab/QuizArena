@@ -27,6 +27,7 @@ export const ROUTES = {
     ANALYTICS: "/analytics",
     SUBSCRIPTION: "/subscription",
     ADMIN: "/admin",
+    ADMIN_MONITORING: "/dashboard/admin/monitoring",
     SUPER_ADMIN: "/dashboard/super-admin",
     CHALLENGE_ATTEMPT: (slug: string) => `/dashboard/challenges/${slug}`,
     CHALLENGE_RESULT: (attemptId: string) => `/dashboard/results/${attemptId}`,
@@ -43,10 +44,22 @@ export const ROUTES = {
     QUESTION_EDIT: (id: string) => `/dashboard/moderator/questions/${id}/edit`,
   },
 
+  // ─── ADMIN ROUTES ─────────────────────────────────────────
+  ADMIN: {
+    ROOT: "/dashboard/admin",
+    SETTINGS: "/dashboard/admin/settings",
+    USERS: "/dashboard/admin/users",
+    MODERATORS: "/dashboard/admin/moderators",
+    MONITORING: "/dashboard/admin/monitoring",
+    REPORTS: "/dashboard/admin/reports",
+    INTELLIGENCE: "/dashboard/admin/intelligence",
+  },
+
   // ─── SUPER ADMIN ROUTES ─────────────────────────────────────
   SUPER_ADMIN: {
     ROOT: "/dashboard/super-admin",
     HOME: "/dashboard/super-admin/home",
+    SETTINGS: "/dashboard/super-admin/settings",
     FINANCIAL: "/dashboard/financials",
     PAYOUTS: "/dashboard/payouts",
     REVENUE: "/dashboard/revenue",
@@ -59,6 +72,7 @@ export const ROUTES = {
     FEATURE_FLAGS: "/dashboard/feature-flags",
     PLATFORM_ANALYTICS: "/dashboard/platform/analytics",
     PLATFORM_REPORTS: "/dashboard/platform/reports",
+    MONITORING: "/dashboard/super-admin/monitoring",
   },
 
   // ─── ONBOARDING ──────────────────────────────────────────

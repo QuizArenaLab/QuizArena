@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -23,8 +23,9 @@ import {
   Shield,
   Settings2,
   DollarSign,
-  FolderCog,
   ClipboardList,
+  Activity,
+  ShieldAlert,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Image from "next/image";
@@ -54,20 +55,27 @@ const moderatorNavItems = [
 
 const adminNavItems = [
   { href: "/dashboard/home", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/users", label: "Users", icon: Users },
-  { href: "/dashboard/moderators", label: "Moderators", icon: Users },
-  { href: "/dashboard/reports", label: "Reports", icon: ClipboardList },
-  { href: "/dashboard/performance", label: "Performance", icon: BarChart3 },
+  { href: "/dashboard/admin/users", label: "Users", icon: Users },
+  { href: "/dashboard/admin/moderators", label: "Moderators", icon: Users },
+  { href: "/dashboard/admin/monitoring", label: "Monitoring", icon: Activity },
+  { href: "/dashboard/admin/intelligence", label: "Intelligence", icon: BarChart3 },
+  { href: "/dashboard/admin/reports", label: "Reports", icon: ShieldAlert },
+  { href: "/dashboard/admin/monitoring?tab=trends", label: "Performance", icon: BarChart3 },
+  { href: "/dashboard/admin/settings", label: "Platform Settings", icon: Settings2 },
   { href: "/profile", label: "Profile", icon: User },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 const superAdminNavItems = [
   { href: "/dashboard/home", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/financials", label: "Revenue", icon: DollarSign },
-  { href: "/dashboard/platform", label: "Platform", icon: Settings2 },
-  { href: "/dashboard/users", label: "Users", icon: Users },
-  { href: "/dashboard/roles", label: "Role Management", icon: Shield },
+  { href: "/dashboard/super-admin/monitoring?tab=trends", label: "Revenue", icon: DollarSign },
+  { href: "/dashboard/super-admin/monitoring", label: "Platform", icon: Settings2 },
+  { href: "/dashboard/super-admin/monitoring", label: "Monitoring", icon: Activity },
+  { href: "/dashboard/super-admin/intelligence", label: "Intelligence", icon: BarChart3 },
+  { href: "/dashboard/admin/users", label: "Users", icon: Users },
+  { href: "/dashboard/admin/reports", label: "Reports", icon: ShieldAlert },
+  { href: "/dashboard/super-admin/roles", label: "Role Management", icon: Shield },
+  { href: "/dashboard/super-admin/settings", label: "Platform Settings", icon: Settings2 },
   { href: "/profile", label: "Profile", icon: User },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
@@ -93,8 +101,28 @@ export function DashboardShell({ children }: DashboardShellProps) {
   const sidebarRef = useRef<HTMLElement>(null);
 
   const user = session?.user;
-  const role = user?.role ?? ROLES.USER;
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "quizarenadev@gmail.com";
+  const actualRole = (user?.role as string) ?? ROLES.USER;
+
+  // Override the role to USER if the user is not the designated admin, preventing client-side layout leaking.
+  const role =
+    (actualRole === ROLES.ADMIN || actualRole === ROLES.SUPER_ADMIN) && user?.email !== adminEmail
+      ? ROLES.USER
+      : actualRole;
+
+  const isNotAdmin = user?.email !== adminEmail;
   const navItems = getNavItemsForRole(role);
+
+  // Client-side hard safety redirect guard for unmatched path patterns
+  useEffect(() => {
+    if (status === "authenticated" && isNotAdmin) {
+      const isTargetingAdminRoute =
+        pathname.startsWith("/dashboard/admin") || pathname.startsWith("/dashboard/super-admin");
+      if (isTargetingAdminRoute) {
+        window.location.href = "/dashboard/home";
+      }
+    }
+  }, [pathname, isNotAdmin, status]);
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return "?";
@@ -165,16 +193,16 @@ export function DashboardShell({ children }: DashboardShellProps) {
       >
         {/* HEADER */}
         <div className="h-16 flex items-center justify-center border-b border-gray-100 shrink-0">
-          <Link href="/dashboard/home" className="flex items-center gap-2.5">
+          <Link href="/dashboard/home" className="flex items-center justify-center gap-2.5 w-full">
             <Image
-              src="/logo-header.png"
+              src={collapsed ? "/logo.png" : "/logo-header.png"}
               alt="QuizArena"
-              width={140}
-              height={32}
+              width={collapsed ? 38 : 140}
+              height={collapsed ? 38 : 32}
               className="transition-all duration-220"
               style={{
-                width: collapsed ? 28 : 140,
-                height: "auto",
+                width: collapsed ? 38 : 140,
+                height: collapsed ? 38 : "auto",
                 objectFit: "contain",
               }}
               unoptimized

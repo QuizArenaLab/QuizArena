@@ -17,6 +17,8 @@ export type Permission =
   | "content.approve"
   | "financials.manage"
   | "platform.settings"
+  | "platform.operational_settings"
+  | "platform.intelligence"
   | "admin.create";
 
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
@@ -44,6 +46,8 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "moderators.manage",
     "performance.review",
     "content.approve",
+    "platform.operational_settings",
+    "platform.intelligence",
   ],
   SUPER_ADMIN: [
     "quizzes.attempt",
@@ -117,6 +121,10 @@ export const canReviewPerformance = (role: Role | string): boolean => {
 };
 
 export const canManageSettings = (role: Role | string): boolean => {
+  return hasMinimumRole(role, ROLES.ADMIN);
+};
+
+export const canManageInfrastructureSettings = (role: Role | string): boolean => {
   return hasRole(role, ROLES.SUPER_ADMIN);
 };
 

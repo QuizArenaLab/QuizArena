@@ -159,6 +159,199 @@ async function main() {
     console.log("Challenge seeded successfully!");
   }
 
+  // ─── Seed Default Platform Settings ─────────────────────────
+  const defaultSettings = [
+    // General
+    {
+      key: "platform.name",
+      value: "QuizArena",
+      category: "general",
+      description: "The display name of the platform shown across the UI",
+      isProtected: false,
+    },
+    {
+      key: "platform.description",
+      value: "AI-powered quiz platform for competitive exam preparation",
+      category: "general",
+      description: "Platform description used in SEO and marketing",
+      isProtected: false,
+    },
+    {
+      key: "platform.logo_url",
+      value: "/logo.png",
+      category: "general",
+      description: "URL path to the platform logo",
+      isProtected: false,
+    },
+    // Challenges
+    {
+      key: "challenges.submissions_enabled",
+      value: true,
+      category: "challenges",
+      description: "Allow users to submit challenge attempts",
+      isProtected: false,
+    },
+    {
+      key: "challenges.auto_publish",
+      value: false,
+      category: "challenges",
+      description: "Automatically publish approved challenges",
+      isProtected: false,
+    },
+    {
+      key: "challenges.max_duration_minutes",
+      value: 180,
+      category: "challenges",
+      description: "Maximum allowed duration for a single challenge in minutes",
+      isProtected: false,
+    },
+    {
+      key: "challenges.max_questions",
+      value: 100,
+      category: "challenges",
+      description: "Maximum number of questions allowed per challenge",
+      isProtected: false,
+    },
+    {
+      key: "challenges.negative_marking_enabled",
+      value: true,
+      category: "challenges",
+      description: "Enable negative marking support for challenges",
+      isProtected: false,
+    },
+    // Moderation
+    {
+      key: "moderation.enabled",
+      value: true,
+      category: "moderation",
+      description: "Enable the content moderation system",
+      isProtected: false,
+    },
+    {
+      key: "moderation.auto_flag_enabled",
+      value: true,
+      category: "moderation",
+      description: "Automatically flag content based on report thresholds",
+      isProtected: false,
+    },
+    {
+      key: "moderation.require_review",
+      value: true,
+      category: "moderation",
+      description: "Require moderator review before content is published",
+      isProtected: false,
+    },
+    {
+      key: "moderation.max_reports_before_flag",
+      value: 3,
+      category: "moderation",
+      description: "Number of reports required before content is auto-flagged",
+      isProtected: false,
+    },
+    // Auth
+    {
+      key: "auth.registration_enabled",
+      value: true,
+      category: "auth",
+      description: "Allow new user registrations",
+      isProtected: false,
+    },
+    {
+      key: "auth.google_oauth_enabled",
+      value: true,
+      category: "auth",
+      description: "Enable Google OAuth login/registration",
+      isProtected: false,
+    },
+    {
+      key: "auth.max_login_attempts",
+      value: 5,
+      category: "auth",
+      description: "Maximum failed login attempts before temporary lockout",
+      isProtected: false,
+    },
+    {
+      key: "auth.onboarding_required",
+      value: true,
+      category: "auth",
+      description: "Require new users to complete the onboarding flow",
+      isProtected: false,
+    },
+    // Analytics
+    {
+      key: "analytics.tracking_enabled",
+      value: true,
+      category: "analytics",
+      description: "Enable platform analytics tracking",
+      isProtected: false,
+    },
+    {
+      key: "analytics.daily_aggregation_enabled",
+      value: true,
+      category: "analytics",
+      description: "Enable daily analytics aggregation",
+      isProtected: false,
+    },
+    {
+      key: "analytics.leaderboard_visible",
+      value: true,
+      category: "analytics",
+      description: "Show leaderboard rankings to all users",
+      isProtected: false,
+    },
+    // System (Protected)
+    {
+      key: "system.maintenance_mode",
+      value: false,
+      category: "system",
+      description: "Enable maintenance mode",
+      isProtected: true,
+    },
+    {
+      key: "system.maintenance_message",
+      value: "QuizArena is currently undergoing scheduled maintenance. We'll be back shortly.",
+      category: "system",
+      description: "Message displayed during maintenance",
+      isProtected: true,
+    },
+    {
+      key: "system.debug_mode",
+      value: false,
+      category: "system",
+      description: "Enable debug mode for enhanced logging",
+      isProtected: true,
+    },
+    {
+      key: "system.max_concurrent_users",
+      value: 10000,
+      category: "system",
+      description: "Maximum concurrent user sessions",
+      isProtected: true,
+    },
+  ];
+
+  let settingsCreated = 0;
+  for (const setting of defaultSettings) {
+    const existing = await prisma.platformSetting.findUnique({
+      where: { key: setting.key },
+    });
+    if (!existing) {
+      await prisma.platformSetting.create({
+        data: {
+          key: setting.key,
+          value: setting.value,
+          category: setting.category,
+          description: setting.description,
+          isProtected: setting.isProtected,
+        },
+      });
+      settingsCreated++;
+    }
+  }
+  console.log(
+    `Platform settings seeded: ${settingsCreated} created, ${defaultSettings.length - settingsCreated} already existed`
+  );
+
   console.log("Seed completed successfully!");
 }
 

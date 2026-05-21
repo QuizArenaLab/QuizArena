@@ -21,6 +21,9 @@ model User {
   onboardingCompleted Boolean            @default(false)
   examCategory        ExamCategory?
   preparationLevel   PreparationLevel?
+  accountState        AccountState       @default(ACTIVE)
+  flagged             Boolean            @default(false)
+  moderatorStatus     ModeratorStatus    @default(ACTIVE)
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
   accounts            Account[]
@@ -31,10 +34,84 @@ model User {
   publishedChallenges Challenge[]        @relation("ChallengePublisher")
   createdQuestions    Question[]
   reviewedQuestions  Question[]          @relation("QuestionReviewer")
+  moderationNotes     ModerationNote[]   @relation("ModerationNoteUser")
+  createdByNotes      ModerationNote[]   @relation("ModerationNoteCreator")
+  moderatorNotes      ModeratorNote[]    @relation("ModeratorNoteModerator")
+  createdByModNotes  ModeratorNote[]     @relation("ModeratorNoteCreator")
+  roleChangesAsTarget RoleChangeAudit[]  @relation("RoleChangeTarget")
+  roleChangesAsActor  RoleChangeAudit[]  @relation("RoleChangeBy")
+  submittedReports    Report[]           @relation("ReportSubmitter")
+  targetedReports     Report[]           @relation("ReportTarget")
+  reviewedReports     Report[]           @relation("ReportReviewer")
+  reportNotes         ReportNote[]       @relation("ReportNoteAuthor")
+  updatedSettings     PlatformSetting[]  @relation("SettingUpdater")
+  settingAudits       SettingAudit[]     @relation("SettingAuditActor")
 
   @@index([email])
   @@index([username])
+  @@index([accountState])
+  @@index([flagged])
+  @@index([moderatorStatus])
   @@map("users")
+}
+
+enum AccountState {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  DEACTIVATED
+}
+
+enum ModeratorStatus {
+  ACTIVE
+  SUSPENDED
+  RESTRICTED
+  INACTIVE
+}
+
+model ModerationNote {
+  id         String   @id @default(cuid())
+  userId     String
+  createdById String
+  note       String   @db.Text
+  createdAt  DateTime @default(now())
+  user       User     @relation("ModerationNoteUser", fields: [userId], references: [id], onDelete: Cascade)
+  createdBy  User     @relation("ModerationNoteCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdById])
+  @@map("moderation_notes")
+}
+
+model ModeratorNote {
+  id           String   @id @default(cuid())
+  moderatorId  String
+  createdById  String
+  note         String   @db.Text
+  createdAt    DateTime @default(now())
+  moderator    User     @relation("ModeratorNoteModerator", fields: [moderatorId], references: [id], onDelete: Cascade)
+  createdBy    User     @relation("ModeratorNoteCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([moderatorId])
+  @@index([createdById])
+  @@map("moderator_notes")
+}
+
+model RoleChangeAudit {
+  id            String   @id @default(cuid())
+  targetUserId  String
+  changedById   String
+  previousRole  UserRole
+  newRole       UserRole
+  reason        String?  @db.Text
+  changedAt     DateTime @default(now())
+  targetUser    User     @relation("RoleChangeTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  changedBy     User     @relation("RoleChangeBy", fields: [changedById], references: [id], onDelete: Cascade)
+
+  @@index([targetUserId])
+  @@index([changedById])
+  @@index([changedAt])
+  @@map("role_change_audit")
 }
 
 enum ExamCategory {
@@ -153,6 +230,7 @@ model Challenge {
   archivedAt        DateTime?
   questions        ChallengeQuestion[]
   attempts        ChallengeAttempt[]
+  reports         Report[]            @relation("ReportedChallenge")
 
   @@index([slug])
   @@index([examCategory])
@@ -189,6 +267,7 @@ model Question {
   reviewedAt    DateTime?
   options       QuestionOption[]
   challenges    ChallengeQuestion[]
+  reports       Report[]            @relation("ReportedQuestion")
 
   @@index([subject])
   @@index([topic])
@@ -314,4 +393,115 @@ model DailyAnalytics {
   @@unique([date])
   @@index([date])
   @@map("daily_analytics")
+}
+
+// ─── Reports & Abuse Management ─────────────────────────────
+
+enum ReportStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum ReportPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ReportType {
+  USER_ABUSE
+  CHEATING
+  SPAM
+  INAPPROPRIATE_CONTENT
+  CHALLENGE_ISSUE
+  QUESTION_ERROR
+  OTHER
+}
+
+model Report {
+  id                String         @id @default(cuid())
+  type              ReportType
+  reason            String
+  description       String?        @db.Text
+  status            ReportStatus   @default(OPEN)
+  priority          ReportPriority @default(MEDIUM)
+  reportedById      String
+  reportedBy        User           @relation("ReportSubmitter", fields: [reportedById], references: [id], onDelete: Cascade)
+  targetUserId      String?
+  targetUser        User?          @relation("ReportTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+  targetChallengeId String?
+  targetChallenge   Challenge?     @relation("ReportedChallenge", fields: [targetChallengeId], references: [id], onDelete: SetNull)
+  targetQuestionId  String?
+  targetQuestion    Question?      @relation("ReportedQuestion", fields: [targetQuestionId], references: [id], onDelete: SetNull)
+  reviewedById      String?
+  reviewedBy        User?          @relation("ReportReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt        DateTime?
+  resolutionNotes   String?        @db.Text
+  notes             ReportNote[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([status])
+  @@index([priority])
+  @@index([type])
+  @@index([reportedById])
+  @@index([targetUserId])
+  @@index([targetChallengeId])
+  @@index([targetQuestionId])
+  @@index([reviewedById])
+  @@index([createdAt])
+  @@map("reports")
+}
+
+model ReportNote {
+  id          String   @id @default(cuid())
+  reportId    String
+  report      Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation("ReportNoteAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  content     String   @db.Text
+  isInternal  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([reportId])
+  @@index([authorId])
+  @@map("report_notes")
+}
+
+// ─── Platform Settings & Feature Controls ────────────────────
+
+model PlatformSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  category    String
+  description String?
+  isProtected Boolean  @default(false)
+  updatedById String?
+  updatedBy   User?    @relation("SettingUpdater", fields: [updatedById], references: [id])
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@index([category])
+  @@index([key])
+  @@map("platform_settings")
+}
+
+model SettingAudit {
+  id            String   @id @default(cuid())
+  settingKey    String
+  previousValue Json?
+  newValue      Json
+  reason        String?  @db.Text
+  changedById   String
+  changedBy     User     @relation("SettingAuditActor", fields: [changedById], references: [id])
+  changedAt     DateTime @default(now())
+
+  @@index([settingKey])
+  @@index([changedById])
+  @@index([changedAt])
+  @@map("setting_audits")
 }

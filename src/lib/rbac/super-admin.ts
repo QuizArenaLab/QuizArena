@@ -94,6 +94,15 @@ export const validateSuperAdminAccess = async (): Promise<SuperAdminValidationRe
       return { authorized: false, reason: "NOT_AUTHENTICATED" };
     }
 
+    const adminEmail = process.env.ADMIN_EMAIL || "quizarenadev@gmail.com";
+    if (session.user.email !== adminEmail) {
+      return {
+        authorized: false,
+        reason: "NOT_SUPER_ADMIN",
+        role: (session.user.role as Role) ?? ROLES.USER,
+      };
+    }
+
     const sessionRole = (session.user.role as Role) ?? ROLES.USER;
 
     if (!hasRole(sessionRole, ROLES.SUPER_ADMIN)) {

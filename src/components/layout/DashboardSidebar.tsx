@@ -103,7 +103,7 @@ export function DashboardSidebar({ session, isOpen, onClose }: DashboardSidebarP
                 } ${collapsed ? "justify-center" : ""}`}
                 title={collapsed ? item.label : undefined}
               >
-                <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-primary" : ""}`} />
+                <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-primary" : ""}`} />
                 {!collapsed && (
                   <span className={`text-sm font-semibold ${isActive ? "text-primary" : ""}`}>
                     {item.label}

@@ -26,8 +26,13 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Validation failed", details: errors }, { status: 400 });
     }
 
+    const userEmail = typedUser.email;
+    if (!userEmail) {
+      return NextResponse.json({ error: "User email not found in session" }, { status: 400 });
+    }
+
     const updatedUser = await prisma.user.update({
-      where: { id: typedUser.id },
+      where: { email: userEmail },
       data: {
         examCategory: examCategory || typedUser.examCategory,
         preparationLevel: preparationLevel || typedUser.preparationLevel,
