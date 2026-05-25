@@ -23,6 +23,8 @@ export const metadata = {
   description: "Executive strategic operational dashboard.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function SovereignDashboardPage() {
   const result = await validateSuperAdmin();
 

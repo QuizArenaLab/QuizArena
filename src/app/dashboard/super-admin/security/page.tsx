@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { validateSuperAdmin, logSuperAdminAudit } from "@/lib/super-admin";
 import { getSOCPageData } from "@/lib/super-admin/security";
-import { SuperAdminShell } from "@/components/super-admin/SuperAdminShell";
 import { SecurityOverviewCards } from "@/components/super-admin/security/SecurityOverviewCards";
 import { SecurityAlertCenter } from "@/components/super-admin/security/SecurityAlertCenter";
 import { AuthForensicsPanel } from "@/components/super-admin/security/AuthForensicsPanel";

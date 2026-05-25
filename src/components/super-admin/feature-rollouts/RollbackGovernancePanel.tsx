@@ -3,7 +3,6 @@
 import { useState } from "react";
 import type { FeatureFlagPayload } from "@/types/super-admin-rollouts";
 import { AlertTriangle, Power, X } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 // Since we cannot run server actions directly from here without importing one,
 // we will assume we build a server action wrapper later. For now, we mock the UI interaction.
@@ -14,7 +13,6 @@ interface RollbackGovernancePanelProps {
 }
 
 export function RollbackGovernancePanel({ flag, onClose }: RollbackGovernancePanelProps) {
-  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reason, setReason] = useState("");
 

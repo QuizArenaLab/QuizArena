@@ -13,6 +13,8 @@ export const metadata = {
   description: "Advanced operational, infrastructure, and strategic insights.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function SuperAdminIntelligencePage() {
   const { success, data, error } = await getStrategicIntelligence();
 

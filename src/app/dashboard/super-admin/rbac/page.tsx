@@ -3,7 +3,7 @@ import { ROLES, ROLE_VALUES } from "@/lib/rbac/roles";
 import { prisma } from "@/lib/prisma";
 import { PermissionMatrix } from "./components/PermissionMatrix";
 import { Shield, ShieldAlert, Key } from "lucide-react";
-import { PERMISSION_CATEGORIES, PERMISSION_LABELS } from "@/lib/rbac/permission-constants";
+import { PERMISSION_CATEGORIES } from "@/lib/rbac/permission-constants";
 
 export const metadata = {
   title: "Global RBAC Governance | Sovereign Command",

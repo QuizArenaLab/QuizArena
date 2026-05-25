@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ShieldAlert, AlertTriangle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toggleRolePermission } from "@/actions/manage/rbac-actions";
 import { type Role, ROLES } from "@/lib/rbac/roles";
 
@@ -69,7 +69,7 @@ export function PermissionMatrix({
       } else {
         alert(res.error || "Failed to update permission");
       }
-    } catch (e) {
+    } catch {
       alert("An unexpected error occurred");
     } finally {
       setLoadingKey(null);

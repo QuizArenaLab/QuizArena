@@ -1,7 +1,7 @@
 "use client";
 
 import type { RolloutStats } from "@/types/super-admin-rollouts";
-import { Rocket, Activity, AlertTriangle, FlaskConical, XCircle, ShieldAlert } from "lucide-react";
+import { Rocket, Activity, FlaskConical, XCircle, ShieldAlert } from "lucide-react";
 
 interface RolloutOverviewCardsProps {
   stats: RolloutStats;

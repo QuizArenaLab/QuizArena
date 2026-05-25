@@ -2,6 +2,8 @@ import { requireSuperAdmin } from "@/lib/super-admin/governance";
 import { getTransactionHealth } from "@/lib/super-admin/financial";
 import { CheckCircle2, AlertCircle, Clock, RotateCcw } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function TransactionsPage() {
   await requireSuperAdmin("/dashboard");
 
