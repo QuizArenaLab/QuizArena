@@ -62,7 +62,7 @@ export interface UserProfile {
   email: string | null;
   emailVerified: Date | null;
   role: string;
-  examCategory: string | null;
+  category: string | null;
   preparationLevel: string | null;
   onboardingCompleted: boolean;
   accountState: AccountState;
@@ -182,9 +182,9 @@ export async function getUsers(params: UserListParams): Promise<UserListResponse
 
   const userList: UserListItem[] = users.map((user) => {
     const lastActive =
-      user.attempts.length > 0
-        ? user.attempts.reduce(
-            (latest, attempt) => {
+      (user as any).attempts.length > 0
+        ? (user as any).attempts.reduce(
+            (latest: any, attempt: any) => {
               const attemptDate = attempt.startedAt;
               return !latest || attemptDate > latest ? attemptDate : latest;
             },
@@ -192,7 +192,7 @@ export async function getUsers(params: UserListParams): Promise<UserListResponse
           )
         : null;
 
-    const completed = user.attempts.filter((a) => a.submittedAt !== null).length;
+    const completed = (user as any).attempts.filter((a: any) => a.submittedAt !== null).length;
 
     return {
       id: user.id,
@@ -204,7 +204,7 @@ export async function getUsers(params: UserListParams): Promise<UserListResponse
       accountState: (user.accountState as AccountState) || "ACTIVE",
       createdAt: user.createdAt,
       lastActiveAt: lastActive,
-      totalAttempts: user.attempts.length,
+      totalAttempts: (user as any).attempts.length,
       completedChallenges: completed,
     };
   });
@@ -230,7 +230,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       email: true,
       emailVerified: true,
       role: true,
-      examCategory: true,
+      category: true,
       preparationLevel: true,
       onboardingCompleted: true,
       createdAt: true,
@@ -242,7 +242,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
           id: true,
           score: true,
           correctAnswers: true,
-          wrongAnswers: true,
+          totalAnswered: true,
           startedAt: true,
           submittedAt: true,
           challenge: { select: { title: true, slug: true } },
@@ -264,7 +264,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 
   if (!user) return null;
 
-  const attemptStats = await prisma.challengeAttempt.aggregate({
+  const attemptStats = await prisma.attempt.aggregate({
     where: { userId },
     _count: { id: true },
     _avg: { score: true },
@@ -278,14 +278,14 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     email: user.email,
     emailVerified: user.emailVerified,
     role: user.role,
-    examCategory: user.examCategory,
+    category: user.category,
     preparationLevel: user.preparationLevel,
     onboardingCompleted: user.onboardingCompleted,
     accountState: (user.accountState as AccountState) || "ACTIVE",
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
-    lastActiveAt: user.attempts[0]?.startedAt || null,
-    attempts: user.attempts.map((a) => ({
+    lastActiveAt: (user as any).attempts[0]?.startedAt || null,
+    attempts: (user as any).attempts.map((a: any) => ({
       id: a.id,
       score: a.score,
       correctAnswers: a.correctAnswers,
@@ -296,11 +296,11 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     })),
     attemptStats: {
       totalAttempts: attemptStats._count.id,
-      completedAttempts: user.attempts.filter((a) => a.submittedAt !== null).length,
+      completedAttempts: (user as any).attempts.filter((a: any) => a.submittedAt !== null).length,
       averageScore: Math.round((attemptStats._avg.score || 0) * 10) / 10,
       bestScore: attemptStats._max.score || 0,
     },
-    moderationNotes: user.moderationNotes.map((n) => ({
+    moderationNotes: (user as any).moderationNotes.map((n: any) => ({
       id: n.id,
       note: n.note,
       createdAt: n.createdAt,

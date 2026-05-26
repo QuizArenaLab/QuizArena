@@ -7,8 +7,8 @@ export async function getPlatformOverview(): Promise<PlatformOverviewData> {
       prisma.user.count(),
       prisma.user.count({ where: { role: "MODERATOR" } }),
       prisma.user.count({ where: { role: "ADMIN" } }),
-      prisma.challenge.count({ where: { status: "PUBLISHED" } }),
-      prisma.challenge.count({ where: { status: "REVIEW" } }),
+      prisma.challenge.count({ where: { status: "LIVE" } }),
+      prisma.challenge.count({ where: { status: "DRAFT" } }),
     ]);
 
   // Derive some synthetic values for the Phase 7.2 strategic view

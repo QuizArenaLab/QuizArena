@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 
 const STATUS_STYLES = {
   DRAFT: "bg-gray-100 text-gray-700 border-gray-200",
-  REVIEW: "bg-amber-50 text-amber-700 border-amber-200",
   APPROVED: "bg-green-50 text-green-700 border-green-200",
   REJECTED: "bg-red-50 text-red-700 border-red-200",
   ARCHIVED: "bg-slate-50 text-slate-700 border-slate-200",
@@ -103,7 +102,7 @@ async function QuestionList({
             >
               <option value="">All Status</option>
               <option value="DRAFT">Draft</option>
-              <option value="REVIEW">Review</option>
+              <option value="DRAFT">Review</option>
               <option value="APPROVED">Approved</option>
               <option value="REJECTED">Rejected</option>
               <option value="ARCHIVED">Archived</option>
@@ -114,9 +113,9 @@ async function QuestionList({
               className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6366F1] focus:border-transparent"
             >
               <option value="">All Difficulty</option>
-              <option value="EASY">Easy</option>
+              <option value="BEGINNER">Easy</option>
               <option value="MEDIUM">Medium</option>
-              <option value="HARD">Hard</option>
+              <option value="HARDCORE">Hard</option>
             </select>
             <button
               type="submit"

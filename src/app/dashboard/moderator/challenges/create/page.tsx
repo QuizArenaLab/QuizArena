@@ -10,7 +10,7 @@ import { createChallengeSchema } from "@/lib/validations/challenge";
 interface FormErrors {
   title?: string;
   description?: string;
-  examCategory?: string;
+  category?: string;
   difficulty?: string;
   durationInMinutes?: string;
   totalQuestions?: string;
@@ -25,7 +25,7 @@ export default function CreateChallengePage() {
     title: "",
     description: "",
     instructions: "",
-    examCategory: "",
+    category: "",
     difficulty: "MEDIUM",
     durationInMinutes: 30,
     totalQuestions: 25,
@@ -40,7 +40,7 @@ export default function CreateChallengePage() {
         title: formData.title,
         description: formData.description || undefined,
         instructions: formData.instructions || undefined,
-        examCategory: formData.examCategory || undefined,
+        category: formData.category || undefined,
         difficulty: formData.difficulty,
         durationInMinutes: formData.durationInMinutes,
         totalQuestions: formData.totalQuestions,
@@ -74,7 +74,7 @@ export default function CreateChallengePage() {
         title: formData.title,
         description: formData.description || undefined,
         instructions: formData.instructions || undefined,
-        examCategory: formData.examCategory || undefined,
+        category: formData.category || undefined,
         difficulty: formData.difficulty,
         durationInMinutes: formData.durationInMinutes,
         totalQuestions: formData.totalQuestions,
@@ -197,16 +197,13 @@ export default function CreateChallengePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label
-                htmlFor="examCategory"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
                 Exam Category
               </label>
               <select
-                id="examCategory"
-                name="examCategory"
-                value={formData.examCategory}
+                id="category"
+                name="category"
+                value={formData.category}
                 onChange={handleChange}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6366F1] focus:border-transparent"
               >
@@ -229,9 +226,9 @@ export default function CreateChallengePage() {
                 onChange={handleChange}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6366F1] focus:border-transparent"
               >
-                <option value="EASY">Easy</option>
+                <option value="BEGINNER">Easy</option>
                 <option value="MEDIUM">Medium</option>
-                <option value="HARD">Hard</option>
+                <option value="HARDCORE">Hard</option>
               </select>
             </div>
           </div>

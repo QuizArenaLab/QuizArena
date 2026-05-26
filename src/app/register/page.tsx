@@ -88,7 +88,6 @@ function RegisterForm() {
         setErrors((prev) => ({ ...prev, username: "Username is already taken" }));
       } else {
         setErrors((prev) => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { username: _, ...rest } = prev;
           return rest;
         });

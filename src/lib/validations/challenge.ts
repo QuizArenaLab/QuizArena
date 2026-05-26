@@ -2,16 +2,9 @@ import { z } from "zod";
 
 export const CHALLENGE_CATEGORIES = ["SSC", "BANKING", "RAILWAYS", "STATE_PSC"] as const;
 
-export const CHALLENGE_DIFFICULTIES = ["EASY", "MEDIUM", "HARD"] as const;
+export const CHALLENGE_DIFFICULTIES = ["BEGINNER", "MEDIUM", "HARDCORE"] as const;
 
-export const CHALLENGE_STATUSES = [
-  "DRAFT",
-  "REVIEW",
-  "SCHEDULED",
-  "PUBLISHED",
-  "EXPIRED",
-  "ARCHIVED",
-] as const;
+export const CHALLENGE_STATUSES = ["DRAFT", "SCHEDULED", "LIVE", "ENDED", "ARCHIVED"] as const;
 
 export const createChallengeSchema = z.object({
   title: z
@@ -24,7 +17,7 @@ export const createChallengeSchema = z.object({
     ),
   description: z.string().max(2000, "Description must not exceed 2000 characters").optional(),
   instructions: z.string().max(2000, "Instructions must not exceed 2000 characters").optional(),
-  examCategory: z.enum(CHALLENGE_CATEGORIES).optional().describe("Exam category"),
+  category: z.enum(CHALLENGE_CATEGORIES).optional().describe("Exam category"),
   difficulty: z.enum(CHALLENGE_DIFFICULTIES).default("MEDIUM").describe("Challenge difficulty"),
   durationInMinutes: z
     .number()
@@ -74,7 +67,7 @@ export const challengeFiltersSchema = z.object({
   search: z.string().max(100).optional(),
   status: z.enum(CHALLENGE_STATUSES).optional(),
   difficulty: z.enum(CHALLENGE_DIFFICULTIES).optional(),
-  examCategory: z.enum(CHALLENGE_CATEGORIES).optional(),
+  category: z.enum(CHALLENGE_CATEGORIES).optional(),
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(100).default(20),
 });
@@ -87,25 +80,24 @@ export type ChallengeStatusTransition = z.infer<typeof challengeStatusTransition
 export const scheduleChallengeSchema = z
   .object({
     id: z.string().cuid("Invalid challenge ID"),
-    scheduledPublishAt: z.string().datetime("Invalid publish date/time"),
-    expiresAt: z.string().datetime("Invalid expiry date/time").optional(),
+    startsAt: z.string().datetime("Invalid start date/time"),
+    endsAt: z.string().datetime("Invalid end date/time"),
   })
   .refine(
     (data) => {
-      const publishDate = new Date(data.scheduledPublishAt);
+      const startDate = new Date(data.startsAt);
       const now = new Date();
-      return publishDate > now;
+      return startDate > now;
     },
-    { message: "Scheduled publish time must be in the future" }
+    { message: "Scheduled start time must be in the future" }
   )
   .refine(
     (data) => {
-      if (!data.expiresAt) return true;
-      const publishDate = new Date(data.scheduledPublishAt);
-      const expiryDate = new Date(data.expiresAt);
-      return expiryDate > publishDate;
+      const startDate = new Date(data.startsAt);
+      const endDate = new Date(data.endsAt);
+      return endDate > startDate;
     },
-    { message: "Expiry time must be after publish time" }
+    { message: "End time must be after start time" }
   );
 
 export type ScheduleChallengeInput = z.infer<typeof scheduleChallengeSchema>;

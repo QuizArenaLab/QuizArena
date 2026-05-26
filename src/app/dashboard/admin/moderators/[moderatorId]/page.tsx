@@ -238,9 +238,9 @@ export default async function AdminModeratorProfilePage({
                       >
                         {challenge.status.toLowerCase()}
                       </span>
-                      {challenge.publishedAt && (
+                      {challenge.createdAt && (
                         <p className="text-xs text-gray-400 mt-1">
-                          Published: {formatDate(challenge.publishedAt)}
+                          Published: {formatDate(challenge.createdAt)}
                         </p>
                       )}
                     </div>
@@ -269,7 +269,7 @@ export default async function AdminModeratorProfilePage({
                   >
                     <div>
                       <p className="text-sm font-medium text-[#0A1C40]">{review.title}</p>
-                      <p className="text-xs text-gray-400">{formatTimeAgo(review.reviewedAt)}</p>
+                      <p className="text-xs text-gray-400">{formatTimeAgo(review.updatedAt)}</p>
                     </div>
                     <span
                       className={`text-xs px-2 py-1 rounded ${

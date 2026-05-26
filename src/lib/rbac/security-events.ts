@@ -127,7 +127,7 @@ export const logRoleChange = async (
 
 export const getRecentSecurityEvents = async (
   _userId: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   _limit: number = 50
 ): Promise<SecurityEvent[]> => {
   return [];

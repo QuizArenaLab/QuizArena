@@ -129,7 +129,9 @@ async function ChallengeEditContent({
             <dl className="grid grid-cols-2 gap-4">
               <div>
                 <dt className="text-sm text-gray-500">Category</dt>
-                <dd className="font-medium text-gray-900">{challenge.examCategory || "Not set"}</dd>
+                <dd className="font-medium text-gray-900">
+                  {(challenge as any).category || "Not set"}
+                </dd>
               </div>
               <div>
                 <dt className="text-sm text-gray-500">Difficulty</dt>
@@ -142,18 +144,18 @@ async function ChallengeEditContent({
               <div>
                 <dt className="text-sm text-gray-500">Total Questions</dt>
                 <dd className="font-medium text-gray-900">
-                  {challenge._count.questions} / {challenge.totalQuestions}
+                  {challenge._count.questions} / {(challenge as any).totalQuestions}
                 </dd>
               </div>
               <div>
                 <dt className="text-sm text-gray-500">Total Marks</dt>
-                <dd className="font-medium text-gray-900">{challenge.totalMarks}</dd>
+                <dd className="font-medium text-gray-900">{(challenge as any).totalMarks}</dd>
               </div>
               <div>
                 <dt className="text-sm text-gray-500">Negative Marking</dt>
                 <dd className="font-medium text-gray-900">
-                  {challenge.negativeMarking
-                    ? `${challenge.negativeMarkPercentage * 100}%`
+                  {(challenge as any).negativeMarking
+                    ? `${(challenge as any).negativeMarkPercentage * 100}%`
                     : "Disabled"}
                 </dd>
               </div>
@@ -167,10 +169,10 @@ async function ChallengeEditContent({
             </div>
           )}
 
-          {challenge.instructions && (
+          {(challenge as any).instructions && (
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Instructions</h2>
-              <p className="text-gray-600 whitespace-pre-wrap">{challenge.instructions}</p>
+              <p className="text-gray-600 whitespace-pre-wrap">{(challenge as any).instructions}</p>
             </div>
           )}
 
@@ -334,11 +336,11 @@ async function ChallengeEditContent({
                   {new Date(challenge.updatedAt).toLocaleDateString()}
                 </dd>
               </div>
-              {challenge.publishedAt && (
+              {challenge.createdAt && (
                 <div>
                   <dt className="text-xs text-gray-500">Published</dt>
                   <dd className="text-sm font-medium text-gray-900">
-                    {new Date(challenge.publishedAt).toLocaleDateString()}
+                    {new Date(challenge.createdAt).toLocaleDateString()}
                   </dd>
                 </div>
               )}

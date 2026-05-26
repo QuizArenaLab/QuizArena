@@ -10,7 +10,7 @@ declare module "next-auth" {
       id: string;
       role?: UserRole;
       onboardingCompleted?: boolean;
-      examCategory?: ExamCategory | null;
+      category?: ExamCategory | null;
       preparationLevel?: PreparationLevel | null;
       username?: string | null;
     } & DefaultSession["user"];
@@ -19,7 +19,7 @@ declare module "next-auth" {
   interface User {
     role?: UserRole;
     onboardingCompleted?: boolean;
-    examCategory?: ExamCategory | null;
+    category?: ExamCategory | null;
     preparationLevel?: PreparationLevel | null;
     username?: string | null;
   }
@@ -28,7 +28,7 @@ declare module "next-auth" {
     id?: string;
     role?: UserRole;
     onboardingCompleted?: boolean;
-    examCategory?: ExamCategory | null;
+    category?: ExamCategory | null;
     preparationLevel?: PreparationLevel | null;
     username?: string | null;
   }

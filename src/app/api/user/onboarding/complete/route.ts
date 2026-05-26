@@ -14,11 +14,11 @@ export async function PATCH(request: NextRequest) {
     if (sessionUser instanceof Response) return sessionUser;
 
     const body = await request.json();
-    const { username, examCategory, preparationLevel } = body;
+    const { username, category, preparationLevel } = body;
 
     console.log(`[Onboarding] Completing for user ${sessionUser.id}:`, {
       username,
-      examCategory,
+      category,
       preparationLevel,
     });
 
@@ -47,8 +47,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     // 2. Validate Exam Category
-    if (!examCategory || !isValidExamCategory(examCategory)) {
-      errors.examCategory = "Valid exam category is required";
+    if (!category || !isValidExamCategory(category)) {
+      errors.category = "Valid exam category is required";
     }
 
     // 3. Validate Preparation Level
@@ -77,7 +77,7 @@ export async function PATCH(request: NextRequest) {
       where: { email: userEmail },
       data: {
         username: normalizeUsername(username),
-        examCategory: examCategory,
+        category: category,
         preparationLevel: preparationLevel,
         onboardingCompleted: true,
       },

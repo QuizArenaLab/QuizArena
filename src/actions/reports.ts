@@ -140,8 +140,8 @@ async function computeReportsSummary(): Promise<ReportsSummary> {
   let averageResolutionHours = 0;
   if (resolvedReports.length > 0) {
     const totalHours = resolvedReports.reduce((sum, r) => {
-      if (!r.reviewedAt) return sum;
-      return sum + (r.reviewedAt.getTime() - r.createdAt.getTime()) / (1000 * 60 * 60);
+      if (!(r as any).updatedAt) return sum;
+      return sum + ((r as any).updatedAt.getTime() - r.createdAt.getTime()) / (1000 * 60 * 60);
     }, 0);
     averageResolutionHours = Math.round((totalHours / resolvedReports.length) * 10) / 10;
   }
@@ -211,7 +211,7 @@ async function getRecentModerationActions(): Promise<ModerationActionRecord[]> {
     action: r.status === "RESOLVED" ? "Report Resolved" : "Report Dismissed",
     description: r.resolutionNotes || `${r.type.replace(/_/g, " ")} report: ${r.reason}`,
     performedBy: r.reviewedBy?.name || "System",
-    timestamp: r.reviewedAt?.toISOString() || new Date().toISOString(),
+    timestamp: (r as any).updatedAt?.toISOString() || new Date().toISOString(),
     reportId: r.id,
   }));
 }

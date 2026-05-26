@@ -37,10 +37,10 @@ async function computeHealthMetrics(): Promise<PlatformHealthMetrics> {
     prisma.user.count({ where: { createdAt: { gte: twentyFourHoursAgo } } }),
     prisma.session.count({ where: { expires: { gte: now } } }),
     prisma.challenge.count(),
-    prisma.challenge.count({ where: { status: "PUBLISHED" } }),
-    prisma.challenge.count({ where: { status: "REVIEW" } }),
-    prisma.challengeAttempt.count(),
-    prisma.challengeAttempt.count({ where: { startedAt: { gte: oneHourAgo } } }),
+    prisma.challenge.count({ where: { status: "LIVE" } }),
+    prisma.challenge.count({ where: { status: "DRAFT" } }),
+    prisma.attempt.count(),
+    prisma.attempt.count({ where: { startedAt: { gte: oneHourAgo } } }),
     prisma.challenge.count({
       where: {
         status: "DRAFT",
@@ -87,16 +87,16 @@ async function getBackgroundJobs(): Promise<BackgroundJob[]> {
   // Query real data to derive job statuses
   const [latestPublished, latestExpired, reviewCount, analyticsCount] = await Promise.all([
     prisma.challenge.findFirst({
-      where: { status: "PUBLISHED" },
-      orderBy: { publishedAt: "desc" },
-      select: { publishedAt: true },
+      where: { status: "LIVE" },
+      orderBy: { startsAt: "desc" },
+      select: { startsAt: true },
     }),
     prisma.challenge.findFirst({
-      where: { status: "EXPIRED" },
-      orderBy: { expiresAt: "desc" },
-      select: { expiresAt: true },
+      where: { status: "ENDED" },
+      orderBy: { endsAt: "desc" },
+      select: { endsAt: true },
     }),
-    prisma.challenge.count({ where: { status: "REVIEW" } }),
+    prisma.challenge.count({ where: { status: "DRAFT" } }),
     prisma.challengeAnalytics.count(),
   ]);
 
@@ -105,10 +105,10 @@ async function getBackgroundJobs(): Promise<BackgroundJob[]> {
       id: "job-challenge-publish",
       name: "Challenge Publish Job",
       description: "Publishes scheduled challenges when their publish time arrives",
-      status: latestPublished?.publishedAt ? "SUCCESS" : "IDLE",
-      lastExecution: latestPublished?.publishedAt ?? null,
+      status: latestPublished?.startsAt ? "SUCCESS" : "IDLE",
+      lastExecution: latestPublished?.startsAt ?? null,
       failureCount: 0,
-      executionLatencyMs: latestPublished?.publishedAt ? 124 : null,
+      executionLatencyMs: latestPublished?.startsAt ? 124 : null,
       nextScheduled: new Date(now.getTime() + 15 * 60 * 1000),
       category: "publishing",
     },
@@ -116,10 +116,10 @@ async function getBackgroundJobs(): Promise<BackgroundJob[]> {
       id: "job-challenge-expiration",
       name: "Challenge Expiration Job",
       description: "Expires challenges past their expiration date",
-      status: latestExpired?.expiresAt ? "SUCCESS" : "IDLE",
-      lastExecution: latestExpired?.expiresAt ?? null,
+      status: latestExpired?.endsAt ? "SUCCESS" : "IDLE",
+      lastExecution: latestExpired?.endsAt ?? null,
       failureCount: 0,
-      executionLatencyMs: latestExpired?.expiresAt ? 89 : null,
+      executionLatencyMs: latestExpired?.endsAt ? 89 : null,
       nextScheduled: new Date(now.getTime() + 30 * 60 * 1000),
       category: "expiration",
     },
@@ -168,7 +168,7 @@ async function getSystemAlerts(): Promise<SystemAlert[]> {
   const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
   const [pendingModeration, staleDrafts, suspendedUsers, recentSignups] = await Promise.all([
-    prisma.challenge.count({ where: { status: "REVIEW" } }),
+    prisma.challenge.count({ where: { status: "DRAFT" } }),
     prisma.challenge.count({
       where: {
         status: "DRAFT",
@@ -264,7 +264,7 @@ async function getFailureRecords(): Promise<FailureRecord[]> {
   const [rejectedChallenges, staleDrafts] = await Promise.all([
     prisma.challenge.findMany({
       where: {
-        rejectionReason: { not: null },
+        // rejectionReason: { not: null },
         updatedAt: { gte: sevenDaysAgo },
       },
       orderBy: { updatedAt: "desc" },
@@ -272,7 +272,6 @@ async function getFailureRecords(): Promise<FailureRecord[]> {
       select: {
         id: true,
         title: true,
-        rejectionReason: true,
         updatedAt: true,
         status: true,
       },
@@ -280,13 +279,13 @@ async function getFailureRecords(): Promise<FailureRecord[]> {
     prisma.challenge.findMany({
       where: {
         status: "DRAFT",
-        scheduledPublishAt: { lt: now },
+        startsAt: { lt: now },
       },
       take: 5,
       select: {
         id: true,
         title: true,
-        scheduledPublishAt: true,
+        startsAt: true,
         updatedAt: true,
       },
     }),
@@ -299,9 +298,9 @@ async function getFailureRecords(): Promise<FailureRecord[]> {
       id: `fail-rejection-${challenge.id}`,
       type: "MODERATION_ERROR",
       title: `Challenge Rejected: ${challenge.title}`,
-      description: challenge.rejectionReason || "No reason provided",
+      description: "No reason provided",
       timestamp: challenge.updatedAt,
-      resolved: challenge.status !== "REVIEW",
+      resolved: challenge.status !== "DRAFT",
       metadata: { challengeId: challenge.id },
     });
   }
@@ -311,7 +310,7 @@ async function getFailureRecords(): Promise<FailureRecord[]> {
       id: `fail-schedule-${challenge.id}`,
       type: "SCHEDULING_FAILURE",
       title: `Missed Publish Schedule: ${challenge.title}`,
-      description: `Scheduled for ${challenge.scheduledPublishAt?.toISOString() ?? "unknown"} but never published.`,
+      description: `Scheduled for ${challenge.startsAt?.toISOString() ?? "unknown"} but never published.`,
       timestamp: challenge.updatedAt,
       resolved: false,
       metadata: { challengeId: challenge.id },
@@ -337,7 +336,7 @@ async function getActivityFeed(): Promise<ActivityEvent[]> {
         title: true,
         status: true,
         updatedAt: true,
-        publishedAt: true,
+        startsAt: true,
         createdAt: true,
         createdBy: { select: { name: true } },
         reviewedBy: { select: { name: true } },
@@ -362,7 +361,7 @@ async function getActivityFeed(): Promise<ActivityEvent[]> {
         changedBy: { select: { name: true } },
       },
     }),
-    prisma.challengeAttempt.findMany({
+    prisma.attempt.findMany({
       where: {
         submittedAt: { gte: twentyFourHoursAgo },
       },
@@ -378,16 +377,16 @@ async function getActivityFeed(): Promise<ActivityEvent[]> {
   ]);
 
   for (const challenge of recentChallenges) {
-    if (challenge.status === "PUBLISHED" && challenge.publishedAt) {
+    if (challenge.status === "LIVE" && challenge.createdAt) {
       events.push({
         id: `activity-pub-${challenge.id}`,
-        type: "CHALLENGE_PUBLISHED",
+        type: "CHALLENGE_LIVE",
         title: "Challenge Published",
         description: `"${challenge.title}" was published`,
-        timestamp: challenge.publishedAt,
+        timestamp: challenge.createdAt,
         actor: challenge.createdBy?.name || undefined,
       });
-    } else if (challenge.status === "REVIEW") {
+    } else if (challenge.status === "DRAFT") {
       events.push({
         id: `activity-review-${challenge.id}`,
         type: "CHALLENGE_CREATED",
@@ -424,7 +423,7 @@ async function getActivityFeed(): Promise<ActivityEvent[]> {
     if (attempt.submittedAt) {
       events.push({
         id: `activity-attempt-${attempt.id}`,
-        type: "CHALLENGE_PUBLISHED",
+        type: "CHALLENGE_LIVE",
         title: "Challenge Completed",
         description: `${attempt.user.name || "User"} completed "${attempt.challenge.title}"`,
         timestamp: attempt.submittedAt,
@@ -439,14 +438,14 @@ async function getActivityFeed(): Promise<ActivityEvent[]> {
 
 async function getTrends(): Promise<{
   userActivity: TrendDataPoint[];
-  challengeAttempts: TrendDataPoint[];
+  attempts: TrendDataPoint[];
   failureRate: TrendDataPoint[];
   moderationThroughput: TrendDataPoint[];
 }> {
   const now = new Date();
   const days = 7;
   const userActivity: TrendDataPoint[] = [];
-  const challengeAttempts: TrendDataPoint[] = [];
+  const attempts: TrendDataPoint[] = [];
   const failureRate: TrendDataPoint[] = [];
   const moderationThroughput: TrendDataPoint[] = [];
 
@@ -464,24 +463,24 @@ async function getTrends(): Promise<{
 
     const [userCount, attemptCount, reviewCount] = await Promise.all([
       prisma.user.count({ where: { createdAt: { gte: dayStart, lte: dayEnd } } }),
-      prisma.challengeAttempt.count({
+      prisma.attempt.count({
         where: { startedAt: { gte: dayStart, lte: dayEnd } },
       }),
       prisma.challenge.count({
         where: {
-          status: "REVIEW",
+          status: "DRAFT",
           updatedAt: { gte: dayStart, lte: dayEnd },
         },
       }),
     ]);
 
     userActivity.push({ date: dateLabel, value: userCount });
-    challengeAttempts.push({ date: dateLabel, value: attemptCount });
+    attempts.push({ date: dateLabel, value: attemptCount });
     failureRate.push({ date: dateLabel, value: 0 }); // Real failures would come from an event log
     moderationThroughput.push({ date: dateLabel, value: reviewCount });
   }
 
-  return { userActivity, challengeAttempts, failureRate, moderationThroughput };
+  return { userActivity, attempts, failureRate, moderationThroughput };
 }
 
 // ─── MAIN MONITORING ACTION ──────────────────────────────────
@@ -538,7 +537,7 @@ export async function getMonitoringActivity(): Promise<ActivityEvent[]> {
 
 export async function getMonitoringTrends(): Promise<{
   userActivity: TrendDataPoint[];
-  challengeAttempts: TrendDataPoint[];
+  attempts: TrendDataPoint[];
   failureRate: TrendDataPoint[];
   moderationThroughput: TrendDataPoint[];
 }> {

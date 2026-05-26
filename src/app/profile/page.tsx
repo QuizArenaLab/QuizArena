@@ -32,7 +32,7 @@ export default async function ProfilePage() {
       .slice(0, 2);
   };
 
-  const examCategory = user.examCategory as keyof typeof EXAM_CATEGORY_LABELS | undefined;
+  const category = user.category as keyof typeof EXAM_CATEGORY_LABELS | undefined;
   const prepLevel = user.preparationLevel as keyof typeof PREPARATION_LEVEL_LABELS | undefined;
 
   return (
@@ -140,7 +140,7 @@ export default async function ProfilePage() {
                 <span className="text-sm font-medium text-navy">Target Exam</span>
               </div>
               <span className="text-sm font-bold text-navy">
-                {examCategory ? EXAM_CATEGORY_LABELS[examCategory] : "Not set"}
+                {category ? EXAM_CATEGORY_LABELS[category] : "Not set"}
               </span>
             </div>
 

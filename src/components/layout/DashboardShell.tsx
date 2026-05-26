@@ -255,15 +255,15 @@ export function DashboardShell({ children }: DashboardShellProps) {
         </div>
 
         {/* EXAM CONTEXT */}
-        {!collapsed && user?.examCategory && (
+        {!collapsed && user?.category && (
           <div className="px-4 py-3 border-b border-gray-100 shrink-0">
             <div className="flex items-center gap-2 p-2.5 bg-primary/5 rounded-lg border border-gray-100/50">
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center gap-1.5">
                   <Target className="w-3.5 h-3.5 text-primary" />
                   <span className="text-xs font-medium text-navy">
-                    {EXAM_CATEGORY_LABELS[user.examCategory as keyof typeof EXAM_CATEGORY_LABELS] ||
-                      user.examCategory}
+                    {EXAM_CATEGORY_LABELS[user.category as keyof typeof EXAM_CATEGORY_LABELS] ||
+                      user.category}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -440,7 +440,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
               </div>
 
               {/* Exam Context */}
-              {user?.examCategory && (
+              {user?.category && (
                 <div className="px-5 py-3 border-b border-gray-100 shrink-0">
                   <div className="flex items-center gap-2 p-2.5 bg-primary/5 rounded-lg border border-gray-100/50">
                     <div className="flex flex-col gap-1">
@@ -448,8 +448,8 @@ export function DashboardShell({ children }: DashboardShellProps) {
                         <Target className="w-3.5 h-3.5 text-primary" />
                         <span className="text-xs font-medium text-navy">
                           {EXAM_CATEGORY_LABELS[
-                            user.examCategory as keyof typeof EXAM_CATEGORY_LABELS
-                          ] || user.examCategory}
+                            user.category as keyof typeof EXAM_CATEGORY_LABELS
+                          ] || user.category}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5">

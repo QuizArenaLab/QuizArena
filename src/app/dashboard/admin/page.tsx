@@ -195,7 +195,7 @@ export default async function AdminDashboardPage() {
                               {item.title}
                             </p>
                             <p className="text-xs text-gray-400">
-                              by {item.reviewedBy || "Unknown"} • {formatTime(item.reviewedAt)}
+                              by {item.reviewedBy || "Unknown"} • {formatTime(item.updatedAt)}
                             </p>
                           </div>
                         </div>

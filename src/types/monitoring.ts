@@ -98,8 +98,8 @@ export interface FailureRecord {
 // ─── ACTIVITY FEED ───────────────────────────────────────────
 
 export type ActivityType =
-  | "CHALLENGE_PUBLISHED"
-  | "CHALLENGE_EXPIRED"
+  | "CHALLENGE_LIVE"
+  | "CHALLENGE_ENDED"
   | "CHALLENGE_CREATED"
   | "MODERATION_APPROVED"
   | "MODERATION_REJECTED"
@@ -148,7 +148,7 @@ export interface MonitoringDashboardData {
   activityFeed: ActivityEvent[];
   trends: {
     userActivity: TrendDataPoint[];
-    challengeAttempts: TrendDataPoint[];
+    attempts: TrendDataPoint[];
     failureRate: TrendDataPoint[];
     moderationThroughput: TrendDataPoint[];
   };

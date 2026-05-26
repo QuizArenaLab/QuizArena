@@ -176,7 +176,7 @@ export function MonitoringDashboardClient({ initialData }: MonitoringDashboardCl
         {activeTab === "trends" && (
           <MonitoringCharts
             userActivity={data.trends.userActivity}
-            challengeAttempts={data.trends.challengeAttempts}
+            attempts={data.trends.attempts}
             failureRate={data.trends.failureRate}
             moderationThroughput={data.trends.moderationThroughput}
           />

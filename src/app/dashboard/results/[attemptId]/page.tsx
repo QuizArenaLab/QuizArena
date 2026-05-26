@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getAttemptById } from "@/actions/challenge";
+import { getUserChallengeRank } from "@/actions/leaderboard";
 import type { QuestionResult } from "@/types/challenge";
 import {
   Trophy,
@@ -12,6 +13,8 @@ import {
   BarChart3,
   ArrowRight,
   RotateCcw,
+  Medal,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,16 +25,34 @@ interface ResultPageProps {
 export default function ResultPage({ params }: ResultPageProps) {
   const [attempt, setAttempt] = useState<{
     id: string;
+    challengeId: string;
     challenge: {
       title: string;
       totalQuestions: number;
-      questions: { questionId: string; question: { correctOption: string } }[];
+      status: string;
+      questions: {
+        questionId: string;
+        question: {
+          options: { id: string; optionText: string; isCorrect: boolean }[];
+          explanation: string | null;
+        };
+      }[];
     };
     correctAnswers: number;
     wrongAnswers: number;
+    unanswered: number;
     score: number;
     timeTakenInSeconds: number | null;
-    answers: { questionId: string; selectedOption: string | null; isCorrect: boolean | null }[];
+    answers: {
+      questionId: string;
+      selectedOptionId: string | null;
+      selectedOption: string | null;
+      isCorrect: boolean | null;
+    }[];
+  } | null>(null);
+  const [rankData, setRankData] = useState<{
+    rank: number;
+    totalParticipants: number;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,12 +61,19 @@ export default function ResultPage({ params }: ResultPageProps) {
   useEffect(() => {
     const loadResult = async () => {
       const { attemptId } = await params;
-      const result = await getAttemptById(attemptId);
+
+      const result = (await getAttemptById(attemptId)) as any;
 
       if (!result) {
         setError("Result not found");
       } else {
         setAttempt(result);
+
+        // Load rank data if challenge has ended
+        if (result.challenge.status === "ENDED" || result.challenge.status === "ARCHIVED") {
+          const rank = await getUserChallengeRank(result.challengeId);
+          setRankData(rank);
+        }
       }
 
       setIsLoading(false);
@@ -99,23 +127,24 @@ export default function ResultPage({ params }: ResultPageProps) {
     return "Keep Practicing";
   };
 
-  const questions: QuestionResult[] = attempt.challenge.questions.map(
-    (cq: { questionId: string; question: { correctOption: string } }) => {
-      const answer = attempt.answers.find(
-        (a: { questionId: string }) => a.questionId === cq.questionId
-      );
-      return {
-        questionId: cq.questionId,
-        selectedOption: answer?.selectedOption || null,
-        correctOption: cq.question.correctOption,
-        isCorrect: answer?.isCorrect || false,
-      };
-    }
-  );
+  const questions: QuestionResult[] = attempt.challenge.questions.map((cq) => {
+    const answer = attempt.answers.find((a) => a.questionId === cq.questionId);
+    const correctOption = cq.question.options.find((o) => o.isCorrect);
+    return {
+      questionId: cq.questionId,
+      selectedOption: answer?.selectedOption || null,
+      correctOption: correctOption?.optionText || "",
+      isCorrect: answer?.isCorrect || false,
+    };
+  });
+
+  const challengeEnded =
+    attempt.challenge.status === "ENDED" || attempt.challenge.status === "ARCHIVED";
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-3xl mx-auto space-y-6">
+        {/* ─── Score Card ──────────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
@@ -166,6 +195,63 @@ export default function ResultPage({ params }: ResultPageProps) {
           </div>
         </div>
 
+        {/* ─── Leaderboard Rank Card ───────────────────────── */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Medal className="w-5 h-5 text-amber-500" />
+            <h2 className="text-lg font-bold text-navy">Your Ranking</h2>
+          </div>
+
+          {challengeEnded ? (
+            rankData ? (
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-100">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-amber-100 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-amber-700">#{rankData.rank}</span>
+                  </div>
+                  <div>
+                    <p className="font-bold text-navy">
+                      Rank {rankData.rank} of {rankData.totalParticipants}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {rankData.rank <= 3
+                        ? "🏆 Top performer!"
+                        : rankData.rank <= Math.ceil(rankData.totalParticipants * 0.1)
+                          ? "Top 10% — Great job!"
+                          : rankData.rank <= Math.ceil(rankData.totalParticipants * 0.25)
+                            ? "Top 25% — Well done!"
+                            : "Keep practicing to improve your rank"}
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href={`/leaderboard?challenge=${attempt.challengeId}`}
+                  className="text-primary font-medium text-sm hover:underline"
+                >
+                  View Full Leaderboard
+                </a>
+              </div>
+            ) : (
+              <div className="text-center py-4 text-gray-500 text-sm">
+                Leaderboard data not available for this challenge.
+              </div>
+            )
+          ) : (
+            <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100">
+              <Lock className="w-5 h-5 text-blue-500" />
+              <div>
+                <p className="font-medium text-navy">
+                  Rankings will be revealed when the challenge ends
+                </p>
+                <p className="text-sm text-gray-500">
+                  Your score has been recorded. Check back after the challenge window closes.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ─── Attempt Summary ─────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="w-5 h-5 text-navy" />
@@ -218,7 +304,7 @@ export default function ResultPage({ params }: ResultPageProps) {
                   {q.isCorrect
                     ? "Correct"
                     : q.selectedOption
-                      ? `Selected: ${q.selectedOption}`
+                      ? `Your answer: ${q.selectedOption}`
                       : "Unanswered"}
                 </span>
               </button>
@@ -226,6 +312,7 @@ export default function ResultPage({ params }: ResultPageProps) {
           </div>
         </div>
 
+        {/* ─── Actions ─────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
             href="/challenges"

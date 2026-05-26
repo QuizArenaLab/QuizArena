@@ -23,7 +23,7 @@ export const authConfig = {
           image: profile.picture,
           role: "USER",
           onboardingCompleted: false,
-          examCategory: null,
+          category: null,
           preparationLevel: null,
           username: null,
         };
@@ -95,7 +95,7 @@ export const authConfig = {
         session.user.id = (token.id || token.sub || "") as string;
         session.user.role = token.role as UserRole | undefined;
         session.user.onboardingCompleted = token.onboardingCompleted as boolean | undefined;
-        session.user.examCategory = token.examCategory as ExamCategory | null | undefined;
+        session.user.category = token.category as ExamCategory | null | undefined;
         session.user.preparationLevel = token.preparationLevel as
           | PreparationLevel
           | null
@@ -109,7 +109,7 @@ export const authConfig = {
         token.sub = user.id;
         token.role = user.role;
         token.onboardingCompleted = user.onboardingCompleted;
-        token.examCategory = user.examCategory;
+        token.category = user.category;
         token.preparationLevel = user.preparationLevel;
         token.username = user.username;
       }
@@ -117,7 +117,7 @@ export const authConfig = {
       // Handle session update
       if (trigger === "update" && session?.user) {
         token.onboardingCompleted = session.user.onboardingCompleted ?? token.onboardingCompleted;
-        token.examCategory = session.user.examCategory ?? token.examCategory;
+        token.category = session.user.category ?? token.category;
         token.preparationLevel = session.user.preparationLevel ?? token.preparationLevel;
         token.username = session.user.username ?? token.username;
       }

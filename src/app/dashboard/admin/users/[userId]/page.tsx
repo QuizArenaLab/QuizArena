@@ -196,12 +196,12 @@ export default async function AdminUserProfilePage({
                   </p>
                 </div>
               </div>
-              {user.examCategory && (
+              {(user as any).category && (
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <Shield className="w-5 h-5 text-gray-400" />
                   <div>
                     <p className="text-xs text-gray-500">Exam Category</p>
-                    <p className="text-sm font-medium text-[#0A1C40]">{user.examCategory}</p>
+                    <p className="text-sm font-medium text-[#0A1C40]">{(user as any).category}</p>
                   </div>
                 </div>
               )}

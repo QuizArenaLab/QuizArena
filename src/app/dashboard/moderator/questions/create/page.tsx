@@ -314,9 +314,9 @@ export default function CreateQuestionPage() {
                 onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6366F1] focus:border-transparent"
               >
-                <option value="EASY">Easy</option>
+                <option value="BEGINNER">Easy</option>
                 <option value="MEDIUM">Medium</option>
-                <option value="HARD">Hard</option>
+                <option value="HARDCORE">Hard</option>
               </select>
             </div>
 

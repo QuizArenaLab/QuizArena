@@ -79,7 +79,7 @@ export interface ModeratorProfile {
     title: string;
     status: string;
     action: "approved" | "rejected";
-    reviewedAt: Date;
+    updatedAt: Date;
   }>;
   performance: {
     totalChallengesCreated: number;
@@ -159,10 +159,10 @@ export async function getModerators(params: ModeratorListParams): Promise<Modera
 
   const moderatorList: ModeratorListItem[] = moderators.map((mod) => {
     const approvedChallenges = mod.reviewedChallenges.filter(
-      (r) => r.status === $Enums.ChallengeStatus.PUBLISHED
+      (r: any) => r.status === $Enums.ChallengeStatus.LIVE
     ).length;
     const rejectedChallenges = mod.reviewedChallenges.filter(
-      (r) => r.status === $Enums.ChallengeStatus.ARCHIVED
+      (r: any) => r.status === $Enums.ChallengeStatus.ARCHIVED
     ).length;
     const totalReviews = mod.reviewedChallenges.length + mod.reviewedQuestions.length;
     const approvalRate =
@@ -231,13 +231,12 @@ export async function getModeratorProfile(moderatorId: string): Promise<Moderato
           slug: true,
           status: true,
           createdAt: true,
-          publishedAt: true,
         },
       },
       reviewedChallenges: {
-        orderBy: { reviewedAt: "desc" },
+        orderBy: { updatedAt: "desc" },
         take: 20,
-        select: { id: true, title: true, status: true, reviewedAt: true },
+        select: { id: true, title: true, status: true, updatedAt: true },
       },
       moderatorNotes: {
         orderBy: { createdAt: "desc" },
@@ -252,24 +251,24 @@ export async function getModeratorProfile(moderatorId: string): Promise<Moderato
   }
 
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const recentReviews = await prisma.challengeAttempt.groupBy({
+  const recentReviews = await prisma.attempt.groupBy({
     by: ["startedAt"],
     where: { challenge: { reviewedById: moderatorId }, startedAt: { gte: weekAgo } },
     _count: { id: true },
   });
 
-  const recentActivity = recentReviews.map((r) => ({
+  const recentActivity = recentReviews.map((r: any) => ({
     date: r.startedAt.toISOString().split("T")[0],
     reviews: r._count.id,
   }));
 
-  const totalChallengesCreated = moderator.createdChallenges.length;
-  const totalReviewsCompleted = moderator.reviewedChallenges.length;
-  const approvedCount = moderator.reviewedChallenges.filter(
-    (r) => r.status === $Enums.ChallengeStatus.PUBLISHED
+  const totalChallengesCreated = (moderator as any).createdChallenges.length;
+  const totalReviewsCompleted = (moderator as any).reviewedChallenges.length;
+  const approvedCount = (moderator as any).reviewedChallenges.filter(
+    (r: any) => r.status === $Enums.ChallengeStatus.LIVE
   ).length;
-  const rejectedCount = moderator.reviewedChallenges.filter(
-    (r) => r.status === $Enums.ChallengeStatus.ARCHIVED
+  const rejectedCount = (moderator as any).reviewedChallenges.filter(
+    (r: any) => r.status === $Enums.ChallengeStatus.ARCHIVED
   ).length;
   const approvalRate =
     totalReviewsCompleted > 0 ? Math.round((approvedCount / totalReviewsCompleted) * 100) : 0;
@@ -288,7 +287,7 @@ export async function getModeratorProfile(moderatorId: string): Promise<Moderato
     moderatorStatus: moderator.moderatorStatus || $Enums.ModeratorStatus.ACTIVE,
     createdAt: moderator.createdAt,
     lastActiveAt: moderator.updatedAt,
-    challenges: moderator.createdChallenges.map((c) => ({
+    challenges: (moderator as any).createdChallenges.map((c: any) => ({
       id: c.id,
       title: c.title,
       slug: c.slug,
@@ -296,16 +295,14 @@ export async function getModeratorProfile(moderatorId: string): Promise<Moderato
       createdAt: c.createdAt,
       publishedAt: c.publishedAt,
     })),
-    reviewHistory: moderator.reviewedChallenges.map((r) => ({
+    reviewHistory: (moderator as any).reviewedChallenges.map((r: any) => ({
       id: r.id,
       type: "challenge" as const,
       title: r.title,
       status: r.status,
       action:
-        r.status === $Enums.ChallengeStatus.PUBLISHED
-          ? ("approved" as const)
-          : ("rejected" as const),
-      reviewedAt: r.reviewedAt!,
+        r.status === $Enums.ChallengeStatus.LIVE ? ("approved" as const) : ("rejected" as const),
+      updatedAt: r.reviewedAt!,
     })),
     performance: {
       totalChallengesCreated,
@@ -316,7 +313,7 @@ export async function getModeratorProfile(moderatorId: string): Promise<Moderato
       publishingFrequency: Math.round((totalChallengesCreated / daysSinceJoined) * 100) / 100,
       recentActivity,
     },
-    operationalNotes: moderator.moderatorNotes.map((n) => ({
+    operationalNotes: (moderator as any).moderatorNotes.map((n: any) => ({
       id: n.id,
       note: n.note,
       createdAt: n.createdAt,
@@ -445,7 +442,7 @@ export async function getModeratorStats(): Promise<{
       where: { createdBy: { role: { in: ["MODERATOR", "ADMIN"] } } },
     }),
     prisma.challenge.count({
-      where: { reviewedBy: { role: { in: ["MODERATOR", "ADMIN"] } }, reviewedAt: { not: null } },
+      where: { reviewedBy: { role: { in: ["MODERATOR", "ADMIN"] } } },
     }),
   ]);
 
@@ -463,7 +460,7 @@ export async function getModeratorStats(): Promise<{
   let totalWithReviews = 0;
   for (const mod of moderators) {
     const approved = mod.reviewedChallenges.filter(
-      (r) => r.status === $Enums.ChallengeStatus.PUBLISHED
+      (r: any) => r.status === $Enums.ChallengeStatus.LIVE
     ).length;
     const total = mod.reviewedChallenges.length;
     if (total > 0) {

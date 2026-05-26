@@ -55,7 +55,7 @@ export interface ModerationQueueMetrics {
     type: "challenge" | "question";
     title: string;
     status: string;
-    reviewedAt: Date;
+    updatedAt: Date;
     reviewedBy: string | null;
   }>;
 }
@@ -132,14 +132,14 @@ export async function getPlatformHealthMetrics(): Promise<PlatformHealthMetrics>
   ] = await Promise.all([
     prisma.challenge.count({
       where: {
-        status: { in: [$Enums.ChallengeStatus.PUBLISHED, $Enums.ChallengeStatus.SCHEDULED] },
+        status: { in: [$Enums.ChallengeStatus.LIVE, $Enums.ChallengeStatus.SCHEDULED] },
       },
     }),
     prisma.challenge.count({
-      where: { status: $Enums.ChallengeStatus.SCHEDULED, scheduledPublishAt: { gt: now } },
+      where: { status: $Enums.ChallengeStatus.SCHEDULED, startsAt: { gt: now } },
     }),
-    prisma.challenge.count({ where: { status: $Enums.ChallengeStatus.PUBLISHED } }),
-    prisma.challenge.count({ where: { status: $Enums.ChallengeStatus.REVIEW } }),
+    prisma.challenge.count({ where: { status: $Enums.ChallengeStatus.LIVE } }),
+    prisma.challenge.count({ where: { status: $Enums.ChallengeStatus.DRAFT } }),
     prisma.user.count({
       where: {
         role: "USER",
@@ -150,7 +150,7 @@ export async function getPlatformHealthMetrics(): Promise<PlatformHealthMetrics>
         },
       },
     }),
-    prisma.challengeAttempt.count({
+    prisma.attempt.count({
       where: { submittedAt: { gte: todayStart } },
     }),
     prisma.question.count({ where: { status: $Enums.QuestionStatus.REVIEW } }),
@@ -171,26 +171,25 @@ export async function getModerationQueueMetrics(): Promise<ModerationQueueMetric
   await validateAdminAccess();
 
   const [pendingReviews, rejectedChallenges, flaggedQuestions, recentReviews] = await Promise.all([
-    prisma.challenge.count({ where: { status: $Enums.ChallengeStatus.REVIEW } }),
+    prisma.challenge.count({ where: { status: $Enums.ChallengeStatus.DRAFT } }),
     prisma.challenge.count({
       where: {
-        rejectionReason: { not: null },
+        status: "DRAFT",
         updatedAt: { gte: getStartOfWeek() },
       },
     }),
     prisma.question.count({ where: { status: $Enums.QuestionStatus.REVIEW } }),
     prisma.challenge.findMany({
       where: {
-        status: { in: [$Enums.ChallengeStatus.PUBLISHED, $Enums.ChallengeStatus.ARCHIVED] },
-        reviewedAt: { not: null },
+        status: { in: [$Enums.ChallengeStatus.LIVE, $Enums.ChallengeStatus.ARCHIVED] },
       },
-      orderBy: { reviewedAt: "desc" },
+      orderBy: { updatedAt: "desc" },
       take: 10,
       select: {
         id: true,
         title: true,
         status: true,
-        reviewedAt: true,
+        updatedAt: true,
         reviewedById: true,
       },
     }),
@@ -210,7 +209,7 @@ export async function getModerationQueueMetrics(): Promise<ModerationQueueMetric
     type: "challenge" as const,
     title: review.title,
     status: review.status,
-    reviewedAt: review.reviewedAt!,
+    updatedAt: review.updatedAt,
     reviewedBy: review.reviewedById ? (reviewerMap.get(review.reviewedById) ?? null) : null,
   }));
 
@@ -239,8 +238,8 @@ export async function getModeratorActivityMetrics(): Promise<ModeratorActivityMe
       }),
       prisma.challenge.count({
         where: {
-          status: $Enums.ChallengeStatus.PUBLISHED,
-          reviewedAt: { gte: weekStart },
+          status: $Enums.ChallengeStatus.LIVE,
+          updatedAt: { gte: weekStart },
         },
       }),
       prisma.user.findMany({
@@ -248,8 +247,8 @@ export async function getModeratorActivityMetrics(): Promise<ModeratorActivityMe
         select: {
           id: true,
           name: true,
-          reviewedChallenges: { where: { reviewedAt: { gte: weekStart } }, select: { id: true } },
-          reviewedQuestions: { where: { reviewedAt: { gte: weekStart } }, select: { id: true } },
+          reviewedChallenges: { where: { updatedAt: { gte: weekStart } }, select: { id: true } },
+          reviewedQuestions: { where: { updatedAt: { gte: weekStart } }, select: { id: true } },
           updatedAt: true,
         },
       }),
@@ -299,17 +298,17 @@ export async function getUserActivityMetrics(): Promise<UserActivityMetrics> {
         },
       },
     }),
-    prisma.challengeAttempt.groupBy({
+    prisma.attempt.groupBy({
       by: ["challengeId"],
       where: { startedAt: { gte: weekStart } },
       _count: { id: true },
     }),
-    prisma.challengeAttempt.groupBy({
+    prisma.attempt.groupBy({
       by: ["challengeId"],
       where: { submittedAt: { gte: weekStart } },
       _count: { id: true },
     }),
-    prisma.challengeAttempt.groupBy({
+    prisma.attempt.groupBy({
       by: ["userId"],
       where: {
         submittedAt: null,
@@ -349,18 +348,18 @@ export async function getSystemAlerts(): Promise<SystemAlert[]> {
     prisma.challenge.count({
       where: {
         status: $Enums.ChallengeStatus.SCHEDULED,
-        scheduledPublishAt: { lt: new Date() },
+        startsAt: { lt: new Date() },
       },
     }),
     prisma.challenge.count({
       where: {
-        rejectionReason: { not: null },
+        status: "DRAFT",
         updatedAt: { gte: weekStart },
       },
     }),
     prisma.challenge.count({
       where: {
-        status: $Enums.ChallengeStatus.PUBLISHED,
+        status: $Enums.ChallengeStatus.LIVE,
         updatedAt: { gte: weekStart },
       },
     }),
@@ -461,13 +460,13 @@ export async function getEngagementTrends(
   startDate.setDate(startDate.getDate() - days);
   startDate.setHours(0, 0, 0, 0);
 
-  const attempts = await prisma.challengeAttempt.groupBy({
+  const attempts = await prisma.attempt.groupBy({
     by: ["startedAt"],
     where: { startedAt: { gte: startDate } },
     _count: { id: true },
   });
 
-  const userCounts = await prisma.challengeAttempt.groupBy({
+  const userCounts = await prisma.attempt.groupBy({
     by: ["startedAt"],
     where: { startedAt: { gte: startDate } },
     _count: { userId: true },

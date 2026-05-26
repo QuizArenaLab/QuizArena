@@ -23,7 +23,7 @@ interface ChallengeInfo {
   id: string;
   title: string;
   slug: string;
-  examCategory: string | null;
+  category: string | null;
   difficulty: string;
 }
 
@@ -343,7 +343,7 @@ export function AnalyticsDashboardClient({ data }: AnalyticsDashboardClientProps
                       {item.challenge?.title || "Unknown"}
                     </td>
                     <td className="py-3 text-sm text-zinc-600">
-                      {item.challenge?.examCategory || "-"}
+                      {item.challenge?.category || "-"}
                     </td>
                     <td className="py-3">
                       <span

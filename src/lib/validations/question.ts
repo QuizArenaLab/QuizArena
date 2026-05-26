@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const QUESTION_DIFFICULTIES = ["EASY", "MEDIUM", "HARD"] as const;
+export const QUESTION_DIFFICULTIES = ["BEGINNER", "MEDIUM", "HARDCORE"] as const;
 
 export const QUESTION_STATUSES = ["DRAFT", "REVIEW", "APPROVED", "REJECTED", "ARCHIVED"] as const;
 

@@ -55,11 +55,10 @@ export interface ReportData {
     id: string;
     name: string | null;
   } | null;
-  reviewedAt: string | null;
+  updatedAt: string | null;
   resolutionNotes: string | null;
   notes: ReportNoteData[];
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface ReportNoteData {

@@ -5,7 +5,7 @@ import type { TrendDataPoint } from "@/types/monitoring";
 
 interface MonitoringChartsProps {
   userActivity: TrendDataPoint[];
-  challengeAttempts: TrendDataPoint[];
+  attempts: TrendDataPoint[];
   failureRate: TrendDataPoint[];
   moderationThroughput: TrendDataPoint[];
 }
@@ -100,7 +100,7 @@ function MiniChart({ title, data, color, accentColor }: MiniChartProps) {
 
 export function MonitoringCharts({
   userActivity,
-  challengeAttempts,
+  attempts,
   failureRate,
   moderationThroughput,
 }: MonitoringChartsProps) {
@@ -123,7 +123,7 @@ export function MonitoringCharts({
         />
         <MiniChart
           title="Challenge Attempts"
-          data={challengeAttempts}
+          data={attempts}
           color="bg-emerald-400"
           accentColor="bg-emerald-600"
         />

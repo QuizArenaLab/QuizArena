@@ -10,12 +10,12 @@ export async function PATCH(request: NextRequest) {
     if (user instanceof Response) return user;
 
     const typedUser = user as User;
-    const { examCategory, preparationLevel } = await request.json();
+    const { category, preparationLevel } = await request.json();
 
     const errors: Record<string, string> = {};
 
-    if (examCategory && !isValidExamCategory(examCategory)) {
-      errors.examCategory = "Invalid exam category";
+    if (category && !isValidExamCategory(category)) {
+      errors.category = "Invalid exam category";
     }
 
     if (preparationLevel && !isValidPreparationLevel(preparationLevel)) {
@@ -34,7 +34,7 @@ export async function PATCH(request: NextRequest) {
     const updatedUser = await prisma.user.update({
       where: { email: userEmail },
       data: {
-        examCategory: examCategory || typedUser.examCategory,
+        category: category || typedUser.category,
         preparationLevel: preparationLevel || typedUser.preparationLevel,
       },
     });
@@ -43,7 +43,7 @@ export async function PATCH(request: NextRequest) {
       success: true,
       user: {
         id: updatedUser.id,
-        examCategory: updatedUser.examCategory,
+        category: updatedUser.category,
         preparationLevel: updatedUser.preparationLevel,
       },
     });

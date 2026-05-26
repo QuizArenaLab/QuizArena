@@ -33,13 +33,13 @@ const STEPS = [
 
 interface FormData {
   username: string;
-  examCategory: ExamCategoryValue | "";
+  category: ExamCategoryValue | "";
   preparationLevel: PreparationLevelValue | "";
 }
 
 interface FormErrors {
   username?: string;
-  examCategory?: string;
+  category?: string;
   preparationLevel?: string;
 }
 
@@ -50,7 +50,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     username: "",
-    examCategory: "",
+    category: "",
     preparationLevel: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -122,7 +122,7 @@ export default function OnboardingPage() {
 
   // Persist to sessionStorage
   useEffect(() => {
-    if (formData.username || formData.examCategory || formData.preparationLevel) {
+    if (formData.username || formData.category || formData.preparationLevel) {
       sessionStorage.setItem("onboarding_data", JSON.stringify(formData));
     }
   }, [formData]);
@@ -159,8 +159,8 @@ export default function OnboardingPage() {
   };
 
   const handleExamCategorySubmit = () => {
-    if (!formData.examCategory) {
-      setErrors({ examCategory: "Please select an exam category" });
+    if (!formData.category) {
+      setErrors({ category: "Please select an exam category" });
       return;
     }
     setErrors({});
@@ -182,7 +182,7 @@ export default function OnboardingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: formData.username,
-          examCategory: formData.examCategory,
+          category: formData.category,
           preparationLevel: formData.preparationLevel,
         }),
       });
@@ -394,12 +394,12 @@ export default function OnboardingPage() {
                         onClick={() => {
                           setFormData((prev) => ({
                             ...prev,
-                            examCategory: cat.value as ExamCategoryValue,
+                            category: cat.value as ExamCategoryValue,
                           }));
                           setErrors({});
                         }}
                         className={`group relative w-full p-5 rounded-2xl border-2 text-left transition-all duration-200 ${
-                          formData.examCategory === cat.value
+                          formData.category === cat.value
                             ? "border-primary bg-primary/5 ring-4 ring-primary/5"
                             : "border-white bg-white hover:border-slate-200 shadow-sm"
                         }`}
@@ -411,12 +411,12 @@ export default function OnboardingPage() {
                           </div>
                           <div
                             className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                              formData.examCategory === cat.value
+                              formData.category === cat.value
                                 ? "bg-primary border-primary"
                                 : "border-slate-200"
                             }`}
                           >
-                            {formData.examCategory === cat.value && (
+                            {formData.category === cat.value && (
                               <CheckCircle2 size={16} className="text-white" />
                             )}
                           </div>
@@ -435,7 +435,7 @@ export default function OnboardingPage() {
                     </button>
                     <button
                       onClick={handleExamCategorySubmit}
-                      disabled={!formData.examCategory}
+                      disabled={!formData.category}
                       className="flex-2 bg-primary hover:bg-primary-dark text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       Continue

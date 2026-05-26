@@ -8,8 +8,8 @@ interface ActivityFeedProps {
 }
 
 const ACTIVITY_CONFIG: Record<ActivityType, { icon: typeof Trophy; color: string; bg: string }> = {
-  CHALLENGE_PUBLISHED: { icon: Trophy, color: "text-emerald-600", bg: "bg-emerald-50" },
-  CHALLENGE_EXPIRED: { icon: Clock, color: "text-gray-500", bg: "bg-gray-100" },
+  CHALLENGE_LIVE: { icon: Trophy, color: "text-emerald-600", bg: "bg-emerald-50" },
+  CHALLENGE_ENDED: { icon: Clock, color: "text-gray-500", bg: "bg-gray-100" },
   CHALLENGE_CREATED: { icon: Trophy, color: "text-blue-600", bg: "bg-blue-50" },
   MODERATION_APPROVED: { icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50" },
   MODERATION_REJECTED: { icon: XCircle, color: "text-red-500", bg: "bg-red-50" },

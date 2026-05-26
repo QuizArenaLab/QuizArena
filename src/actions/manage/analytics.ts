@@ -61,24 +61,24 @@ export async function getDashboardOverview() {
     averageCompletionTime,
   ] = await Promise.all([
     prisma.challenge.count(),
-    prisma.challenge.count({ where: { status: "PUBLISHED" } }),
-    prisma.challengeAttempt.count({
+    prisma.challenge.count({ where: { status: "LIVE" } }),
+    prisma.attempt.count({
       where: { startedAt: { gte: startDate, lte: endDate } },
     }),
-    prisma.challengeAttempt.count({
+    prisma.attempt.count({
       where: { submittedAt: { not: null, gte: startDate, lte: endDate } },
     }),
-    prisma.challengeAttempt
+    prisma.attempt
       .groupBy({
         by: ["userId"],
         where: { startedAt: { gte: startDate, lte: endDate } },
       })
       .then((result) => result.length),
-    prisma.challengeAttempt.aggregate({
+    prisma.attempt.aggregate({
       where: { submittedAt: { not: null, gte: startDate, lte: endDate } },
       _avg: { score: true },
     }),
-    prisma.challengeAttempt.aggregate({
+    prisma.attempt.aggregate({
       where: { submittedAt: { not: null, gte: startDate, lte: endDate } },
       _avg: { timeTakenInSeconds: true },
     }),
@@ -102,7 +102,7 @@ export async function getChallengePerformanceMetrics(
   filter: Partial<{
     challengeId: string;
     timeRange: string;
-    examCategory: string | null;
+    category: string | null;
     difficulty: string | null;
   }> = {}
 ) {
@@ -119,9 +119,9 @@ export async function getChallengePerformanceMetrics(
     whereClause.challengeId = parsedFilter.challengeId;
   }
 
-  if (parsedFilter.examCategory) {
+  if (parsedFilter.category) {
     whereClause.challenge = {
-      examCategory: parsedFilter.examCategory as "SSC" | "BANKING" | "RAILWAYS" | "STATE_PSC",
+      category: parsedFilter.category as "SSC" | "BANKING" | "RAILWAYS" | "STATE_PSC",
     };
   }
 
@@ -129,19 +129,19 @@ export async function getChallengePerformanceMetrics(
     const existing = (whereClause.challenge as Record<string, unknown>) || {};
     whereClause.challenge = {
       ...existing,
-      difficulty: parsedFilter.difficulty as "EASY" | "MEDIUM" | "HARD",
+      difficulty: parsedFilter.difficulty as "BEGINNER" | "MEDIUM" | "HARDCORE",
     };
   }
 
   const [aggregated, byChallenge] = await Promise.all([
-    prisma.challengeAttempt.aggregate({
+    prisma.attempt.aggregate({
       where: whereClause,
       _count: { id: true },
       _avg: { score: true, timeTakenInSeconds: true },
       _max: { score: true },
       _min: { score: true },
     }),
-    prisma.challengeAttempt.groupBy({
+    prisma.attempt.groupBy({
       by: ["challengeId"],
       where: whereClause,
       _count: { id: true },
@@ -153,7 +153,7 @@ export async function getChallengePerformanceMetrics(
 
   const challenges = await prisma.challenge.findMany({
     where: { id: { in: byChallenge.map((b) => b.challengeId) } },
-    select: { id: true, title: true, slug: true, examCategory: true, difficulty: true },
+    select: { id: true, title: true, slug: true, category: true, difficulty: true },
   });
 
   const challengeMap = new Map(challenges.map((c) => [c.id, c]));
@@ -172,7 +172,7 @@ export async function getChallengePerformanceMetrics(
       },
     }));
 
-  const lowCompletion = await prisma.challengeAttempt.groupBy({
+  const lowCompletion = await prisma.attempt.groupBy({
     by: ["challengeId"],
     where: {
       ...whereClause,
@@ -228,7 +228,7 @@ export async function getQuestionAnalytics(
     where: {
       status: "APPROVED",
       ...(parsedFilter.difficulty && {
-        difficulty: parsedFilter.difficulty as "EASY" | "MEDIUM" | "HARD",
+        difficulty: parsedFilter.difficulty as "BEGINNER" | "MEDIUM" | "HARDCORE",
       }),
       ...(parsedFilter.subject && { subject: parsedFilter.subject }),
       ...(parsedFilter.topic && { topic: parsedFilter.topic }),
@@ -245,7 +245,7 @@ export async function getQuestionAnalytics(
 
   const questionIds = questions.map((q) => q.id);
 
-  const answerStats = await prisma.userAnswer.groupBy({
+  const answerStats = await prisma.attemptAnswer.groupBy({
     by: ["questionId", "isCorrect", "isSkipped"],
     where: {
       questionId: { in: questionIds },
@@ -330,7 +330,7 @@ export async function getEngagementTrends(timeRange: string = "monthly") {
   const parsedRange = analyticsTimeRangeSchema.parse(timeRange);
   const { startDate, endDate } = getDateFilter(parsedRange);
 
-  const dailyAttempts = await prisma.challengeAttempt.groupBy({
+  const dailyAttempts = await prisma.attempt.groupBy({
     by: ["startedAt"],
     where: {
       startedAt: { gte: startDate, lte: endDate },
@@ -365,7 +365,7 @@ export async function getDifficultyInsights() {
 
   const { startDate, endDate } = getDateFilter("monthly");
 
-  const byDifficulty = await prisma.challengeAttempt.groupBy({
+  const byDifficulty = await prisma.attempt.groupBy({
     by: ["challengeId"],
     where: {
       submittedAt: { not: null },
@@ -410,7 +410,7 @@ export async function getCategoryAnalytics() {
 
   const { startDate, endDate } = getDateFilter("monthly");
 
-  const byCategory = await prisma.challengeAttempt.groupBy({
+  const byCategory = await prisma.attempt.groupBy({
     by: ["challengeId"],
     where: {
       startedAt: { gte: startDate, lte: endDate },
@@ -421,10 +421,10 @@ export async function getCategoryAnalytics() {
 
   const challengeCategories = await prisma.challenge.findMany({
     where: { id: { in: byCategory.map((b) => b.challengeId) } },
-    select: { id: true, examCategory: true, title: true },
+    select: { id: true, category: true, title: true },
   });
 
-  const categoryMap = new Map(challengeCategories.map((c) => [c.id, c.examCategory]));
+  const categoryMap = new Map(challengeCategories.map((c) => [c.id, c.category]));
 
   const categoryStats: Record<string, { total: number; avgScore: number; count: number }> = {
     SSC: { total: 0, avgScore: 0, count: 0 },
@@ -466,7 +466,7 @@ export async function generateInsights(): Promise<
   const { startDate, endDate } = getDateFilter("monthly");
 
   const [completionStats, difficultyStats, questionStats] = await Promise.all([
-    prisma.challengeAttempt.groupBy({
+    prisma.attempt.groupBy({
       by: ["challengeId"],
       where: {
         startedAt: { gte: startDate, lte: endDate },
@@ -475,10 +475,10 @@ export async function generateInsights(): Promise<
     }),
     prisma.challenge.groupBy({
       by: ["difficulty"],
-      where: { status: "PUBLISHED" },
+      where: { status: "LIVE" },
       _count: { id: true },
     }),
-    prisma.userAnswer.groupBy({
+    prisma.attemptAnswer.groupBy({
       by: ["questionId", "isCorrect"],
       where: {
         attempt: {
@@ -501,8 +501,8 @@ export async function generateInsights(): Promise<
     });
   }
 
-  const easyCount = difficultyStats.find((d) => d.difficulty === "EASY")?._count.id || 0;
-  const hardCount = difficultyStats.find((d) => d.difficulty === "HARD")?._count.id || 0;
+  const easyCount = difficultyStats.find((d) => d.difficulty === "BEGINNER")?._count.id || 0;
+  const hardCount = difficultyStats.find((d) => d.difficulty === "HARDCORE")?._count.id || 0;
 
   if (easyCount > hardCount * 3) {
     insights.push({
@@ -552,7 +552,7 @@ export async function getLeaderboardData(limit: number = 10) {
 
   const { startDate, endDate } = getDateFilter("monthly");
 
-  const leaderboard = await prisma.challengeAttempt.groupBy({
+  const leaderboard = await prisma.attempt.groupBy({
     by: ["userId"],
     where: {
       submittedAt: { not: null },

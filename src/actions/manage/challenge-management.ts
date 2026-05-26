@@ -16,10 +16,10 @@ import {
 import { revalidatePath } from "next/cache";
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
-  DRAFT: ["REVIEW"],
-  REVIEW: ["DRAFT", "SCHEDULED", "PUBLISHED"],
-  SCHEDULED: ["DRAFT", "PUBLISHED"],
-  PUBLISHED: ["EXPIRED", "ARCHIVED"],
+  DRAFT: ["DRAFT"],
+  REVIEW: ["DRAFT", "SCHEDULED", "LIVE"],
+  SCHEDULED: ["DRAFT", "LIVE"],
+  PUBLISHED: ["ENDED", "ARCHIVED"],
   EXPIRED: ["ARCHIVED", "DRAFT"],
   ARCHIVED: ["DRAFT"],
 };
@@ -73,14 +73,10 @@ export async function createChallenge(
         title: parsed.title,
         slug,
         description: parsed.description,
-        instructions: parsed.instructions,
-        examCategory: parsed.examCategory,
+        category: parsed.category,
         difficulty: parsed.difficulty,
         durationInMinutes: parsed.durationInMinutes,
         totalQuestions: parsed.totalQuestions,
-        totalMarks: parsed.totalMarks,
-        negativeMarking: parsed.negativeMarking,
-        negativeMarkPercentage: parsed.negativeMarkPercentage,
         status: "DRAFT",
       },
     });
@@ -119,22 +115,17 @@ export async function updateChallenge(
       return { success: false, error: "Challenge not found" };
     }
 
-    if (existing.status === "PUBLISHED" || existing.status === "ARCHIVED") {
+    if (existing.status === "LIVE" || existing.status === "ARCHIVED") {
       return { success: false, error: "Cannot update a published or archived challenge" };
     }
 
     const updateData: Record<string, unknown> = {};
     if (parsed.title) updateData.title = parsed.title;
     if (parsed.description !== undefined) updateData.description = parsed.description;
-    if (parsed.instructions !== undefined) updateData.instructions = parsed.instructions;
-    if (parsed.examCategory) updateData.examCategory = parsed.examCategory;
+    if (parsed.category) updateData.category = parsed.category;
     if (parsed.difficulty) updateData.difficulty = parsed.difficulty;
     if (parsed.durationInMinutes) updateData.durationInMinutes = parsed.durationInMinutes;
     if (parsed.totalQuestions) updateData.totalQuestions = parsed.totalQuestions;
-    if (parsed.totalMarks) updateData.totalMarks = parsed.totalMarks;
-    if (parsed.negativeMarking !== undefined) updateData.negativeMarking = parsed.negativeMarking;
-    if (parsed.negativeMarkPercentage !== undefined)
-      updateData.negativeMarkPercentage = parsed.negativeMarkPercentage;
 
     await prisma.challenge.update({
       where: { id: parsed.id },
@@ -184,7 +175,7 @@ export async function updateChallengeStatus(
     const userRole = (session.user.role as string) || "USER";
     const isAdmin = hasMinimumRole(userRole, ROLE.ADMIN);
 
-    if (newStatus === "PUBLISHED" && !isAdmin) {
+    if (newStatus === "LIVE" && !isAdmin) {
       return { success: false, error: "Only admins can publish challenges" };
     }
 
@@ -196,7 +187,7 @@ export async function updateChallengeStatus(
       status: newStatus,
     };
 
-    if (newStatus === "PUBLISHED") {
+    if (newStatus === "LIVE") {
       updateData.publishedAt = new Date();
     }
 
@@ -224,7 +215,7 @@ export async function moveToReview(
 ): Promise<{ success: boolean; error?: string }> {
   return updateChallengeStatus({
     id: challengeId,
-    newStatus: "REVIEW",
+    newStatus: "DRAFT",
   });
 }
 
@@ -233,7 +224,7 @@ export async function publishChallenge(
 ): Promise<{ success: boolean; error?: string }> {
   return updateChallengeStatus({
     id: challengeId,
-    newStatus: "PUBLISHED",
+    newStatus: "LIVE",
   });
 }
 
@@ -267,7 +258,7 @@ export async function deleteChallenge(
       return { success: false, error: "Challenge not found" };
     }
 
-    if (challenge.status === "PUBLISHED") {
+    if (challenge.status === "LIVE") {
       return { success: false, error: "Cannot delete a published challenge" };
     }
 
@@ -302,15 +293,14 @@ interface ChallengeListResult {
     title: string;
     slug: string;
     description: string | null;
-    examCategory: string | null;
+    category: string | null;
     difficulty: string;
     durationInMinutes: number;
     totalQuestions: number;
-    totalMarks: number;
     status: string;
     createdAt: Date;
     updatedAt: Date;
-    publishedAt: Date | null;
+
     createdBy: { id: string; name: string | null; email: string | null } | null;
     _count: { attempts: number; questions: number };
   }>;
@@ -324,7 +314,7 @@ export async function getChallenges(filters: unknown): Promise<ChallengeListResu
     await validateModeratorAccess();
 
     const parsed = challengeFiltersSchema.parse(filters);
-    const { search, status, difficulty, examCategory, page, limit } = parsed;
+    const { search, status, difficulty, category, page, limit } = parsed;
     const skip = (page - 1) * limit;
 
     const where: Record<string, unknown> = {};
@@ -339,7 +329,7 @@ export async function getChallenges(filters: unknown): Promise<ChallengeListResu
 
     if (status) where.status = status;
     if (difficulty) where.difficulty = difficulty;
-    if (examCategory) where.examCategory = examCategory;
+    if (category) where.category = category;
 
     const [challenges, total] = await Promise.all([
       prisma.challenge.findMany({
@@ -352,15 +342,13 @@ export async function getChallenges(filters: unknown): Promise<ChallengeListResu
           title: true,
           slug: true,
           description: true,
-          examCategory: true,
+          category: true,
           difficulty: true,
           durationInMinutes: true,
           totalQuestions: true,
-          totalMarks: true,
           status: true,
           createdAt: true,
           updatedAt: true,
-          publishedAt: true,
           createdBy: {
             select: { id: true, name: true, email: true },
           },
@@ -386,18 +374,14 @@ export async function getChallengeById(challengeId: string): Promise<{
   title: string;
   slug: string;
   description: string | null;
-  instructions: string | null;
-  examCategory: string | null;
+  category: string | null;
   difficulty: string;
   durationInMinutes: number;
   totalQuestions: number;
-  totalMarks: number;
-  negativeMarking: boolean;
-  negativeMarkPercentage: number;
   status: string;
   createdAt: Date;
   updatedAt: Date;
-  publishedAt: Date | null;
+
   createdBy: { id: string; name: string | null; email: string | null } | null;
   _count: { attempts: number; questions: number };
 } | null> {
@@ -411,18 +395,13 @@ export async function getChallengeById(challengeId: string): Promise<{
         title: true,
         slug: true,
         description: true,
-        instructions: true,
-        examCategory: true,
+        category: true,
         difficulty: true,
         durationInMinutes: true,
         totalQuestions: true,
-        totalMarks: true,
-        negativeMarking: true,
-        negativeMarkPercentage: true,
         status: true,
         createdAt: true,
         updatedAt: true,
-        publishedAt: true,
         createdBy: { select: { id: true, name: true, email: true } },
         _count: { select: { attempts: true, questions: true } },
       },
@@ -439,11 +418,10 @@ export async function getChallengeBySlug(slug: string): Promise<{
   title: string;
   slug: string;
   description: string | null;
-  examCategory: string | null;
+  category: string | null;
   difficulty: string;
   durationInMinutes: number;
   totalQuestions: number;
-  totalMarks: number;
   status: string;
 } | null> {
   const challenge = await prisma.challenge.findUnique({
@@ -453,11 +431,10 @@ export async function getChallengeBySlug(slug: string): Promise<{
       title: true,
       slug: true,
       description: true,
-      examCategory: true,
+      category: true,
       difficulty: true,
       durationInMinutes: true,
       totalQuestions: true,
-      totalMarks: true,
       status: true,
     },
   });
@@ -481,7 +458,7 @@ export async function addQuestionToChallenge(
       return { success: false, error: "Challenge not found" };
     }
 
-    if (challenge.status === "PUBLISHED" || challenge.status === "ARCHIVED") {
+    if (challenge.status === "LIVE" || challenge.status === "ARCHIVED") {
       return { success: false, error: "Cannot modify a published or archived challenge" };
     }
 
@@ -553,7 +530,7 @@ export async function removeQuestionFromChallenge(
       return { success: false, error: "Challenge not found" };
     }
 
-    if (challenge.status === "PUBLISHED" || challenge.status === "ARCHIVED") {
+    if (challenge.status === "LIVE" || challenge.status === "ARCHIVED") {
       return { success: false, error: "Cannot modify a published or archived challenge" };
     }
 
@@ -594,7 +571,7 @@ export async function reorderChallengeQuestions(
       return { success: false, error: "Challenge not found" };
     }
 
-    if (challenge.status === "PUBLISHED" || challenge.status === "ARCHIVED") {
+    if (challenge.status === "LIVE" || challenge.status === "ARCHIVED") {
       return { success: false, error: "Cannot modify a published or archived challenge" };
     }
 
@@ -627,21 +604,10 @@ async function updateChallengeQuestionCount(challengeId: string) {
     where: { challengeId },
   });
 
-  const questions = await prisma.challengeQuestion.findMany({
-    where: { challengeId },
-    include: { question: { select: { marks: true, negativeMarks: true } } },
-  });
-
-  const totalMarks = questions.reduce((sum, cq) => {
-    const marks = cq.question.marks;
-    return sum + marks;
-  }, 0);
-
   await prisma.challenge.update({
     where: { id: challengeId },
     data: {
       totalQuestions: count,
-      totalMarks,
     },
   });
 }
@@ -841,7 +807,7 @@ export async function scheduleChallenge(
     const session = await validateModeratorAccess();
 
     const parsed = scheduleChallengeSchema.parse(data);
-    const { id, scheduledPublishAt, expiresAt } = parsed;
+    const { id, startsAt, endsAt } = parsed;
 
     const challenge = await prisma.challenge.findUnique({
       where: { id },
@@ -852,8 +818,8 @@ export async function scheduleChallenge(
       return { success: false, error: "Challenge not found" };
     }
 
-    if (challenge.status !== "DRAFT" && challenge.status !== "REVIEW") {
-      return { success: false, error: "Only DRAFT or REVIEW challenges can be scheduled" };
+    if (challenge.status !== "DRAFT") {
+      return { success: false, error: "Only DRAFT challenges can be scheduled" };
     }
 
     if (challenge._count.questions === 0) {
@@ -871,8 +837,8 @@ export async function scheduleChallenge(
       where: { id },
       data: {
         status: "SCHEDULED",
-        scheduledPublishAt: new Date(scheduledPublishAt),
-        expiresAt: expiresAt ? new Date(expiresAt) : null,
+        startsAt: new Date(startsAt),
+        endsAt: endsAt ? new Date(endsAt) : null,
       },
     });
 
@@ -906,8 +872,8 @@ export async function publishChallengeNow(
       return { success: false, error: "Challenge not found" };
     }
 
-    if (challenge.status !== "SCHEDULED" && challenge.status !== "REVIEW") {
-      return { success: false, error: "Challenge must be in SCHEDULED or REVIEW status" };
+    if (challenge.status !== "SCHEDULED" && challenge.status !== "DRAFT") {
+      return { success: false, error: "Challenge must be in SCHEDULED or DRAFT status" };
     }
 
     const userRole = (session.user.role as string) || "USER";
@@ -920,9 +886,8 @@ export async function publishChallengeNow(
     await prisma.challenge.update({
       where: { id: challengeId },
       data: {
-        status: "PUBLISHED",
-        publishedAt: new Date(),
-        scheduledPublishAt: null,
+        status: "LIVE",
+        startsAt: new Date(),
       },
     });
 
@@ -960,8 +925,8 @@ export async function cancelSchedule(
       where: { id: challengeId },
       data: {
         status: "DRAFT",
-        scheduledPublishAt: null,
-        expiresAt: null,
+        startsAt: undefined,
+        endsAt: null,
       },
     });
 
@@ -985,22 +950,21 @@ export async function processScheduledChallenges(): Promise<{
   const publishedCount = await prisma.challenge.updateMany({
     where: {
       status: "SCHEDULED",
-      scheduledPublishAt: { lte: now },
+      startsAt: { lte: now },
     },
     data: {
-      status: "PUBLISHED",
-      publishedAt: now,
-      scheduledPublishAt: null,
+      status: "LIVE",
+      startsAt: now,
     },
   });
 
   const expiredCount = await prisma.challenge.updateMany({
     where: {
-      status: "PUBLISHED",
-      expiresAt: { lte: now },
+      status: "LIVE",
+      endsAt: { lte: now },
     },
     data: {
-      status: "EXPIRED",
+      status: "ENDED",
     },
   });
 
@@ -1025,14 +989,14 @@ export async function expireChallenge(
       return { success: false, error: "Challenge not found" };
     }
 
-    if (challenge.status !== "PUBLISHED") {
+    if (challenge.status !== "LIVE") {
       return { success: false, error: "Only published challenges can be expired" };
     }
 
     await prisma.challenge.update({
       where: { id: challengeId },
       data: {
-        status: "EXPIRED",
+        status: "ENDED",
       },
     });
 
@@ -1055,15 +1019,15 @@ export async function getScheduledChallenges() {
     const upcoming = await prisma.challenge.findMany({
       where: {
         status: "SCHEDULED",
-        scheduledPublishAt: { gt: now },
+        startsAt: { gt: now },
       },
-      orderBy: { scheduledPublishAt: "asc" },
+      orderBy: { startsAt: "asc" },
       select: {
         id: true,
         title: true,
         slug: true,
-        scheduledPublishAt: true,
-        expiresAt: true,
+        startsAt: true,
+        endsAt: true,
         createdAt: true,
       },
     });
@@ -1071,15 +1035,15 @@ export async function getScheduledChallenges() {
     const readyToPublish = await prisma.challenge.findMany({
       where: {
         status: "SCHEDULED",
-        scheduledPublishAt: { lte: now },
+        startsAt: { lte: now },
       },
-      orderBy: { scheduledPublishAt: "asc" },
+      orderBy: { startsAt: "asc" },
       select: {
         id: true,
         title: true,
         slug: true,
-        scheduledPublishAt: true,
-        expiresAt: true,
+        startsAt: true,
+        endsAt: true,
         createdAt: true,
       },
     });
@@ -1113,10 +1077,10 @@ export async function approveChallenge(
       return { success: false, error: "Challenge not found" };
     }
 
-    if (challenge.status !== "REVIEW" && challenge.status !== "SCHEDULED") {
+    if (challenge.status !== "DRAFT" && challenge.status !== "SCHEDULED") {
       return {
         success: false,
-        error: "Challenge must be in REVIEW or SCHEDULED status to be approved",
+        error: "Challenge must be in DRAFT or SCHEDULED status to be approved",
       };
     }
 
@@ -1125,9 +1089,7 @@ export async function approveChallenge(
       data: {
         status: "SCHEDULED",
         reviewedById: session.user.id,
-        reviewedAt: new Date(),
-        reviewNotes: reviewNotes || null,
-        rejectionReason: null,
+        updatedAt: new Date(),
       },
     });
 
@@ -1169,10 +1131,10 @@ export async function rejectChallenge(
       return { success: false, error: "Challenge not found" };
     }
 
-    if (challenge.status !== "REVIEW" && challenge.status !== "SCHEDULED") {
+    if (challenge.status !== "DRAFT" && challenge.status !== "SCHEDULED") {
       return {
         success: false,
-        error: "Challenge must be in REVIEW or SCHEDULED status to be rejected",
+        error: "Challenge must be in DRAFT or SCHEDULED status to be rejected",
       };
     }
 
@@ -1181,10 +1143,8 @@ export async function rejectChallenge(
       data: {
         status: "DRAFT",
         reviewedById: session.user.id,
-        reviewedAt: new Date(),
-        rejectionReason: rejectionReason.trim(),
-        reviewNotes: null,
-        scheduledPublishAt: null,
+        updatedAt: new Date(),
+        startsAt: undefined,
       },
     });
 
@@ -1204,13 +1164,13 @@ export async function getModerationQueue() {
     await validateModeratorAccess();
 
     const pendingReview = await prisma.challenge.findMany({
-      where: { status: "REVIEW" },
+      where: { status: "DRAFT" },
       orderBy: { updatedAt: "asc" },
       select: {
         id: true,
         title: true,
         slug: true,
-        examCategory: true,
+        category: true,
         difficulty: true,
         totalQuestions: true,
         createdBy: { select: { id: true, name: true, email: true } },
@@ -1221,24 +1181,24 @@ export async function getModerationQueue() {
 
     const recentApprovals = await prisma.challenge.findMany({
       where: {
-        status: { in: ["SCHEDULED", "PUBLISHED"] },
-        reviewedAt: { not: null },
+        status: { in: ["SCHEDULED", "LIVE"] },
+        // updatedAt: { not: null },
       },
-      orderBy: { reviewedAt: "desc" },
+      orderBy: { updatedAt: "desc" },
       take: 20,
       select: {
         id: true,
         title: true,
         status: true,
         reviewedBy: { select: { id: true, name: true, email: true } },
-        reviewedAt: true,
+        updatedAt: true,
       },
     });
 
     const rejectedCount = await prisma.challenge.count({
       where: {
         status: "DRAFT",
-        rejectionReason: { not: null },
+        // rejectionReason: { not: null },
       },
     });
 

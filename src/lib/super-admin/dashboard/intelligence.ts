@@ -3,7 +3,7 @@ import type { StrategicIntelligenceData } from "@/types/super-admin-dashboard";
 
 export async function getStrategicInsights(): Promise<StrategicIntelligenceData> {
   // Querying high-level analytics
-  const totalAttempts = await prisma.challengeAttempt.count();
+  const totalAttempts = await prisma.attempt.count();
 
   return {
     engagementVelocity: totalAttempts > 0 ? 85 : 0, // Synthetic velocity score

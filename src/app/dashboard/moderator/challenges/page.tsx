@@ -6,8 +6,9 @@ import { cn } from "@/lib/utils";
 
 const STATUS_STYLES = {
   DRAFT: "bg-gray-100 text-gray-700 border-gray-200",
-  REVIEW: "bg-amber-50 text-amber-700 border-amber-200",
-  PUBLISHED: "bg-green-50 text-green-700 border-green-200",
+  SCHEDULED: "bg-amber-50 text-amber-700 border-amber-200",
+  LIVE: "bg-green-50 text-green-700 border-green-200",
+  ENDED: "bg-purple-50 text-purple-700 border-purple-200",
   ARCHIVED: "bg-red-50 text-red-700 border-red-200",
 };
 
@@ -41,14 +42,14 @@ async function ChallengeList({
   const search = typeof params.search === "string" ? params.search : undefined;
   const status = typeof params.status === "string" ? params.status : undefined;
   const difficulty = typeof params.difficulty === "string" ? params.difficulty : undefined;
-  const examCategory = typeof params.examCategory === "string" ? params.examCategory : undefined;
+  const category = typeof params.category === "string" ? params.category : undefined;
   const page = parseInt(typeof params.page === "string" ? params.page : "1", 10);
 
   const result = await getChallenges({
     search,
     status,
     difficulty,
-    examCategory,
+    category,
     page,
     limit: 20,
   });
@@ -89,8 +90,8 @@ async function ChallengeList({
             >
               <option value="">All Status</option>
               <option value="DRAFT">Draft</option>
-              <option value="REVIEW">Review</option>
-              <option value="PUBLISHED">Published</option>
+              <option value="DRAFT">Review</option>
+              <option value="LIVE">Published</option>
               <option value="ARCHIVED">Archived</option>
             </select>
             <select
@@ -99,13 +100,13 @@ async function ChallengeList({
               className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6366F1] focus:border-transparent"
             >
               <option value="">All Difficulty</option>
-              <option value="EASY">Easy</option>
+              <option value="BEGINNER">Easy</option>
               <option value="MEDIUM">Medium</option>
-              <option value="HARD">Hard</option>
+              <option value="HARDCORE">Hard</option>
             </select>
             <select
-              name="examCategory"
-              defaultValue={examCategory || ""}
+              name="category"
+              defaultValue={category || ""}
               className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6366F1] focus:border-transparent"
             >
               <option value="">All Categories</option>
@@ -142,7 +143,7 @@ async function ChallengeList({
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No challenges found</h3>
             <p className="text-gray-500 mb-4">
-              {search || status || difficulty || examCategory
+              {search || status || difficulty || category
                 ? "Try adjusting your filters"
                 : "Create your first challenge to get started"}
             </p>
@@ -207,8 +208,9 @@ async function ChallengeList({
                         </span>
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600">
-                        {challenge.examCategory
-                          ? CATEGORY_LABELS[challenge.examCategory] || challenge.examCategory
+                        {(challenge as any).category
+                          ? CATEGORY_LABELS[(challenge as any).category] ||
+                            (challenge as any).category
                           : "-"}
                       </td>
                       <td className="px-4 py-4">
@@ -261,7 +263,7 @@ async function ChallengeList({
                       href={`?page=${page - 1}${search ? `&search=${search}` : ""}${
                         status ? `&status=${status}` : ""
                       }${difficulty ? `&difficulty=${difficulty}` : ""}${
-                        examCategory ? `&examCategory=${examCategory}` : ""
+                        category ? `&category=${category}` : ""
                       }`}
                       className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
                     >
@@ -273,7 +275,7 @@ async function ChallengeList({
                       href={`?page=${page + 1}${search ? `&search=${search}` : ""}${
                         status ? `&status=${status}` : ""
                       }${difficulty ? `&difficulty=${difficulty}` : ""}${
-                        examCategory ? `&examCategory=${examCategory}` : ""
+                        category ? `&category=${category}` : ""
                       }`}
                       className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
                     >

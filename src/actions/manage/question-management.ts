@@ -485,7 +485,7 @@ export async function approveQuestionAction(
       data: {
         status: "APPROVED",
         reviewedById: session.user.id,
-        reviewedAt: new Date(),
+        updatedAt: new Date(),
         reviewNotes: reviewNotes || null,
         rejectionReason: null,
       },
@@ -538,7 +538,7 @@ export async function rejectQuestionAction(
       data: {
         status: "REJECTED",
         reviewedById: session.user.id,
-        reviewedAt: new Date(),
+        updatedAt: new Date(),
         rejectionReason: rejectionReason.trim(),
         reviewNotes: null,
       },
@@ -577,16 +577,16 @@ export async function getQuestionModerationQueue() {
     const recentApprovals = await prisma.question.findMany({
       where: {
         status: "APPROVED",
-        reviewedAt: { not: null },
+        // updatedAt: { not: null },
       },
-      orderBy: { reviewedAt: "desc" },
+      orderBy: { updatedAt: "desc" },
       take: 20,
       select: {
         id: true,
         question: true,
         status: true,
         reviewedBy: { select: { id: true, name: true, email: true } },
-        reviewedAt: true,
+        updatedAt: true,
       },
     });
 

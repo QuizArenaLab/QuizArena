@@ -53,31 +53,31 @@ export async function getPlatformOverview(): Promise<PlatformOverview> {
 
   // 2. Challenges
   const totalPublished = await prisma.challenge.count({
-    where: { status: "PUBLISHED" },
+    where: { status: "LIVE" },
   });
 
   const publishedLast7Days = await prisma.challenge.count({
-    where: { status: "PUBLISHED", publishedAt: { gte: sevenDaysAgo } },
+    where: { status: "LIVE", createdAt: { gte: sevenDaysAgo } },
   });
   const publishedPrevious7Days = await prisma.challenge.count({
-    where: { status: "PUBLISHED", publishedAt: { gte: fourteenDaysAgo, lt: sevenDaysAgo } },
+    where: { status: "LIVE", createdAt: { gte: fourteenDaysAgo, lt: sevenDaysAgo } },
   });
   const publishingVelocity = calculateTrendPercentage(publishedLast7Days, publishedPrevious7Days);
 
   // 3. Backlog & Moderation
   const reviewBacklogSize = await prisma.challenge.count({
-    where: { status: "REVIEW" },
+    where: { status: "DRAFT" },
   });
 
   const backlogPrevious7Days = await prisma.challenge.count({
-    where: { status: "REVIEW", updatedAt: { lt: sevenDaysAgo } }, // simplified proxy
+    where: { status: "DRAFT", updatedAt: { lt: sevenDaysAgo } }, // simplified proxy
   });
   const backlogGrowthPercentage = calculateTrendPercentage(reviewBacklogSize, backlogPrevious7Days);
 
   const moderationThroughput = await prisma.challenge.count({
     where: {
-      status: { in: ["PUBLISHED", "DRAFT", "ARCHIVED"] }, // Approvals or rejections roughly
-      reviewedAt: { gte: sevenDaysAgo },
+      status: { in: ["LIVE", "DRAFT", "ARCHIVED"] }, // Approvals or rejections roughly
+      updatedAt: { gte: sevenDaysAgo },
     },
   });
 
@@ -109,7 +109,7 @@ export async function getModeratorIntelligence(): Promise<ModeratorIntelligence>
       name: true,
       username: true,
       reviewedChallenges: {
-        where: { reviewedAt: { gte: sevenDaysAgo } },
+        where: { updatedAt: { gte: sevenDaysAgo } },
         select: { status: true },
       },
     },
@@ -120,7 +120,7 @@ export async function getModeratorIntelligence(): Promise<ModeratorIntelligence>
   const metrics = moderators.map((mod) => {
     const totalReviewed = mod.reviewedChallenges.length;
     const approved = mod.reviewedChallenges.filter(
-      (c) => c.status === "PUBLISHED" || c.status === "SCHEDULED"
+      (c) => c.status === "LIVE" || c.status === "SCHEDULED"
     ).length;
     const rejected = totalReviewed - approved;
 
@@ -211,10 +211,10 @@ export async function getContentQualityTrends(): Promise<ContentQualityMetrics> 
   // Rejection trends
   const sevenDaysAgo = subDays(new Date(), 7);
   const recentReviews = await prisma.challenge.count({
-    where: { reviewedAt: { gte: sevenDaysAgo } },
+    where: { updatedAt: { gte: sevenDaysAgo } },
   });
   const recentRejections = await prisma.challenge.count({
-    where: { reviewedAt: { gte: sevenDaysAgo }, status: "DRAFT" }, // Proxy for rejection
+    where: { updatedAt: { gte: sevenDaysAgo }, status: "DRAFT" }, // Proxy for rejection
   });
 
   const rejectionTrendPercentage = recentReviews > 0 ? (recentRejections / recentReviews) * 100 : 0;

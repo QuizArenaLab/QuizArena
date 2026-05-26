@@ -20,16 +20,16 @@ export default async function ChallengesPage() {
   }
 
   const user = session.user;
-  const examCategory = user.examCategory as keyof typeof EXAM_CATEGORY_LABELS | undefined;
+  const category = user.category as keyof typeof EXAM_CATEGORY_LABELS | undefined;
   const challenge = await getLatestChallenge();
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case "EASY":
+      case "BEGINNER":
         return "bg-green-100 text-green-700";
       case "MEDIUM":
         return "bg-amber-100 text-amber-700";
-      case "HARD":
+      case "HARDCORE":
         return "bg-red-100 text-red-700";
       default:
         return "bg-gray-100 text-gray-700";
@@ -76,13 +76,9 @@ export default async function ChallengesPage() {
                 <Clock className="w-4 h-4" />
                 {challenge.durationInMinutes} Minutes
               </span>
-              {challenge.examCategory && (
+              {challenge.category && (
                 <span className="px-2 py-1 bg-white/10 rounded text-xs">
-                  {
-                    EXAM_CATEGORY_LABELS[
-                      challenge.examCategory as keyof typeof EXAM_CATEGORY_LABELS
-                    ]
-                  }
+                  {EXAM_CATEGORY_LABELS[challenge.category as keyof typeof EXAM_CATEGORY_LABELS]}
                 </span>
               )}
             </div>
@@ -99,21 +95,21 @@ export default async function ChallengesPage() {
         <div className="relative overflow-hidden bg-navy rounded-2xl p-6 sm:p-8 text-white">
           <div className="relative z-10">
             <h2 className="text-xl sm:text-2xl font-bold mb-2">
-              {examCategory
-                ? `Prepare for ${EXAM_CATEGORY_LABELS[examCategory]}`
+              {category
+                ? `Prepare for ${EXAM_CATEGORY_LABELS[category]}`
                 : "Start Your Practice Journey"}
             </h2>
             <p className="text-white/70 mb-6 max-w-xl">
-              {examCategory
+              {category
                 ? `Based on your ${user.preparationLevel} level, we've curated challenges to help you succeed.`
                 : "Complete your profile to get personalized quiz recommendations."}
             </p>
             <Link
-              href={examCategory ? "#" : "/profile"}
+              href={category ? "#" : "/profile"}
               className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors"
             >
               <Play className="w-4 h-4 fill-current" />
-              {examCategory ? "Start Challenge" : "Complete Profile"}
+              {category ? "Start Challenge" : "Complete Profile"}
             </Link>
           </div>
           <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-primary/20 to-transparent pointer-events-none" />
@@ -141,9 +137,9 @@ export default async function ChallengesPage() {
             <button className="px-4 py-2 bg-primary text-white rounded-full text-sm font-medium">
               All
             </button>
-            {examCategory && (
+            {category && (
               <button className="px-4 py-2 bg-white border border-gray-200 text-navy rounded-full text-sm font-medium hover:border-primary/30 transition-colors">
-                {EXAM_CATEGORY_LABELS[examCategory]}
+                {EXAM_CATEGORY_LABELS[category]}
               </button>
             )}
           </div>
@@ -175,13 +171,13 @@ export default async function ChallengesPage() {
             </div>
             <h3 className="text-xl font-bold text-navy mb-3">No challenges available yet</h3>
             <p className="text-gray-500 max-w-md mb-6">
-              {examCategory
-                ? `We're curating ${EXAM_CATEGORY_LABELS[examCategory]} challenges for your preparation level. Check back soon!`
+              {category
+                ? `We're curating ${EXAM_CATEGORY_LABELS[category]} challenges for your preparation level. Check back soon!`
                 : "We're preparing personalized challenges for you. Complete your profile to get started."}
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              {examCategory ? (
+              {category ? (
                 <div className="flex items-center gap-2 text-sm text-gray-400">
                   <Clock className="w-4 h-4" />
                   <span>New challenges added weekly</span>

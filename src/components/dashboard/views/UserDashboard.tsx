@@ -21,11 +21,11 @@ import {
 } from "lucide-react";
 
 interface UserDashboardViewProps {
-  user: DefaultSession["user"] & { examCategory?: string | null; preparationLevel?: string | null };
+  user: DefaultSession["user"] & { category?: string | null; preparationLevel?: string | null };
 }
 
 export async function UserDashboardView({ user }: UserDashboardViewProps) {
-  const examCategory = user.examCategory as keyof typeof EXAM_CATEGORY_LABELS | undefined;
+  const category = user.category as keyof typeof EXAM_CATEGORY_LABELS | undefined;
   const prepLevel = user.preparationLevel as keyof typeof PREPARATION_LEVEL_LABELS | undefined;
 
   const challenge = await getLatestChallenge();
@@ -40,11 +40,11 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case "EASY":
+      case "BEGINNER":
         return "text-green-600";
       case "MEDIUM":
         return "text-amber-600";
-      case "HARD":
+      case "HARDCORE":
         return "text-red-600";
       default:
         return "text-gray-600";
@@ -80,11 +80,11 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
                 Welcome back, {user.name?.split(" ")[0] || "Aspirant"}
               </h1>
 
-              {examCategory && (
+              {category && (
                 <div className="flex flex-wrap items-center gap-3 text-sm text-white/70 mb-3">
                   <span className="flex items-center gap-1.5">
                     <Target className="w-3.5 h-3.5" />
-                    {EXAM_CATEGORY_LABELS[examCategory]}
+                    {EXAM_CATEGORY_LABELS[category]}
                   </span>
                   <span className="w-1 h-1 bg-white/30 rounded-full" />
                   <span className="flex items-center gap-1.5">
@@ -163,8 +163,7 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
               <div>
                 <p className="font-bold text-navy mb-1">{challenge.title}</p>
                 <p className="text-sm text-gray-500">
-                  {challenge.description ||
-                    `Test your ${examCategory || "competitive"} knowledge now`}
+                  {challenge.description || `Test your ${category || "competitive"} knowledge now`}
                 </p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
@@ -221,9 +220,7 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
           {latestAttempt ? (
             <p className="text-xl font-bold text-navy">
               {Math.round(
-                (latestAttempt.correctAnswers /
-                  (latestAttempt.correctAnswers + latestAttempt.wrongAnswers)) *
-                  100
+                (latestAttempt.correctAnswers / (latestAttempt.totalAnswered || 1)) * 100
               ) || 0}
               %
             </p>
@@ -232,7 +229,7 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
           )}
           <p className="text-xs text-gray-400 mt-1">
             {latestAttempt
-              ? `${latestAttempt.correctAnswers}/${latestAttempt.correctAnswers + latestAttempt.wrongAnswers} correct`
+              ? `${latestAttempt.correctAnswers}/${latestAttempt.totalAnswered} correct`
               : "Track after first attempt"}
           </p>
         </div>

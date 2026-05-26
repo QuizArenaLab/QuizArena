@@ -173,7 +173,7 @@ export function ReportInvestigationPanel({
       {/* Investigation Title */}
       <div className="bg-white rounded-xl border border-gray-100 p-5">
         <div className="flex items-start gap-3">
-          <div className="p-2.5 bg-gradient-to-br from-[#0A1C40] to-[#2471e7] rounded-xl">
+          <div className="p-2.5 bg-linear-to-br from-[#0A1C40] to-secondary rounded-xl">
             <Shield className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
@@ -305,7 +305,7 @@ export function ReportInvestigationPanel({
               {report.reviewedBy && (
                 <p className="text-xs text-emerald-600 mt-2">
                   Reviewed by: {report.reviewedBy.name} •{" "}
-                  {report.reviewedAt && formatDate(report.reviewedAt)}
+                  {report.updatedAt && formatDate(report.updatedAt)}
                 </p>
               )}
             </div>
@@ -526,13 +526,15 @@ export function ReportInvestigationPanel({
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                   <span>
                     Reviewed by {report.reviewedBy.name}
-                    {report.reviewedAt && `: ${formatDate(report.reviewedAt)}`}
+                    {report.updatedAt && `: ${formatDate(report.updatedAt)}`}
                   </span>
                 </div>
               )}
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                <span>Last updated: {formatDate(report.updatedAt)}</span>
+                <span>
+                  Last updated: {report.updatedAt ? formatDate(report.updatedAt as any) : "Never"}
+                </span>
               </div>
             </div>
           </div>

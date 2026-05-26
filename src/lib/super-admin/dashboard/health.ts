@@ -4,7 +4,7 @@ import type { InfrastructureHealthData } from "@/types/super-admin-dashboard";
 export async function getInfrastructureHealth(): Promise<InfrastructureHealthData> {
   const [activeSessions, pubChallenges] = await Promise.all([
     prisma.session.count(),
-    prisma.challenge.count({ where: { status: "PUBLISHED" } }),
+    prisma.challenge.count({ where: { status: "LIVE" } }),
   ]);
 
   const dbStatus = {
