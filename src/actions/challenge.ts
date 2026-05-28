@@ -75,7 +75,7 @@ export const getActiveChallenges = unstable_cache(
             question: true,
           },
           orderBy: {
-            order: "asc",
+            orderIndex: "asc",
           },
         },
       },
@@ -105,7 +105,7 @@ export const getLatestChallenge = unstable_cache(
             question: true,
           },
           orderBy: {
-            order: "asc",
+            orderIndex: "asc",
           },
         },
       },
@@ -131,7 +131,7 @@ export async function getChallengeBySlug(slug: string) {
           question: true,
         },
         orderBy: {
-          order: "asc",
+          orderIndex: "asc",
         },
       },
     },
@@ -155,18 +155,9 @@ async function getChallengeForAttempt(
       status: "LIVE",
     },
     include: {
-      questions: {
-        include: {
-          question: {
-            include: {
-              options: {
-                orderBy: { order: "asc" },
-              },
-            },
-          },
-        },
+      snapshots: {
         orderBy: {
-          order: "asc",
+          orderIndex: "asc",
         },
       },
     },
@@ -189,13 +180,22 @@ async function getChallengeForAttempt(
 
   // Generate and persist randomization if not already set
   if (!questionOrder || !optionOrders) {
-    const questionIds = challenge.questions.map((cq) => cq.questionId);
+    const questionIds = challenge.snapshots.map((cq) => cq.originalQuestionId);
     questionOrder = seededShuffle(questionIds, seed);
 
     optionOrders = {};
-    for (const cq of challenge.questions) {
-      const optionIds = cq.question.options.map((opt) => opt.id);
-      optionOrders[cq.questionId] = seededShuffle(optionIds, `${seed}-${cq.questionId}`);
+    for (const cq of challenge.snapshots) {
+      const options = cq.options as Array<{
+        id: string;
+        optionText: string;
+        isCorrect: boolean;
+        order: number;
+      }>;
+      const optionIds = options.map((opt) => opt.id);
+      optionOrders[cq.originalQuestionId] = seededShuffle(
+        optionIds,
+        `${seed}-${cq.originalQuestionId}`
+      );
     }
 
     // Persist randomization for refresh recovery
@@ -209,7 +209,7 @@ async function getChallengeForAttempt(
   }
 
   // Build the question map for lookup
-  const questionMap = new Map(challenge.questions.map((cq) => [cq.questionId, cq]));
+  const questionMap = new Map(challenge.snapshots.map((cq) => [cq.originalQuestionId, cq]));
   const labels = ["A", "B", "C", "D"];
 
   // Build sanitized response in shuffled order
@@ -218,9 +218,15 @@ async function getChallengeForAttempt(
       const cq = questionMap.get(questionId);
       if (!cq) return null;
 
+      const options = cq.options as Array<{
+        id: string;
+        optionText: string;
+        isCorrect: boolean;
+        order: number;
+      }>;
       // Build option map for this question
-      const optionMap = new Map(cq.question.options.map((opt) => [opt.id, opt]));
-      const shuffledOptionIds = optionOrders![questionId] || cq.question.options.map((o) => o.id);
+      const optionMap = new Map(options.map((opt) => [opt.id, opt]));
+      const shuffledOptionIds = optionOrders![questionId] || options.map((o) => o.id);
 
       const shuffledOptions: ShuffledOption[] = shuffledOptionIds
         .map((optionId, optIdx) => {
@@ -236,8 +242,8 @@ async function getChallengeForAttempt(
 
       return {
         id: cq.id,
-        questionId: cq.questionId,
-        question: cq.question.question,
+        questionId: cq.originalQuestionId,
+        question: cq.question,
         options: shuffledOptions,
         order: index,
       };
@@ -595,15 +601,7 @@ async function evaluateAndFinalizeAttempt(
     include: {
       challenge: {
         include: {
-          questions: {
-            include: {
-              question: {
-                include: {
-                  options: true,
-                },
-              },
-            },
-          },
+          snapshots: true,
         },
       },
       answers: true,
@@ -615,7 +613,7 @@ async function evaluateAndFinalizeAttempt(
   }
 
   // ─── Server-Authoritative Evaluation ───────────────────────
-  const allQuestionIds = attempt.challenge.questions.map((cq) => cq.questionId);
+  const allQuestionIds = attempt.challenge.snapshots.map((cq) => cq.originalQuestionId);
   const answeredQuestionIds = attempt.answers.map((a: { questionId: string }) => a.questionId);
   const unansweredCount = allQuestionIds.filter(
     (id: string) => !answeredQuestionIds.includes(id)
@@ -626,9 +624,9 @@ async function evaluateAndFinalizeAttempt(
   let wrongAnswers = 0;
   let totalScore = 0;
 
-  for (const cq of attempt.challenge.questions) {
+  for (const cq of attempt.challenge.snapshots) {
     const attemptAnswer = attempt.answers.find(
-      (a: { questionId: string }) => a.questionId === cq.questionId
+      (a: { questionId: string }) => a.questionId === cq.originalQuestionId
     );
 
     if (!attemptAnswer || !attemptAnswer.selectedOptionId) {
@@ -636,10 +634,9 @@ async function evaluateAndFinalizeAttempt(
       continue;
     }
 
-    const correctOption = cq.question.options.find((opt) => opt.isCorrect);
-    if (correctOption && attemptAnswer.selectedOptionId === correctOption.id) {
+    if (attemptAnswer.selectedOptionId === cq.correctOption) {
       correctAnswers++;
-      totalScore += cq.question.marks;
+      totalScore += 1; // Assuming 1 mark per question for now. Should get from snapshot if added later.
     } else {
       wrongAnswers++;
     }
@@ -719,12 +716,17 @@ async function evaluateAndFinalizeAttempt(
   processEngagementPostAttempt(userId, attemptId).catch(console.error);
 
   // 6. Update analytics (non-blocking)
-  updateAnalyticsOnEvaluation(attempt.challengeId, attempt.challenge.questions, attempt.answers, {
-    score: totalScore,
-    correctAnswers,
-    wrongAnswers,
-    timeTakenInSeconds,
-  }).catch(console.error);
+  updateAnalyticsOnEvaluation(
+    attempt.challengeId,
+    attempt.challenge.snapshots.map((s) => ({ questionId: s.originalQuestionId })),
+    attempt.answers,
+    {
+      score: totalScore,
+      correctAnswers,
+      wrongAnswers,
+      timeTakenInSeconds,
+    }
+  ).catch(console.error);
 
   return {
     success: true,
@@ -796,22 +798,35 @@ async function updateAnalyticsOnEvaluation(
   // Update QuestionAnalytics for each question
   for (const cq of questions) {
     const answer = answers.find((a: { questionId: string }) => a.questionId === cq.questionId);
-    await prisma.questionAnalytics.upsert({
+
+    const correctInc = answer?.isCorrect === true ? 1 : 0;
+    const incorrectInc = answer?.isCorrect === false || !answer || answer.isSkipped ? 1 : 0;
+
+    const qa = await prisma.questionAnalytics.upsert({
       where: { questionId: cq.questionId },
       update: {
         totalAttempts: { increment: 1 },
-        correctAttempts: { increment: answer?.isCorrect === true ? 1 : 0 },
-        wrongAttempts: { increment: answer?.isCorrect === false ? 1 : 0 },
-        skippedAttempts: { increment: !answer || answer.isSkipped ? 1 : 0 },
+        correctAttempts: { increment: correctInc },
+        incorrectAttempts: { increment: incorrectInc },
+        usageCount: { increment: 1 },
+        lastUsedAt: new Date(),
       },
       create: {
         questionId: cq.questionId,
         totalAttempts: 1,
-        correctAttempts: answer?.isCorrect === true ? 1 : 0,
-        wrongAttempts: answer?.isCorrect === false ? 1 : 0,
-        skippedAttempts: !answer || answer.isSkipped ? 1 : 0,
+        correctAttempts: correctInc,
+        incorrectAttempts: incorrectInc,
+        usageCount: 1,
+        lastUsedAt: new Date(),
       },
     });
+
+    if (qa.totalAttempts > 0) {
+      await prisma.questionAnalytics.update({
+        where: { questionId: cq.questionId },
+        data: { accuracyRate: (qa.correctAttempts / qa.totalAttempts) * 100 },
+      });
+    }
   }
 }
 

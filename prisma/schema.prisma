@@ -34,6 +34,7 @@ model User {
   publishedChallenges       Challenge[]                 @relation("ChallengePublisher")
   createdQuestions          Question[]
   reviewedQuestions         Question[]                  @relation("QuestionReviewer")
+  approvedQuestions         Question[]                  @relation("QuestionApprovedBy")
   moderationNotes           ModerationNote[]            @relation("ModerationNoteUser")
   createdByNotes            ModerationNote[]            @relation("ModerationNoteCreator")
   moderatorNotes            ModeratorNote[]             @relation("ModeratorNoteModerator")
@@ -60,6 +61,10 @@ model User {
   tournamentLeaderboards    TournamentLeaderboard[]
   UserDifficultyPerformance UserDifficultyPerformance[]
   UserSubjectPerformance    UserSubjectPerformance[]
+  QuestionImportJob         QuestionImportJob[]
+  savedFilters              SavedFilter[]
+  searchAnalytics           SearchAnalytics[]
+  QuestionAuditLog          QuestionAuditLog[]
 
   @@index([email])
   @@index([username])
@@ -205,6 +210,7 @@ model AuditLog {
   @@index([actorId])
   @@index([targetUserId])
   @@index([entityType])
+  @@index([entityType, entityId])
   @@index([severity])
   @@index([createdAt])
   @@map("audit_logs")
@@ -444,6 +450,7 @@ enum QuestionStatus {
   APPROVED
   REJECTED
   ARCHIVED
+  FLAGGED
 }
 
 model Challenge {
@@ -477,10 +484,11 @@ model Challenge {
 
   // Relations
   questions            ChallengeQuestion[]
+  snapshots            ChallengeQuestionSnapshot[]
   attempts             Attempt[]
   leaderboard          LeaderboardEntry[]
   invites              ChallengeInvite[]
-  reports              Report[]              @relation("ReportedChallenge")
+  reports              Report[]                    @relation("ReportedChallenge")
   tournamentChallenges TournamentChallenge[]
   premiumAccess        PremiumAccess?
 
@@ -499,38 +507,52 @@ model Challenge {
 }
 
 model Question {
-  id              String              @id @default(cuid())
-  question        String              @db.Text
-  explanation     String?             @db.Text
-  subject         String?
-  topic           String?
-  examCategory    ExamCategory?
-  language        String              @default("en")
-  marks           Int                 @default(1)
-  negativeMarks   Float               @default(0)
-  difficulty      ChallengeDifficulty @default(MEDIUM)
-  status          QuestionStatus      @default(DRAFT)
-  createdById     String?
-  createdBy       User?               @relation(fields: [createdById], references: [id])
-  reviewedById    String?
-  reviewedBy      User?               @relation("QuestionReviewer", fields: [reviewedById], references: [id])
-  reviewNotes     String?             @db.Text
-  rejectionReason String?             @db.Text
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
-  reviewedAt      DateTime?
-  options         QuestionOption[]
-  challenges      ChallengeQuestion[]
-  reports         Report[]            @relation("ReportedQuestion")
+  id               String              @id @default(cuid())
+  questionCode     String?             @unique
+  question         String              @db.Text
+  explanation      String?             @db.Text
+  subject          String?
+  topic            String?
+  category         String?
+  examCategory     ExamCategory?
+  language         String              @default("en")
+  marks            Int                 @default(1)
+  negativeMarks    Float               @default(0)
+  difficulty       ChallengeDifficulty @default(MEDIUM)
+  status           QuestionStatus      @default(DRAFT)
+  tags             String[]            @default([])
+  version          Int                 @default(1)
+  isActive         Boolean             @default(true)
+  usageCount       Int                 @default(0)
+  createdById      String?
+  createdBy        User?               @relation(fields: [createdById], references: [id])
+  reviewedById     String?
+  reviewedBy       User?               @relation("QuestionReviewer", fields: [reviewedById], references: [id])
+  approvedById     String?
+  approvedBy       User?               @relation("QuestionApprovedBy", fields: [approvedById], references: [id])
+  reviewNotes      String?             @db.Text
+  rejectionReason  String?             @db.Text
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  reviewedAt       DateTime?
+  options          QuestionOption[]
+  challenges       ChallengeQuestion[]
+  reports          Report[]            @relation("ReportedQuestion")
+  analytics        QuestionAnalytics?
+  QuestionAuditLog QuestionAuditLog[]
 
+  @@index([questionCode])
+  @@index([category])
   @@index([subject])
   @@index([topic])
-  @@index([examCategory])
   @@index([difficulty])
   @@index([status])
   @@index([createdById])
   @@index([reviewedById])
+  @@index([approvedById])
   @@index([createdAt])
+  @@index([status, category, difficulty])
+  @@index([updatedAt])
   @@map("questions")
 }
 
@@ -546,18 +568,154 @@ model QuestionOption {
   @@map("question_options")
 }
 
+// ─── Question Bank Governance ────────────────────────────────
+
+enum QuestionAuditAction {
+  CREATED
+  UPDATED
+  SUBMITTED_FOR_REVIEW
+  APPROVED
+  REJECTED
+  FLAGGED
+  ARCHIVED
+  VERSION_CREATED
+  SNAPSHOT_GENERATED
+  BULK_IMPORTED
+}
+
+model QuestionAuditLog {
+  id String @id @default(cuid())
+
+  questionId String
+
+  actorId String
+
+  action QuestionAuditAction
+
+  previousStatus QuestionStatus?
+  nextStatus     QuestionStatus?
+
+  previousVersion Int?
+  nextVersion     Int?
+
+  reason String?
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  actor    User     @relation(fields: [actorId], references: [id])
+
+  @@index([questionId])
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([questionId, action, createdAt(sort: Desc)])
+  @@map("question_audit_logs")
+}
+
+model QuestionCodeCounter {
+  id       String @id @default(cuid())
+  category String @unique
+  counter  Int    @default(0)
+
+  @@map("question_code_counters")
+}
+
+enum ImportJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  PARTIAL_SUCCESS
+}
+
+model QuestionImportJob {
+  id String @id @default(cuid())
+
+  uploadedById String
+
+  fileName String
+  fileType String
+
+  totalRows   Int @default(0)
+  validRows   Int @default(0)
+  invalidRows Int @default(0)
+
+  status ImportJobStatus
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  errorReport Json?
+
+  createdAt DateTime @default(now())
+
+  uploadedBy User @relation(fields: [uploadedById], references: [id])
+
+  @@index([status])
+  @@map("question_import_jobs")
+}
+
 model ChallengeQuestion {
-  id          String    @id @default(cuid())
+  id String @id @default(cuid())
+
   challengeId String
   questionId  String
-  order       Int       @default(0)
-  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  question    Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  orderIndex Int
+
+  marks Int @default(1)
+
+  isMandatory Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  question  Question  @relation(fields: [questionId], references: [id])
 
   @@unique([challengeId, questionId])
   @@index([challengeId])
   @@index([questionId])
   @@map("challenge_questions")
+}
+
+model ChallengeQuestionSnapshot {
+  id String @id @default(cuid())
+
+  challengeId String
+
+  originalQuestionId String
+
+  questionVersion Int
+
+  questionCode String
+
+  question String
+  options  Json
+
+  correctOption String
+
+  explanation String?
+
+  category   String
+  subject    String
+  difficulty ChallengeDifficulty
+
+  tags String[]
+
+  language String
+
+  orderIndex Int
+
+  createdAt DateTime @default(now())
+
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@index([challengeId])
+  @@index([originalQuestionId])
+  @@map("challenge_question_snapshots")
 }
 
 model Attempt {
@@ -702,18 +860,31 @@ model AntiCheatLog {
 }
 
 model QuestionAnalytics {
-  id               String   @id @default(cuid())
-  questionId       String   @unique
-  totalAttempts    Int      @default(0)
-  correctAttempts  Int      @default(0)
-  wrongAttempts    Int      @default(0)
-  skippedAttempts  Int      @default(0)
-  totalTimeSpent   Int      @default(0)
-  averageTimeSpent Float    @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id String @id @default(cuid())
 
-  @@index([questionId])
+  questionId String @unique
+
+  totalAttempts Int @default(0)
+
+  correctAttempts   Int @default(0)
+  incorrectAttempts Int @default(0)
+
+  averageResponseTime Float @default(0)
+
+  accuracyRate Float @default(0)
+
+  usageCount Int @default(0)
+
+  flaggedCount Int @default(0)
+
+  lastUsedAt DateTime?
+
+  updatedAt DateTime @updatedAt
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([accuracyRate])
+  @@index([usageCount])
   @@map("question_analytics")
 }
 
@@ -1133,4 +1304,37 @@ model TournamentLeaderboard {
   @@index([tournamentId, rank])
   @@index([userId])
   @@map("tournament_leaderboards")
+}
+
+// -----------------------------------------------------------------------------
+// Operational Discovery & Search
+// -----------------------------------------------------------------------------
+
+model SavedFilter {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?  @db.Text
+  filters     Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@map("saved_filters")
+}
+
+model SearchAnalytics {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  query       String?
+  filters     Json?
+  resultCount Int
+  latencyMs   Int
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("search_analytics")
 }

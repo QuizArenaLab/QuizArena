@@ -32,15 +32,8 @@ export async function getEvaluationResult(attemptId: string): Promise<Evaluation
     include: {
       challenge: {
         include: {
-          questions: {
-            include: {
-              question: {
-                include: {
-                  options: { orderBy: { order: "asc" } },
-                },
-              },
-            },
-            orderBy: { order: "asc" },
+          snapshots: {
+            orderBy: { orderIndex: "asc" },
           },
         },
       },
@@ -51,7 +44,7 @@ export async function getEvaluationResult(attemptId: string): Promise<Evaluation
   if (!attempt) return null;
 
   // Calculate scoring
-  const totalQuestions = attempt.challenge.totalQuestions || attempt.challenge.questions.length;
+  const totalQuestions = attempt.challenge.totalQuestions || attempt.challenge.snapshots.length;
   const correctAnswers = attempt.correctAnswers;
   const wrongAnswers = attempt.wrongAnswers;
   const unansweredCount = attempt.unansweredCount;
@@ -75,22 +68,28 @@ export async function getEvaluationResult(attemptId: string): Promise<Evaluation
   const isRankFrozen = attempt.challenge.leaderboardFrozen;
 
   // Build question-by-question details
-  const questions: QuestionResultDetail[] = attempt.challenge.questions.map((cq) => {
+  const questions: QuestionResultDetail[] = attempt.challenge.snapshots.map((cq) => {
     const answer = attempt.answers.find(
-      (a: { questionId: string }) => a.questionId === cq.questionId
+      (a: { questionId: string }) => a.questionId === cq.originalQuestionId
     );
-    const correctOption = cq.question.options.find((opt) => opt.isCorrect);
+    const options = cq.options as Array<{
+      id: string;
+      optionText: string;
+      isCorrect: boolean;
+      order: number;
+    }>;
+    const correctOption = options.find((opt) => opt.id === cq.correctOption);
 
     return {
-      questionId: cq.questionId,
-      questionText: cq.question.question,
+      questionId: cq.originalQuestionId,
+      questionText: cq.question,
       selectedOptionId: answer?.selectedOptionId || null,
       selectedOptionText: answer?.selectedOption || null,
       correctOptionId: correctOption?.id || "",
       correctOptionText: correctOption?.optionText || "",
       isCorrect: answer?.isCorrect === true,
       isUnanswered: !answer || !answer.selectedOptionId,
-      explanation: cq.question.explanation || null,
+      explanation: cq.explanation || null,
     };
   });
 

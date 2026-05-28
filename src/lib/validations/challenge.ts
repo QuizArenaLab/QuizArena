@@ -110,3 +110,24 @@ export function generateSlug(title: string): string {
     .replace(/-+/g, "-")
     .trim();
 }
+
+// ─── Challenge Builder Validations ────────────────────────────────
+
+export const builderAddQuestionSchema = z.object({
+  challengeId: z.string().cuid("Invalid challenge ID"),
+  questionId: z.string().cuid("Invalid question ID"),
+});
+
+export const builderRemoveQuestionSchema = z.object({
+  challengeId: z.string().cuid("Invalid challenge ID"),
+  questionId: z.string().cuid("Invalid question ID"),
+});
+
+export const builderReorderQuestionsSchema = z.object({
+  challengeId: z.string().cuid("Invalid challenge ID"),
+  questionIds: z.array(z.string().cuid("Invalid question ID")),
+});
+
+export type BuilderAddQuestionInput = z.infer<typeof builderAddQuestionSchema>;
+export type BuilderRemoveQuestionInput = z.infer<typeof builderRemoveQuestionSchema>;
+export type BuilderReorderQuestionsInput = z.infer<typeof builderReorderQuestionsSchema>;

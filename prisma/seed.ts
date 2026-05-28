@@ -173,7 +173,7 @@ async function main() {
           data: {
             challengeId: challenge.id,
             questionId: q.id,
-            order: index + 1,
+            orderIndex: index + 1,
           },
         })
       )

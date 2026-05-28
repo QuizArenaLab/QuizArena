@@ -14,6 +14,7 @@ import {
   scheduleChallengeSchema,
 } from "@/lib/validations/challenge";
 import { revalidatePath } from "next/cache";
+import { generateChallengeSnapshots, verifySnapshotIntegrity } from "../snapshot";
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
   DRAFT: ["DRAFT"],
@@ -181,6 +182,14 @@ export async function updateChallengeStatus(
 
     if (newStatus === "ARCHIVED" && !isAdmin) {
       return { success: false, error: "Only admins can archive challenges" };
+    }
+
+    if (newStatus === "LIVE" || newStatus === "SCHEDULED") {
+      try {
+        await generateChallengeSnapshots(id);
+      } catch (err) {
+        return { success: false, error: "Failed to generate runtime snapshots for this challenge" };
+      }
     }
 
     const updateData: Record<string, unknown> = {
@@ -490,15 +499,15 @@ export async function addQuestionToChallenge(
 
     const maxOrder = await prisma.challengeQuestion.findFirst({
       where: { challengeId },
-      orderBy: { order: "desc" },
-      select: { order: true },
+      orderBy: { orderIndex: "desc" },
+      select: { orderIndex: true },
     });
 
     await prisma.challengeQuestion.create({
       data: {
         challengeId,
         questionId,
-        order: (maxOrder?.order ?? -1) + 1,
+        orderIndex: (maxOrder?.orderIndex ?? -1) + 1,
       },
     });
 
@@ -557,7 +566,7 @@ export async function removeQuestionFromChallenge(
 
 export async function reorderChallengeQuestions(
   challengeId: string,
-  questionOrders: Array<{ questionId: string; order: number }>
+  questionOrders: Array<{ questionId: string; orderIndex: number }>
 ): Promise<{ success: boolean; error?: string }> {
   try {
     await validateModeratorAccess();
@@ -576,7 +585,7 @@ export async function reorderChallengeQuestions(
     }
 
     await Promise.all(
-      questionOrders.map(({ questionId, order }) =>
+      questionOrders.map(({ questionId, orderIndex }) =>
         prisma.challengeQuestion.update({
           where: {
             challengeId_questionId: {
@@ -584,7 +593,7 @@ export async function reorderChallengeQuestions(
               questionId,
             },
           },
-          data: { order },
+          data: { orderIndex },
         })
       )
     );
@@ -678,6 +687,17 @@ export async function validateChallengeForPublishing(
     warnings.push("Total questions count doesn't match attached questions");
   }
 
+  // Pre-flight check: ensure snapshots can be generated or exist correctly
+  try {
+    await generateChallengeSnapshots(challengeId);
+    const integrityOk = await verifySnapshotIntegrity(challengeId);
+    if (!integrityOk) {
+      errors.push("Snapshot integrity validation failed. Some questions may be malformed.");
+    }
+  } catch (err) {
+    errors.push("Failed to generate or validate snapshots for this challenge.");
+  }
+
   return {
     valid: errors.length === 0,
     errors,
@@ -689,7 +709,7 @@ export async function getChallengeQuestions(challengeId: string): Promise<
   Array<{
     id: string;
     questionId: string;
-    order: number;
+    orderIndex: number;
     question: {
       id: string;
       question: string;
@@ -708,7 +728,7 @@ export async function getChallengeQuestions(challengeId: string): Promise<
 
     const questions = await prisma.challengeQuestion.findMany({
       where: { challengeId },
-      orderBy: { order: "asc" },
+      orderBy: { orderIndex: "asc" },
       include: {
         question: {
           include: {

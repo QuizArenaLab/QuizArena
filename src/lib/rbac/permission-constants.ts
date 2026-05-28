@@ -6,6 +6,7 @@ export const PERMISSIONS = {
     DELETE: "challenge:delete",
     PUBLISH: "challenge:publish",
     ARCHIVE: "challenge:archive",
+    REVIEW: "challenge:review",
   },
   QUESTION: {
     CREATE: "question:create",
