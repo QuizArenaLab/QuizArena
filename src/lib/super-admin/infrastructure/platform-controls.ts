@@ -46,14 +46,30 @@ export async function getPlatformState(): Promise<{
   analyticsSystem: FeatureState;
   leaderboard: FeatureState;
 }> {
-  const settings = await prisma.platformSetting.findMany({
-    where: { category: "INFRASTRUCTURE" },
-  });
+  let settings: any[] = [];
+
+  try {
+    settings = await prisma.platformSetting.findMany({
+      where: { category: "INFRASTRUCTURE" },
+    });
+  } catch (error: any) {
+    // If the database is completely unreachable or times out, catch the error
+    // to prevent the entire Next.js root layout from crashing.
+    // Use console.warn instead of console.error to prevent Next.js from triggering the dev error overlay.
+    console.warn(
+      "[getPlatformState] Database unreachable, falling back to default states. Error:",
+      error?.message || "Unknown error"
+    );
+  }
 
   const getSetting = (key: string, defaultEnabled: boolean): FeatureState => {
     const setting = settings.find((s) => s.key === key);
     if (!setting) return { enabled: defaultEnabled };
-    return JSON.parse(setting.value as string) as FeatureState;
+    try {
+      return JSON.parse(setting.value as string) as FeatureState;
+    } catch {
+      return { enabled: defaultEnabled };
+    }
   };
 
   return {

@@ -24,21 +24,21 @@ export default function OAuthButton({
       onClick={onClick}
       disabled={loading || disabled}
       className={clsx(
-        "group relative flex w-full items-center justify-center gap-3.5",
-        "rounded-xl border border-slate-200 bg-white px-6 py-3.5",
-        "text-sm font-semibold text-slate-700 shadow-sm",
-        "hover:bg-slate-50 hover:border-slate-300 hover:shadow-md",
+        "group relative flex w-full items-center justify-center gap-4",
+        "rounded-xl border-2 border-slate-200 bg-white px-6 py-4",
+        "text-[16px] font-bold text-slate-800 shadow-sm",
+        "hover:bg-slate-50 hover:border-slate-300 hover:shadow-md hover:-translate-y-px",
         "focus:outline-none focus:ring-4 focus:ring-slate-100",
         "disabled:pointer-events-none disabled:opacity-50",
-        "transition-all duration-300 active:scale-[0.98]"
+        "transition-all duration-150 active:scale-[0.98]"
       )}
       aria-label={`${label} - Opens Google authentication`}
     >
       {loading ? (
-        <Loader2 className="h-5 w-5 animate-spin text-slate-400" strokeWidth={2.5} />
+        <Loader2 className="h-6 w-6 animate-spin text-slate-400" strokeWidth={2.5} />
       ) : (
         <>
-          <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+          <svg className="h-6 w-6" viewBox="0 0 24 24" aria-hidden="true">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
               fill="#4285F4"

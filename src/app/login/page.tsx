@@ -3,6 +3,8 @@
 import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 import {
   AuthInput,
   PasswordField,
@@ -79,14 +81,33 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 bg-gradient-to-br from-navy via-navy/95 to-navy/90 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,rgba(230,112,30,0.15)_0%,transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(37,113,231,0.1)_0%,transparent_40%)]" />
-        <BrandSection />
-      </div>
+    <div className="min-h-screen flex flex-col bg-[#FAFAFB]">
+      {/* Minimalist White Auth Navbar */}
+      <header className="fixed top-0 inset-x-0 w-full bg-white/80 backdrop-blur-xl border-b border-gray-200/60 shadow-sm z-50 shrink-0 py-0 transition-all duration-500">
+        <div className="container-base flex items-center justify-between">
+          <Link
+            href="/"
+            className="flex items-center group z-50 cursor-pointer hover:opacity-90 hover:-translate-y-px transition-all duration-300"
+          >
+            <Image
+              src="/logo-header.png"
+              alt="QuizArena"
+              width={180}
+              height={100}
+              className="h-16 sm:h-22 md:h-28 w-auto object-contain drop-shadow-sm transition-all duration-500"
+            />
+          </Link>
+        </div>
+      </header>
 
-      <div className="w-full lg:w-1/2 xl:w-2/5 flex items-center justify-center p-6 sm:p-8 lg:p-12 bg-white">
+      <div className="flex-1 flex flex-col lg:flex-row pt-[64px] sm:pt-[88px] md:pt-[112px]">
+        <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 bg-linear-to-br from-navy via-navy/95 to-navy/90 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,rgba(230,112,30,0.15)_0%,transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(37,113,231,0.1)_0%,transparent_40%)]" />
+          <BrandSection />
+        </div>
+
+        <div className="w-full lg:w-1/2 xl:w-2/5 flex flex-col items-center justify-center p-6 sm:p-8 lg:p-12 bg-white">
         <AuthCard className="w-full max-w-[420px]">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold tracking-tight text-navy">Welcome back</h2>
@@ -177,10 +198,17 @@ function LoginForm() {
             />
           </div>
         </AuthCard>
-      </div>
 
-      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-white border-t border-accent/20 p-4 safe-area-bottom">
-        <p className="text-center text-xs text-navy/50">Trusted by thousands of exam aspirants</p>
+        <div className="mt-6 flex items-center justify-center gap-4 text-[13px] font-medium text-slate-400">
+          <a href="/privacy" className="hover:text-slate-600 transition-colors">
+            Privacy Policy
+          </a>
+          <a href="/terms" className="hover:text-slate-600 transition-colors">
+            Terms of Service
+          </a>
+          <span>© 2026 QuizArena</span>
+        </div>
+      </div>
       </div>
     </div>
   );

@@ -25,9 +25,10 @@ export async function POST(request: NextRequest) {
     // 1. Resolve client IP for rate limiting
     const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
 
-    // 2. Check rate limit
-    const isRateLimited = await signupRateLimiter.checkAndRegister(ip);
-    if (isRateLimited) {
+    // 2. Check rate limit (relax in development)
+    const isDev = process.env.NODE_ENV === "development";
+    const { isLimited } = signupRateLimiter.checkAndRegister(ip);
+    if (isLimited && !isDev) {
       return NextResponse.json(
         { error: "Too many registration attempts. Please try again later." },
         { status: 429 }

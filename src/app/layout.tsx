@@ -70,23 +70,28 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const headersList = await headers();
   const fullPath = headersList.get("x-invoke-path") || "";
   const isOnboarding = fullPath.startsWith("/onboarding");
+  const isAuthPage =
+    fullPath.startsWith("/register") ||
+    fullPath.startsWith("/login") ||
+    fullPath.startsWith("/forgot-password") ||
+    fullPath.startsWith("/signup");
   const isLoggedIn = !!session;
 
   return (
     <html lang="en" className={hanken.variable}>
       <body className="antialiased min-h-screen bg-background font-sans text-navy flex flex-col">
         <SecureClientAuthProvider>
-          {/* Global Desktop Navbar - Visible only when not logged in */}
-          {!isLoggedIn && !isOnboarding && <Navbar session={session} />}
+          {/* Global Desktop Navbar - Visible only when not logged in and not on auth pages */}
+          {!isLoggedIn && !isOnboarding && !isAuthPage && <Navbar session={session} />}
 
-          {/* Global Mobile Navigation Drawer - Visible only when not logged in */}
-          {!isLoggedIn && !isOnboarding && <MobileNav session={session} />}
+          {/* Global Mobile Navigation Drawer - Visible only when not logged in and not on auth pages */}
+          {!isLoggedIn && !isOnboarding && !isAuthPage && <MobileNav session={session} />}
 
           {/* Main Application Content */}
           <main className={!isOnboarding ? "flex-1 w-full" : "flex-1 w-full"}>{children}</main>
 
-          {/* Global Footer - Visible only when not logged in */}
-          {!isLoggedIn && !isOnboarding && <Footer />}
+          {/* Global Footer - Visible only when not logged in and not on auth pages */}
+          {!isLoggedIn && !isOnboarding && !isAuthPage && <Footer />}
         </SecureClientAuthProvider>
       </body>
     </html>

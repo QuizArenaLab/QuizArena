@@ -32,6 +32,7 @@ export const authConfig = {
   ],
   pages: {
     signIn: "/login",
+    error: "/register", // Redirect auth errors (like Google OAuth cancel/config errors) to register instead of the default /api/auth/error page
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {

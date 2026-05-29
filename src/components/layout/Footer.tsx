@@ -8,6 +8,11 @@ import { usePathname } from "next/navigation";
 export function Footer() {
   const pathname = usePathname();
   const isOnboarding = pathname?.startsWith("/onboarding");
+  const isAuthPage =
+    pathname?.startsWith("/register") ||
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/forgot-password") ||
+    pathname?.startsWith("/signup");
 
   if (isOnboarding) return null;
 
@@ -34,68 +39,70 @@ export function Footer() {
   return (
     <footer className="bg-navy pt-20 pb-10 text-white border-t border-navy overflow-hidden">
       <div className="container-base">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16 sm:mb-20"
-        >
-          {/* Column 1: Brand Identity */}
-          <motion.div variants={itemVariants} className="sm:col-span-2 lg:col-span-6">
-            <Link href="/" className="flex items-center mb-6 group w-fit">
-              <Image
-                src="/logo-header.png"
-                alt="QuizArena"
-                width={120}
-                height={56}
-                className="h-14 sm:h-16 w-auto brightness-0 invert"
-              />
-            </Link>
-            <p className="text-white/60 text-base sm:text-sm font-medium leading-relaxed max-w-sm">
-              Competitive preparation for serious aspirants. Train under pressure, track your
-              weaknesses, and climb the national leaderboard.
-            </p>
-          </motion.div>
+        {!isAuthPage && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16 sm:mb-20"
+          >
+            {/* Column 1: Brand Identity */}
+            <motion.div variants={itemVariants} className="sm:col-span-2 lg:col-span-6">
+              <Link href="/" className="flex items-center mb-6 group w-fit">
+                <Image
+                  src="/logo-header.png"
+                  alt="QuizArena"
+                  width={120}
+                  height={56}
+                  className="h-14 sm:h-16 w-auto brightness-0 invert"
+                />
+              </Link>
+              <p className="text-white/60 text-base sm:text-sm font-medium leading-relaxed max-w-sm">
+                Competitive preparation for serious aspirants. Train under pressure, track your
+                weaknesses, and climb the national leaderboard.
+              </p>
+            </motion.div>
 
-          {/* Column 2: Navigation */}
-          <motion.div variants={itemVariants} className="lg:col-span-3">
-            <h4 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-white/40 mb-6">
-              Navigation
-            </h4>
-            <ul className="flex flex-col gap-4">
-              {["Challenges", "Rankings", "Intelligence", "Pricing"].map((item) => (
-                <li key={item}>
-                  <Link
-                    href={`#${item.toLowerCase()}`}
-                    className="text-sm font-bold text-white/70 hover:text-primary transition-colors"
-                  >
-                    {item}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
+            {/* Column 2: Navigation */}
+            <motion.div variants={itemVariants} className="lg:col-span-3">
+              <h4 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-white/40 mb-6">
+                Navigation
+              </h4>
+              <ul className="flex flex-col gap-4">
+                {["Challenges", "Rankings", "Intelligence", "Pricing"].map((item) => (
+                  <li key={item}>
+                    <Link
+                      href={`#${item.toLowerCase()}`}
+                      className="text-sm font-bold text-white/70 hover:text-primary transition-colors"
+                    >
+                      {item}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
 
-          {/* Column 3: Resources */}
-          <motion.div variants={itemVariants} className="lg:col-span-3">
-            <h4 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-white/40 mb-6">
-              Resources
-            </h4>
-            <ul className="flex flex-col gap-4">
-              {["FAQ", "Contact", "Terms of Service", "Privacy Policy"].map((item) => (
-                <li key={item}>
-                  <Link
-                    href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-                    className="text-sm font-bold text-white/70 hover:text-white transition-colors"
-                  >
-                    {item}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {/* Column 3: Resources */}
+            <motion.div variants={itemVariants} className="lg:col-span-3">
+              <h4 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-white/40 mb-6">
+                Resources
+              </h4>
+              <ul className="flex flex-col gap-4">
+                {["FAQ", "Contact", "Terms of Service", "Privacy Policy"].map((item) => (
+                  <li key={item}>
+                    <Link
+                      href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
+                      className="text-sm font-bold text-white/70 hover:text-white transition-colors"
+                    >
+                      {item}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        )}
 
         {/* Footer Bottom Strip */}
         <motion.div

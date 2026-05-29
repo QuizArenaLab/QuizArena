@@ -18,6 +18,11 @@ export function MobileNav({ session }: { session: Session | null }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const isOnboarding = pathname?.startsWith("/onboarding");
+  const isAuthPage =
+    pathname?.startsWith("/register") ||
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/forgot-password") ||
+    pathname?.startsWith("/signup");
 
   const NAV_ITEMS = [
     { label: "Dashboard", href: "/dashboard", icon: Layout },
@@ -58,7 +63,7 @@ export function MobileNav({ session }: { session: Session | null }) {
         .slice(0, 2)
     : "?";
 
-  if (isOnboarding) return null;
+  if (isOnboarding || isAuthPage) return null;
 
   return (
     <>
