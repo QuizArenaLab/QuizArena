@@ -25,6 +25,7 @@ import {
   ClipboardList,
   Activity,
   ShieldAlert,
+  Flame,
 } from "lucide-react";
 
 import { signOut } from "next-auth/react";
@@ -34,6 +35,8 @@ import { ROLES } from "@/lib/rbac/roles";
 
 interface DashboardShellProps {
   children: React.ReactNode;
+  currentStreak?: number;
+  currentRank?: number | null;
 }
 
 const userNavItems = [
@@ -87,11 +90,10 @@ function getNavItemsForRole(role: string | undefined) {
   }
 }
 
-export function DashboardShell({ children }: DashboardShellProps) {
+export function DashboardShell({ children, currentStreak, currentRank }: DashboardShellProps) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
   const sidebarRef = useRef<HTMLElement>(null);
 
   const user = session?.user;
@@ -183,22 +185,20 @@ export function DashboardShell({ children }: DashboardShellProps) {
       {/* Desktop Sidebar */}
       <aside
         ref={sidebarRef}
-        className={`hidden md:flex flex-col fixed left-0 top-0 bottom-0 bg-white border-r border-gray-100 z-30 ${
-          collapsed ? "w-[72px]" : "w-[280px]"
-        } transition-[width] duration-220 ease-out`}
+        className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 bg-white border-r border-gray-100 z-30 w-[280px] transition-[width] duration-220 ease-out"
       >
         {/* HEADER */}
         <div className="h-16 flex items-center justify-center border-b border-gray-100 shrink-0">
           <Link href="/dashboard/home" className="flex items-center justify-center gap-2.5 w-full">
             <Image
-              src={collapsed ? "/logo.png" : "/logo-header.png"}
+              src="/logo-header.png"
               alt="QuizArena"
-              width={collapsed ? 38 : 140}
-              height={collapsed ? 38 : 32}
+              width={140}
+              height={32}
               className="transition-all duration-220"
               style={{
-                width: collapsed ? 38 : 140,
-                height: collapsed ? 38 : "auto",
+                width: 140,
+                height: "auto",
                 objectFit: "contain",
               }}
               unoptimized
@@ -207,47 +207,49 @@ export function DashboardShell({ children }: DashboardShellProps) {
         </div>
 
         {/* USER SECTION */}
-        <div
-          className={`p-4 border-b border-gray-100 shrink-0 ${collapsed ? "flex justify-center" : ""}`}
-        >
-          {collapsed ? (
-            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-              {getInitials(user?.name)}
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              {user?.image ? (
-                <Image
-                  src={user.image}
-                  alt={user.name || "User"}
-                  width={40}
-                  height={40}
-                  className="h-10 w-10 rounded-lg object-cover"
-                />
-              ) : (
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-                  {getInitials(user?.name)}
+        <div className="p-4 border-b border-gray-100 shrink-0">
+          <div className="flex items-center gap-3">
+            {user?.image ? (
+              <Image
+                src={user.image}
+                alt={user.name || "User"}
+                width={40}
+                height={40}
+                className="h-10 w-10 rounded-lg object-cover"
+              />
+            ) : (
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                {getInitials(user?.name)}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-navy truncate">{user?.name || "User"}</p>
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="text-xs text-gray-500 truncate">
+                  @{user?.username || "aspirant"}
+                </span>
+                {role !== ROLES.USER && (
+                  <span className="text-xs px-1.5 py-0.5 bg-primary/10 text-primary rounded font-medium">
+                    {getRoleLabel(role)}
+                  </span>
+                )}
+              </div>
+              {role === ROLES.USER && (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="flex items-center gap-1 px-1.5 py-0.5 bg-orange-50 text-orange-600 rounded text-[10px] font-bold border border-orange-100">
+                    <Flame className="w-3 h-3" /> {currentStreak || 0} Streak
+                  </span>
+                  <span className="flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-bold border border-blue-100">
+                    <Trophy className="w-3 h-3" /> {currentRank ? `#${currentRank}` : "Unranked"}
+                  </span>
                 </div>
               )}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-navy truncate">{user?.name || "User"}</p>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-gray-500 truncate">
-                    @{user?.username || "aspirant"}
-                  </span>
-                  {role !== ROLES.USER && (
-                    <span className="text-xs px-1.5 py-0.5 bg-primary/10 text-primary rounded font-medium">
-                      {getRoleLabel(role)}
-                    </span>
-                  )}
-                </div>
-              </div>
             </div>
-          )}
+          </div>
         </div>
 
         {/* EXAM CONTEXT */}
-        {!collapsed && user?.examCategory && (
+        {user?.examCategory && (
           <div className="px-4 py-3 border-b border-gray-100 shrink-0">
             <div className="flex items-center gap-2 p-2.5 bg-primary/5 rounded-lg border border-gray-100/50">
               <div className="flex flex-col gap-1.5">
@@ -285,8 +287,8 @@ export function DashboardShell({ children }: DashboardShellProps) {
                     isActive
                       ? "bg-primary/10 text-primary"
                       : "text-gray-600 hover:bg-gray-50 hover:text-navy"
-                  } ${collapsed ? "justify-center" : ""}`}
-                  title={collapsed ? item.label : undefined}
+                  }`}
+                  title={item.label}
                 >
                   {isActive && (
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-r-full" />
@@ -294,17 +296,9 @@ export function DashboardShell({ children }: DashboardShellProps) {
                   <Icon
                     className={`w-5 h-5 shrink-0 ${isActive ? "text-primary" : ""} ${role !== ROLES.USER && item.href.includes("dashboard") ? "text-amber-500" : ""}`}
                   />
-                  {!collapsed && (
-                    <span className={`text-sm font-medium ${isActive ? "text-primary" : ""}`}>
-                      {item.label}
-                    </span>
-                  )}
-                  {collapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-navy text-white text-xs font-medium rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none">
-                      {item.label}
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 border-4 border-transparent border-r-navy" />
-                    </div>
-                  )}
+                  <span className={`text-sm font-medium ${isActive ? "text-primary" : ""}`}>
+                    {item.label}
+                  </span>
                 </Link>
               );
             })}
@@ -313,71 +307,20 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
         {/* BOTTOM UTILITY SECTION */}
         <div className="shrink-0 border-t border-gray-100">
-          <div className={`p-3 space-y-1 ${collapsed ? "flex justify-center" : ""}`}>
-            {collapsed ? (
-              <>
-                <Link
-                  href="/settings"
-                  className="group relative flex items-center justify-center p-2.5 rounded-lg text-gray-500 hover:bg-gray-50 hover:text-navy transition-all duration-220"
-                >
-                  <Settings className="w-5 h-5" />
-                  <div className="absolute left-full ml-2 px-2 py-1 bg-navy text-white text-xs font-medium rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none">
-                    Settings
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 border-4 border-transparent border-r-navy" />
-                  </div>
-                </Link>
-                <button
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                  className="group relative flex items-center justify-center p-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-all duration-220"
-                >
-                  <LogOut className="w-5 h-5" />
-                  <div className="absolute left-full ml-2 px-2 py-1 bg-navy text-white text-xs font-medium rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none">
-                    Sign Out
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 border-4 border-transparent border-r-navy" />
-                  </div>
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/settings"
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:bg-gray-50 hover:text-navy transition-all duration-220 w-full"
-                >
-                  <Settings className="w-5 h-5" />
-                  <span className="text-sm font-medium">Settings</span>
-                </Link>
-                <button
-                  onClick={() => signOut({ callbackUrl: "/" })}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-all duration-220 w-full"
-                >
-                  <LogOut className="w-5 h-5" />
-                  <span className="text-sm font-medium">Sign Out</span>
-                </button>
-              </>
-            )}
-          </div>
-
-          <div className={`p-3 pt-0 ${collapsed ? "flex justify-center" : ""}`}>
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:bg-gray-50 hover:text-navy transition-all duration-220 w-full ${
-                collapsed ? "justify-center" : ""
-              }`}
+          <div className="p-3 space-y-1">
+            <Link
+              href="/settings"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-500 hover:bg-gray-50 hover:text-navy transition-all duration-220 w-full"
             >
-              {collapsed ? (
-                <>
-                  <ChevronRight className="w-5 h-5" />
-                  <div className="absolute left-full ml-2 px-2 py-1 bg-navy text-white text-xs font-medium rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50 pointer-events-none">
-                    Expand
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 border-4 border-transparent border-r-navy" />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <ChevronLeft className="w-5 h-5" />
-                  <span className="text-sm font-medium">Collapse</span>
-                </>
-              )}
+              <Settings className="w-5 h-5" />
+              <span className="text-sm font-medium">Settings</span>
+            </Link>
+            <button
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-all duration-220 w-full"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="text-sm font-medium">Sign Out</span>
             </button>
           </div>
         </div>
@@ -431,7 +374,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-navy">{user?.name || "User"}</p>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 mb-1.5">
                       <p className="text-xs text-gray-500">@{user?.username || "aspirant"}</p>
                       {role !== ROLES.USER && (
                         <span className="text-xs px-1.5 py-0.5 bg-primary/10 text-primary rounded font-medium">
@@ -439,6 +382,17 @@ export function DashboardShell({ children }: DashboardShellProps) {
                         </span>
                       )}
                     </div>
+                    {role === ROLES.USER && (
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="flex items-center gap-1 px-1.5 py-0.5 bg-orange-50 text-orange-600 rounded text-[10px] font-bold border border-orange-100">
+                          <Flame className="w-3 h-3" /> {currentStreak || 0} Streak
+                        </span>
+                        <span className="flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-bold border border-blue-100">
+                          <Trophy className="w-3 h-3" />{" "}
+                          {currentRank ? `#${currentRank}` : "Unranked"}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -523,11 +477,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main
-        className={`md:ml-[280px] min-h-[calc(100vh-3.5rem)] md:min-h-screen transition-[margin] duration-220 ease-out ${
-          collapsed ? "md:ml-[72px]" : ""
-        }`}
-      >
+      <main className="md:ml-[280px] min-h-[calc(100vh-3.5rem)] md:min-h-screen transition-[margin] duration-220 ease-out">
         <div className="px-4 md:px-8 py-6 md:py-8">{children}</div>
       </main>
     </div>

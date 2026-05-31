@@ -98,14 +98,20 @@ export function DashboardSidebar({ session, isOpen, onClose }: DashboardSidebarP
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
                   isActive
-                    ? "bg-primary/10 text-primary"
+                    ? item.label === "Challenges"
+                      ? "bg-orange-50 text-orange-600 shadow-[0_0_15px_rgba(249,115,22,0.15)] ring-1 ring-orange-200"
+                      : "bg-primary/10 text-primary"
                     : "text-gray-600 hover:bg-gray-50 hover:text-navy"
                 } ${collapsed ? "justify-center" : ""}`}
                 title={collapsed ? item.label : undefined}
               >
-                <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-primary" : ""}`} />
+                <Icon
+                  className={`w-5 h-5 shrink-0 ${isActive ? (item.label === "Challenges" ? "text-orange-500 fill-orange-500/20 drop-shadow-[0_0_8px_rgba(249,115,22,0.4)] scale-110 transition-all" : "text-primary") : ""}`}
+                />
                 {!collapsed && (
-                  <span className={`text-sm font-semibold ${isActive ? "text-primary" : ""}`}>
+                  <span
+                    className={`text-sm font-semibold ${isActive ? (item.label === "Challenges" ? "text-orange-600" : "text-primary") : ""}`}
+                  >
                     {item.label}
                   </span>
                 )}
@@ -197,12 +203,18 @@ export function DashboardSidebar({ session, isOpen, onClose }: DashboardSidebarP
                       onClick={onClose}
                       className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                         isActive
-                          ? "bg-primary/10 text-primary"
+                          ? item.label === "Challenges"
+                            ? "bg-orange-50 text-orange-600 shadow-[0_0_15px_rgba(249,115,22,0.15)] ring-1 ring-orange-200"
+                            : "bg-primary/10 text-primary"
                           : "text-gray-600 hover:bg-gray-50 hover:text-navy"
                       }`}
                     >
-                      <Icon className={`w-5 h-5 ${isActive ? "text-primary" : ""}`} />
-                      <span className={`text-sm font-semibold ${isActive ? "text-primary" : ""}`}>
+                      <Icon
+                        className={`w-5 h-5 ${isActive ? (item.label === "Challenges" ? "text-orange-500 fill-orange-500/20 drop-shadow-[0_0_8px_rgba(249,115,22,0.4)] scale-110 transition-all" : "text-primary") : ""}`}
+                      />
+                      <span
+                        className={`text-sm font-semibold ${isActive ? (item.label === "Challenges" ? "text-orange-600" : "text-primary") : ""}`}
+                      >
                         {item.label}
                       </span>
                     </Link>

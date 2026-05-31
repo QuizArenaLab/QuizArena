@@ -8,6 +8,7 @@ import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
 import { ROUTES } from "@/lib/routes";
 import { DashboardShell } from "@/components/layout/DashboardShell";
+import { getPerformanceOverview, getCompetitivePosition } from "@/actions/performance";
 
 export default async function UserAppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -26,5 +27,18 @@ export default async function UserAppLayout({ children }: { children: React.Reac
     redirect("/onboarding");
   }
 
-  return <DashboardShell>{children}</DashboardShell>;
+  let currentStreak = 0;
+  let currentRank: number | null = null;
+  if (isNotAdmin && session.user.id) {
+    const performance = await getPerformanceOverview(session.user.id);
+    const position = await getCompetitivePosition(session.user.id);
+    if (performance) currentStreak = performance.currentStreak;
+    if (position) currentRank = position.globalRank;
+  }
+
+  return (
+    <DashboardShell currentStreak={currentStreak} currentRank={currentRank}>
+      {children}
+    </DashboardShell>
+  );
 }

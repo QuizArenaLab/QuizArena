@@ -1,223 +1,171 @@
 /**
- * QuizArena — Challenges Page
+ * QuizArena — Challenges Page (Practice Arena)
  *
- * Daily challenge listing with proper empty state.
- * Protected route — requires authentication.
+ * Light mode aesthetic redesign.
  */
 import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
 import { ROUTES } from "@/lib/routes";
-import { EXAM_CATEGORY_LABELS } from "@/lib/onboarding";
-import { getLatestChallenge } from "@/actions/challenge";
+import { getLatestChallenge, getActiveChallenges } from "@/actions/challenge";
+import { getRecentAttempts } from "@/actions/performance";
 import Link from "next/link";
-import { Trophy, Target, Clock, ArrowRight, Play, Search, Filter, Zap } from "lucide-react";
+import { Trophy, Target, Clock, Play, Zap, Users, ArrowRight } from "lucide-react";
+import { ChallengeGridClient } from "@/components/challenges/ChallengeGridClient";
+import { ChallengeHistory } from "@/components/challenges/ChallengeHistory";
 
 export default async function ChallengesPage() {
   const session = await auth();
 
-  if (!session?.user) {
+  if (!session?.user?.id) {
     redirect(ROUTES.AUTH.SIGN_IN);
   }
 
-  const user = session.user;
-  const category = user.examCategory as keyof typeof EXAM_CATEGORY_LABELS | undefined;
-  const challenge = await getLatestChallenge();
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "BEGINNER":
-        return "bg-green-100 text-green-700";
-      case "MEDIUM":
-        return "bg-amber-100 text-amber-700";
-      case "HARDCORE":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
+  const [latestChallenge, activeChallenges, recentAttempts] = await Promise.all([
+    getLatestChallenge(),
+    getActiveChallenges(),
+    getRecentAttempts(session.user.id, 5),
+  ]);
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-navy mb-2">Challenges</h1>
-          <p className="text-gray-500">Test your knowledge with competitive quizzes</p>
+    <div className="min-h-screen bg-gray-50 -m-6 sm:-m-8 p-6 sm:p-8 space-y-12">
+      {/* SECTION 1 - ACTIVE CHALLENGE HERO */}
+      <section className="relative rounded-2xl overflow-hidden bg-white border border-gray-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col justify-center py-8 md:py-10 px-8 md:px-12">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {/* Subtle grid pattern for competitive feel */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-size-[24px_24px]"></div>
+          {/* Competitive glow (infinite, low opacity) */}
+          <div
+            className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] animate-pulse"
+            style={{ animationDuration: "15s" }}
+          />
+          <div
+            className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-blue-400/5 rounded-full blur-[120px] animate-pulse"
+            style={{ animationDuration: "12s" }}
+          />
         </div>
-      </div>
 
-      {challenge ? (
-        <div className="relative overflow-hidden bg-gradient-to-br from-navy via-navy to-navy/90 rounded-2xl p-6 sm:p-8 text-white">
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/30 rounded-full blur-3xl" />
+        <div className="relative z-10 max-w-4xl mx-auto w-full flex flex-col items-center text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-mono font-bold rounded-md uppercase tracking-widest mb-6 shadow-sm">
+            <Zap className="w-3.5 h-3.5" /> Practice Arena
           </div>
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/20 text-primary text-xs font-bold rounded-full">
-                <Zap className="w-3 h-3" />
-                Today&apos;s Challenge
+
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 tracking-tight mb-8">
+            {latestChallenge ? latestChallenge.title : "Daily Challenge"}
+          </h1>
+
+          <div className="flex flex-wrap justify-center gap-6 md:gap-10 text-gray-500 font-mono text-sm md:text-base mb-10">
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-gray-400 text-xs uppercase tracking-widest">Questions</span>
+              <span className="text-gray-900 font-bold flex items-center gap-2">
+                <Target className="w-4 h-4 text-primary" /> {latestChallenge?.totalQuestions || 20}{" "}
+                Questions
               </span>
-              <span
-                className={`px-2 py-1 text-xs font-medium rounded ${getDifficultyColor(challenge.difficulty)}`}
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-gray-400 text-xs uppercase tracking-widest">Duration</span>
+              <span className="text-gray-900 font-bold flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />{" "}
+                {latestChallenge?.durationInMinutes || 20} Minutes
+              </span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-gray-400 text-xs uppercase tracking-widest">Ranking</span>
+              <span className="text-gray-900 font-bold flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-primary" /> National Ranking
+              </span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-gray-400 text-xs uppercase tracking-widest">Difficulty</span>
+              <span className="text-gray-900 font-bold capitalize">
+                {session.user.preparationLevel?.toLowerCase() || "Beginner"} Level
+              </span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-gray-400 text-xs uppercase tracking-widest">Participants</span>
+              <span className="text-gray-900 font-bold flex items-center gap-2">
+                <Users className="w-4 h-4 text-primary" /> 127 Aspirants Today
+              </span>
+            </div>
+          </div>
+
+          {latestChallenge ? (
+            <div className="flex flex-col items-center gap-3">
+              <Link
+                href={`/dashboard/challenges/${latestChallenge.slug}`}
+                className="group inline-flex items-center justify-center gap-3 bg-primary text-white h-14 min-w-[260px] px-8 rounded-xl font-bold tracking-wider hover:bg-blue-600 transition-all duration-180 ease-out shadow-[0_4px_14px_rgba(37,99,235,0.25)] hover:shadow-[0_8px_20px_rgba(37,99,235,0.35)] hover:translate-y-[-2px] active:translate-y-px"
               >
-                {challenge.difficulty}
-              </span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold mb-2">{challenge.title}</h2>
-            <p className="text-white/70 mb-6 max-w-xl">
-              {challenge.description ||
-                `Test your skills with ${challenge.totalQuestions} questions in ${challenge.durationInMinutes} minutes.`}
-            </p>
-            <div className="flex flex-wrap items-center gap-4 mb-6 text-sm text-white/60">
-              <span className="flex items-center gap-1.5">
-                <Target className="w-4 h-4" />
-                {challenge.totalQuestions} Questions
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4" />
-                {challenge.durationInMinutes} Minutes
-              </span>
-              {challenge.category && (
-                <span className="px-2 py-1 bg-white/10 rounded text-xs">
-                  {EXAM_CATEGORY_LABELS[challenge.category as keyof typeof EXAM_CATEGORY_LABELS]}
-                </span>
-              )}
-            </div>
-            <Link
-              href={`/dashboard/challenges/${challenge.slug}`}
-              className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors"
-            >
-              <Play className="w-4 h-4 fill-current" />
-              Start Challenge
-            </Link>
-          </div>
-        </div>
-      ) : (
-        <div className="relative overflow-hidden bg-navy rounded-2xl p-6 sm:p-8 text-white">
-          <div className="relative z-10">
-            <h2 className="text-xl sm:text-2xl font-bold mb-2">
-              {category
-                ? `Prepare for ${EXAM_CATEGORY_LABELS[category]}`
-                : "Start Your Practice Journey"}
-            </h2>
-            <p className="text-white/70 mb-6 max-w-xl">
-              {category
-                ? `Based on your ${user.preparationLevel} level, we've curated challenges to help you succeed.`
-                : "Complete your profile to get personalized quiz recommendations."}
-            </p>
-            <Link
-              href={category ? "#" : "/profile"}
-              className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors"
-            >
-              <Play className="w-4 h-4 fill-current" />
-              {category ? "Start Challenge" : "Complete Profile"}
-            </Link>
-          </div>
-          <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-primary/20 to-transparent pointer-events-none" />
-        </div>
-      )}
-
-      {challenge && (
-        <>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search challenges..."
-                className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-navy placeholder:text-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-              />
-            </div>
-            <button className="flex items-center gap-2 px-5 py-3 bg-white border border-gray-200 rounded-xl text-navy font-medium hover:bg-gray-50 transition-colors">
-              <Filter className="w-5 h-5" />
-              Filters
-            </button>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <button className="px-4 py-2 bg-primary text-white rounded-full text-sm font-medium">
-              All
-            </button>
-            {category && (
-              <button className="px-4 py-2 bg-white border border-gray-200 text-navy rounded-full text-sm font-medium hover:border-primary/30 transition-colors">
-                {EXAM_CATEGORY_LABELS[category]}
-              </button>
-            )}
-          </div>
-
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 sm:p-12">
-            <div className="flex flex-col items-center text-center">
-              <div className="w-20 h-20 rounded-2xl bg-gray-50 flex items-center justify-center mb-6">
-                <Trophy className="w-10 h-10 text-gray-300" />
-              </div>
-              <h3 className="text-xl font-bold text-navy mb-3">More challenges coming soon</h3>
-              <p className="text-gray-500 max-w-md mb-6">
-                Check back regularly for new challenges across different topics and difficulty
-                levels.
+                START PRACTICING{" "}
+                <Play className="w-5 h-5 fill-current group-hover:scale-110 transition-transform" />
+              </Link>
+              <p className="text-sm text-gray-500 font-medium mt-1">
+                Compete for rankings and improve your preparation score.
               </p>
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <Clock className="w-4 h-4" />
-                <span>New challenges added weekly</span>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-4">
+              <p className="text-gray-500 font-medium">Practice Arena Ready</p>
+              <Link
+                href="#practice-challenges"
+                className="group inline-flex items-center justify-center gap-3 bg-primary text-white h-14 min-w-[260px] px-8 rounded-xl font-bold tracking-wider hover:bg-blue-600 transition-all duration-180 ease-out shadow-[0_4px_14px_rgba(37,99,235,0.25)] hover:shadow-[0_8px_20px_rgba(37,99,235,0.35)] hover:translate-y-[-2px] active:translate-y-px"
+              >
+                START PRACTICING{" "}
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <p className="text-sm text-gray-400 font-medium">
+                Compete for rankings and improve your preparation score.
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        {/* SECTION 2 - OPEN PRACTICE CHALLENGES (Left Column) */}
+        <section id="practice-challenges" className="lg:col-span-8 space-y-6 scroll-mt-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-black text-gray-900 uppercase tracking-widest flex items-center gap-2">
+                Open Practice{" "}
+                <span className="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded-full font-bold">
+                  {activeChallenges.length}
+                </span>
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">Choose from available public challenges.</p>
+            </div>
+          </div>
+          <ChallengeGridClient challenges={activeChallenges} />
+        </section>
+
+        {/* Right Column: History & Invites */}
+        <div className="lg:col-span-4 space-y-10">
+          {/* SECTION 3 - PRIVATE INVITES */}
+          <section className="space-y-4">
+            <div>
+              <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest">
+                Challenge With Friends
+              </h2>
+              <p className="text-xs text-gray-400 mt-1 mb-2">Join challenges using invite codes.</p>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 p-5 max-h-[120px] flex flex-col justify-center shadow-sm hover:border-gray-300 transition-colors">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Enter Invite Code"
+                  className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-gray-900 font-mono placeholder:text-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                />
+                <button className="shrink-0 bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white px-6 py-2.5 rounded-lg font-bold transition-all shadow-sm">
+                  Join
+                </button>
               </div>
             </div>
-          </div>
-        </>
-      )}
+          </section>
 
-      {!challenge && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 sm:p-12">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-20 h-20 rounded-2xl bg-gray-50 flex items-center justify-center mb-6">
-              <Trophy className="w-10 h-10 text-gray-300" />
-            </div>
-            <h3 className="text-xl font-bold text-navy mb-3">No challenges available yet</h3>
-            <p className="text-gray-500 max-w-md mb-6">
-              {category
-                ? `We're curating ${EXAM_CATEGORY_LABELS[category]} challenges for your preparation level. Check back soon!`
-                : "We're preparing personalized challenges for you. Complete your profile to get started."}
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              {category ? (
-                <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Clock className="w-4 h-4" />
-                  <span>New challenges added weekly</span>
-                </div>
-              ) : (
-                <Link
-                  href="/profile"
-                  className="inline-flex items-center gap-2 text-primary font-semibold hover:underline"
-                >
-                  Complete your profile <ArrowRight className="w-4 h-4" />
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-            <Target className="w-6 h-6 text-primary" />
-          </div>
-          <h3 className="text-lg font-bold text-navy mb-2">Topic-Based Quizzes</h3>
-          <p className="text-sm text-gray-500">Practice specific topics and subjects</p>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-4">
-            <Trophy className="w-6 h-6 text-blue-600" />
-          </div>
-          <h3 className="text-lg font-bold text-navy mb-2">Competitive Rankings</h3>
-          <p className="text-sm text-gray-500">Compete with other aspirants</p>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-4">
-            <Clock className="w-6 h-6 text-green-600" />
-          </div>
-          <h3 className="text-lg font-bold text-navy mb-2">Timed Challenges</h3>
-          <p className="text-sm text-gray-500">Test your speed and accuracy</p>
+          {/* SECTION 4 - CHALLENGE HISTORY */}
+          {recentAttempts && recentAttempts.length > 0 && (
+            <section>
+              <ChallengeHistory attempts={recentAttempts} />
+            </section>
+          )}
         </div>
       </div>
     </div>

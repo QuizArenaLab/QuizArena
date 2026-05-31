@@ -25,6 +25,7 @@ import {
   ArrowUpRight,
   Users,
   Lock,
+  Activity,
 } from "lucide-react";
 
 interface UserDashboardViewProps {
@@ -89,7 +90,6 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
 
   const hasHistory = performance && performance.totalAttempts > 0;
   const hasEnoughData = performance && performance.totalAttempts >= 3;
-  const showOnboarding = !hasHistory;
 
   const checklist = [
     { title: "Create Account", completed: true },
@@ -97,20 +97,19 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
     { title: "Unlock Analytics", completed: hasHistory && performance.totalAttempts > 2 },
     { title: "Appear On Rankings", completed: competitivePosition?.globalRank !== null },
   ];
+  const completedCount = checklist.filter((c) => c.completed).length;
+  const showOnboarding = completedCount < 4;
+  const progressPercent = (completedCount / 4) * 100;
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-6 lg:space-y-8">
-      {/* ════════════════════════════════════════════════════════
-          SECTION 1 — TODAY'S MISSION (Primary Hero)
-          ════════════════════════════════════════════════════════ */}
+    <div className="max-w-[1600px] mx-auto space-y-6 md:space-y-8">
+      {/* 1. HERO */}
       <section
         className="arena-hero rounded-2xl p-6 md:p-8 lg:p-10 text-white arena-section"
         style={{ animationDelay: "0ms", minHeight: 240 }}
       >
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          {/* Left: Challenge Info */}
           <div className="flex-1 space-y-4">
-            {/* Status badge */}
             <div className="flex items-center gap-3">
               {challenge ? (
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/25">
@@ -128,15 +127,11 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
                 </div>
               )}
             </div>
-
-            {/* Title */}
             {challenge ? (
               <>
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
                   Complete Today&apos;s Challenge
                 </h1>
-
-                {/* Challenge meta pills */}
                 <div className="flex flex-wrap items-center gap-2.5">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-white/70">
                     <Target className="w-3.5 h-3.5 text-primary" />
@@ -171,8 +166,6 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white/80 leading-tight">
                   No Scheduled Challenge
                 </h1>
-
-                {/* Practice meta pills */}
                 <div className="flex flex-wrap items-center gap-2.5">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-white/70">
                     <Swords className="w-3.5 h-3.5 text-blue-400" />
@@ -186,12 +179,14 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
                     <Trophy className="w-3.5 h-3.5" />
                     Instant Ranking
                   </span>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-white/70">
+                    <Users className="w-3.5 h-3.5 text-pink-400" />
+                    1,248 Participants
+                  </span>
                 </div>
               </>
             )}
           </div>
-
-          {/* Right: CTA */}
           <div className="shrink-0 mt-4 lg:mt-0">
             {challenge ? (
               <Link
@@ -214,29 +209,38 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════════
-          SECTION 6 — FIRST-TIME ONBOARDING (0 attempts only)
-          ════════════════════════════════════════════════════════ */}
+      {/* 2. GETTING STARTED */}
       {showOnboarding && (
         <section className="arena-section" style={{ animationDelay: "60ms" }}>
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-            <h2 className="text-xs font-bold text-navy/50 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <Target className="w-3.5 h-3.5 text-primary" />
-              Getting Started
-            </h2>
-            <div className="flex flex-wrap gap-x-8 gap-y-3">
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xs font-bold text-navy/50 uppercase tracking-widest flex items-center gap-2">
+                <Target className="w-3.5 h-3.5 text-primary" />
+                Getting Started
+              </h2>
+              <span className="text-xs font-bold text-navy">
+                Progress: {completedCount}/4 Complete
+              </span>
+            </div>
+            <div className="w-full h-1.5 bg-gray-100 rounded-full mb-6 overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all duration-1000 ease-out"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <div className="flex flex-wrap gap-x-8 gap-y-4">
               {checklist.map((item, idx) => (
                 <div
                   key={idx}
-                  className={`flex items-center gap-2 ${item.completed ? "text-green-600" : "text-gray-400"}`}
+                  className={`flex items-center gap-2.5 ${item.completed ? "text-emerald-600" : "text-gray-400"}`}
                 >
                   {item.completed ? (
-                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 shrink-0" />
                   ) : (
-                    <Circle className="w-4 h-4 shrink-0" />
+                    <Circle className="w-5 h-5 shrink-0" />
                   )}
                   <span
-                    className={`text-sm font-medium ${item.completed ? "text-navy" : "text-gray-500"}`}
+                    className={`text-sm font-semibold ${item.completed ? "text-navy" : "text-gray-500"}`}
                   >
                     {item.title}
                   </span>
@@ -247,10 +251,114 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
         </section>
       )}
 
-      {/* ════════════════════════════════════════════════════════
-          SECTION 5 — COMPETITIVE POSITION (Ranking)
-          ════════════════════════════════════════════════════════ */}
+      {/* 3. PREPARATION SNAPSHOT */}
       <section className="arena-section" style={{ animationDelay: "120ms" }}>
+        <h2 className="text-xs font-bold text-navy/50 uppercase tracking-widest mb-4 flex items-center gap-2">
+          <Activity className="w-3.5 h-3.5" />
+          Preparation Snapshot
+        </h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm hover:border-orange-200 transition-colors group">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                Current Streak
+              </span>
+              <Flame
+                className={`w-5 h-5 text-orange-500 ${hasHistory && performance?.currentStreak ? "arena-fire" : "opacity-30"}`}
+              />
+            </div>
+            {hasHistory ? (
+              <p className="text-3xl md:text-4xl font-black text-navy">
+                {performance?.currentStreak || 0}
+              </p>
+            ) : (
+              <div className="flex flex-col gap-1.5 mt-2">
+                <div className="flex items-center gap-1.5">
+                  <Lock className="w-4 h-4 text-gray-300" />
+                  <span className="text-xs font-bold text-gray-400">Locked</span>
+                </div>
+                <span className="text-[10px] font-medium text-gray-400 leading-tight">
+                  Complete 1 challenge to start your streak.
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm hover:border-emerald-200 transition-colors group">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                Accuracy
+              </span>
+              <Crosshair
+                className={`w-5 h-5 text-emerald-500 ${!hasHistory ? "opacity-30" : ""}`}
+              />
+            </div>
+            {hasHistory ? (
+              <p className="text-3xl md:text-4xl font-black text-navy">
+                {Math.round(performance?.averageAccuracy || 0)}%
+              </p>
+            ) : (
+              <div className="flex flex-col gap-1.5 mt-2">
+                <div className="flex items-center gap-1.5">
+                  <Lock className="w-4 h-4 text-gray-300" />
+                  <span className="text-xs font-bold text-gray-400">Locked</span>
+                </div>
+                <span className="text-[10px] font-medium text-gray-400 leading-tight">
+                  Complete 1 challenge to see accuracy.
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm hover:border-blue-200 transition-colors group">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                Current Rank
+              </span>
+              <Trophy className={`w-5 h-5 text-blue-500 ${!hasHistory ? "opacity-30" : ""}`} />
+            </div>
+            {hasHistory && performance?.rank ? (
+              <p className="text-3xl md:text-4xl font-black text-navy">#{performance.rank}</p>
+            ) : (
+              <div className="flex flex-col gap-1.5 mt-2">
+                <div className="flex items-center gap-1.5">
+                  <Lock className="w-4 h-4 text-gray-300" />
+                  <span className="text-xs font-bold text-gray-400">Locked</span>
+                </div>
+                <span className="text-[10px] font-medium text-gray-400 leading-tight">
+                  Compete to earn your first rank.
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm hover:border-violet-200 transition-colors group">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                Completed
+              </span>
+              <CheckCircle2
+                className={`w-5 h-5 text-violet-500 ${!hasHistory ? "opacity-30" : ""}`}
+              />
+            </div>
+            {hasHistory ? (
+              <p className="text-3xl md:text-4xl font-black text-navy">
+                {performance?.completedAttempts || 0}
+              </p>
+            ) : (
+              <div className="flex flex-col gap-1.5 mt-2">
+                <div className="flex items-center gap-1.5">
+                  <Lock className="w-4 h-4 text-gray-300" />
+                  <span className="text-xs font-bold text-gray-400">Locked</span>
+                </div>
+                <span className="text-[10px] font-medium text-gray-400 leading-tight">
+                  Complete 1 challenge to track.
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. RANKING POSITION */}
+      <section className="arena-section" style={{ animationDelay: "180ms" }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xs font-bold text-navy/50 uppercase tracking-widest flex items-center gap-2">
             <Trophy className="w-3.5 h-3.5" />
@@ -263,14 +371,13 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
             View Rankings <ChevronRight className="w-3 h-3" />
           </Link>
         </div>
-        <div className="arena-glass rounded-xl p-5 md:p-6 text-white arena-shimmer">
-          <div className="flex flex-col md:grid md:grid-cols-4 gap-0 md:gap-8">
-            {/* Global Rank */}
-            <div className="flex items-center justify-between md:block py-3 md:py-0 border-b border-white/10 md:border-0">
-              <p className="text-[11px] md:text-[10px] font-semibold text-white/50 md:text-white/35 uppercase tracking-wider md:mb-1.5">
+        <div className="arena-glass rounded-2xl text-white arena-shimmer overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10">
+            <div className="flex items-center justify-between md:flex-col md:items-start md:justify-center p-6 md:p-8">
+              <p className="text-[11px] md:text-xs font-bold text-white/50 uppercase tracking-widest mb-0 md:mb-4">
                 Global Rank
               </p>
-              <p className="text-lg md:text-2xl font-black text-white">
+              <p className="text-2xl md:text-4xl lg:text-5xl font-black text-white">
                 {competitivePosition?.globalRank ? (
                   `#${competitivePosition.globalRank}`
                 ) : (
@@ -278,13 +385,11 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
                 )}
               </p>
             </div>
-
-            {/* Category Rank */}
-            <div className="flex items-center justify-between md:block py-3 md:py-0 border-b border-white/10 md:border-0">
-              <p className="text-[11px] md:text-[10px] font-semibold text-white/50 md:text-white/35 uppercase tracking-wider md:mb-1.5">
+            <div className="flex items-center justify-between md:flex-col md:items-start md:justify-center p-6 md:p-8">
+              <p className="text-[11px] md:text-xs font-bold text-white/50 uppercase tracking-widest mb-0 md:mb-4">
                 Category Rank
               </p>
-              <p className="text-lg md:text-2xl font-black text-white">
+              <p className="text-2xl md:text-4xl lg:text-5xl font-black text-white">
                 {competitivePosition?.categoryRank ? (
                   `#${competitivePosition.categoryRank}`
                 ) : (
@@ -292,13 +397,11 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
                 )}
               </p>
             </div>
-
-            {/* Percentile */}
-            <div className="flex items-center justify-between md:block py-3 md:py-0 border-b border-white/10 md:border-0">
-              <p className="text-[11px] md:text-[10px] font-semibold text-white/50 md:text-white/35 uppercase tracking-wider md:mb-1.5">
+            <div className="flex items-center justify-between md:flex-col md:items-start md:justify-center p-6 md:p-8">
+              <p className="text-[11px] md:text-xs font-bold text-white/50 uppercase tracking-widest mb-0 md:mb-4">
                 Percentile
               </p>
-              <p className="text-lg md:text-2xl font-black text-white">
+              <p className="text-2xl md:text-4xl lg:text-5xl font-black text-white">
                 {competitivePosition?.percentile ? (
                   <span className="text-emerald-400">
                     Top {Math.max(1, 100 - competitivePosition.percentile)}%
@@ -308,16 +411,15 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
                 )}
               </p>
             </div>
-
-            {/* Weekly Movement */}
-            <div className="flex items-center justify-between md:block py-3 md:py-0 border-b-0">
-              <p className="text-[11px] md:text-[10px] font-semibold text-white/50 md:text-white/35 uppercase tracking-wider md:mb-1.5">
-                Weekly Movement
+            <div className="flex items-center justify-between md:flex-col md:items-start md:justify-center p-6 md:p-8">
+              <p className="text-[11px] md:text-xs font-bold text-white/50 uppercase tracking-widest mb-0 md:mb-4">
+                Weekly Improvement
               </p>
-              <p className="text-lg md:text-2xl font-black text-white">
+              <p className="text-2xl md:text-4xl lg:text-5xl font-black text-white">
                 {competitivePosition?.weeklyMovement ? (
-                  <span className="flex items-center gap-1.5 text-emerald-400">
-                    <TrendingUp className="w-5 h-5" />+{competitivePosition.weeklyMovement}
+                  <span className="flex items-center gap-2 text-emerald-400">
+                    <TrendingUp className="w-6 h-6 md:w-8 md:h-8" />+
+                    {competitivePosition.weeklyMovement}
                   </span>
                 ) : (
                   <span className="text-white/15">—</span>
@@ -328,10 +430,8 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════════
-          SECTION 4 — RECENT PERFORMANCE
-          ════════════════════════════════════════════════════════ */}
-      <section className="arena-section" style={{ animationDelay: "180ms" }}>
+      {/* 5. RECENT PERFORMANCE */}
+      <section className="arena-section" style={{ animationDelay: "240ms" }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xs font-bold text-navy/50 uppercase tracking-widest flex items-center gap-2">
             <Swords className="w-3.5 h-3.5" />
@@ -346,7 +446,6 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
             </Link>
           )}
         </div>
-
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           {recentAttempts.length > 0 ? (
             <div className="divide-y divide-gray-50">
@@ -359,20 +458,17 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
                     key={attempt.id}
                     className="group block"
                   >
-                    <div className="flex items-center gap-3 px-5 py-4 hover:bg-gray-50/80 transition-colors">
-                      {/* Rank dot */}
+                    <div className="flex items-center gap-4 px-6 py-5 hover:bg-gray-50/80 transition-colors">
                       <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black shrink-0 ${rankBadge ? `${rankBadge.bg} ${rankBadge.color} border ${rankBadge.border}` : "bg-gray-50 text-gray-400 border border-gray-100"}`}
+                        className={`w-12 h-12 rounded-xl flex items-center justify-center text-sm font-black shrink-0 ${rankBadge ? `${rankBadge.bg} ${rankBadge.color} border ${rankBadge.border}` : "bg-gray-50 text-gray-400 border border-gray-100"}`}
                       >
                         {rankBadge ? rankBadge.label : "—"}
                       </div>
-
-                      {/* Name + Date */}
                       <div className="flex-1 min-w-0 ml-1">
                         <p className="text-base font-bold text-navy truncate group-hover:text-primary transition-colors">
                           {attempt.challengeName}
                         </p>
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-xs font-medium text-gray-400 mt-1">
                           {attempt.submittedAt
                             ? attempt.submittedAt.toLocaleDateString("en-US", {
                                 month: "short",
@@ -382,14 +478,12 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
                             : "—"}
                         </p>
                       </div>
-
-                      {/* Score + Accuracy */}
-                      <div className="flex items-center gap-4 shrink-0">
+                      <div className="flex items-center gap-5 shrink-0">
                         <div className="text-right hidden md:block">
                           <p className="text-sm font-black text-navy">{attempt.score} pts</p>
                         </div>
                         <div
-                          className={`px-2.5 py-1 rounded-md text-xs font-bold ${accColors.bg} ${accColors.text}`}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-bold ${accColors.bg} ${accColors.text}`}
                         >
                           {attempt.accuracy}%
                         </div>
@@ -401,12 +495,12 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
               })}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-              <div className="w-12 h-12 rounded-xl bg-navy/5 flex items-center justify-center mb-4">
-                <Swords className="w-6 h-6 text-navy/20" />
+            <div className="flex flex-col items-center justify-center text-center h-[140px]">
+              <div className="w-10 h-10 rounded-xl bg-navy/5 flex items-center justify-center mb-3">
+                <Swords className="w-5 h-5 text-navy/20" />
               </div>
-              <p className="text-base font-bold text-navy/60">No Performance Data</p>
-              <p className="text-sm text-gray-400 mt-1.5">
+              <p className="text-sm font-bold text-navy/60">No Performance Data</p>
+              <p className="text-xs font-medium text-gray-400 mt-1">
                 Start a challenge to build your history.
               </p>
             </div>
@@ -414,157 +508,63 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════════
-          SECTION 2 & 3 — PREPARATION SNAPSHOT & FOCUS AREA
-          ════════════════════════════════════════════════════════ */}
-      <div
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6 arena-section"
-        style={{ animationDelay: "240ms" }}
-      >
-        {/* PREPARATION SNAPSHOT */}
-        <section>
-          <h2 className="text-xs font-bold text-navy/50 uppercase tracking-widest mb-4">
-            Preparation Snapshot
-          </h2>
-          <div className="grid grid-cols-2 gap-4">
-            {/* Current Streak */}
-            <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:border-orange-200 transition-colors group">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                  Current Streak
-                </span>
-                <Flame
-                  className={`w-5 h-5 text-orange-500 ${hasHistory && performance?.currentStreak ? "arena-fire" : "opacity-30"}`}
-                />
-              </div>
-              {hasHistory ? (
-                <p className="text-3xl font-black text-navy">{performance?.currentStreak || 0}</p>
-              ) : (
-                <div className="flex items-center gap-1.5 mt-2">
-                  <Lock className="w-4 h-4 text-gray-300" />
-                  <span className="text-xs font-semibold text-gray-400">Locked</span>
-                </div>
-              )}
-            </div>
-
-            {/* Accuracy */}
-            <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:border-emerald-200 transition-colors group">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                  Accuracy
-                </span>
-                <Crosshair
-                  className={`w-5 h-5 text-emerald-500 ${!hasHistory ? "opacity-30" : ""}`}
-                />
-              </div>
-              {hasHistory ? (
-                <p className="text-3xl font-black text-navy">
-                  {Math.round(performance?.averageAccuracy || 0)}%
+      {/* 6. FOCUS AREA */}
+      <section className="arena-section" style={{ animationDelay: "300ms" }}>
+        <h2 className="text-xs font-bold text-navy/50 uppercase tracking-widest mb-4 flex items-center gap-2">
+          <Brain className="w-3.5 h-3.5" />
+          Focus Area
+        </h2>
+        {hasEnoughData && performance?.weakestCategory ? (
+          <div className="arena-glass rounded-xl p-8 text-white">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-white/40 uppercase tracking-widest">
+                  Current Priority
                 </p>
-              ) : (
-                <div className="flex items-center gap-1.5 mt-2">
-                  <Lock className="w-4 h-4 text-gray-300" />
-                  <span className="text-xs font-semibold text-gray-400">Locked</span>
-                </div>
-              )}
-            </div>
-
-            {/* Current Rank */}
-            <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:border-blue-200 transition-colors group">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                  Current Rank
-                </span>
-                <Trophy className={`w-5 h-5 text-blue-500 ${!hasHistory ? "opacity-30" : ""}`} />
-              </div>
-              {hasHistory && performance?.rank ? (
-                <p className="text-3xl font-black text-navy">#{performance.rank}</p>
-              ) : (
-                <div className="flex items-center gap-1.5 mt-2">
-                  <Lock className="w-4 h-4 text-gray-300" />
-                  <span className="text-xs font-semibold text-gray-400">Locked</span>
-                </div>
-              )}
-            </div>
-
-            {/* Completed */}
-            <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:border-violet-200 transition-colors group">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                  Completed
-                </span>
-                <CheckCircle2
-                  className={`w-5 h-5 text-violet-500 ${!hasHistory ? "opacity-30" : ""}`}
-                />
-              </div>
-              {hasHistory ? (
-                <p className="text-3xl font-black text-navy">
-                  {performance?.completedAttempts || 0}
+                <p className="text-3xl font-black text-white">
+                  {EXAM_CATEGORY_LABELS[
+                    performance.weakestCategory as keyof typeof EXAM_CATEGORY_LABELS
+                  ] || performance.weakestCategory}
                 </p>
-              ) : (
-                <div className="flex items-center gap-1.5 mt-2">
-                  <Lock className="w-4 h-4 text-gray-300" />
-                  <span className="text-xs font-semibold text-gray-400">Locked</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* FOCUS AREA INTELLIGENCE */}
-        <section>
-          <h2 className="text-xs font-bold text-navy/50 uppercase tracking-widest mb-4 flex items-center gap-2">
-            <Brain className="w-3.5 h-3.5" />
-            Focus Area
-          </h2>
-
-          {hasEnoughData && performance?.weakestCategory ? (
-            <div className="arena-glass rounded-xl p-6 text-white h-[calc(100%-32px)]">
-              <div className="space-y-5">
-                <div>
-                  <p className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">
-                    Current Priority
-                  </p>
-                  <p className="text-2xl font-black text-white">
-                    {EXAM_CATEGORY_LABELS[
-                      performance.weakestCategory as keyof typeof EXAM_CATEGORY_LABELS
-                    ] || performance.weakestCategory}
-                  </p>
-                </div>
-
-                <div className="border-t border-white/6 pt-5 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/40 font-medium">Accuracy</span>
-                    <span className="text-base font-bold text-red-400">Needs Work</span>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0">
+                <div className="flex items-center gap-4 bg-white/5 px-4 py-2.5 rounded-lg border border-white/10 w-full sm:w-auto">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-white/40 font-bold uppercase tracking-wider">
+                      Accuracy
+                    </span>
+                    <span className="text-sm font-black text-red-400">Needs Work</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/40 font-medium">Recommended</span>
-                    <span className="text-base font-bold text-amber-400">High Priority</span>
+                  <div className="w-px h-8 bg-white/10" />
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-white/40 font-bold uppercase tracking-wider">
+                      Recommended
+                    </span>
+                    <span className="text-sm font-black text-amber-400">High Priority</span>
                   </div>
                 </div>
-
                 <Link
                   href="/challenges"
-                  className="flex items-center justify-center gap-2 w-full py-3.5 mt-2 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white rounded-xl text-sm font-bold transition-colors border border-white/5"
+                  className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 bg-white hover:bg-gray-50 text-navy rounded-xl text-sm font-black transition-all hover:scale-105 active:scale-95 uppercase tracking-wide"
                 >
                   <Target className="w-4 h-4" />
-                  Practice This Area
+                  Practice Area
                 </Link>
               </div>
             </div>
-          ) : (
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8 flex flex-col items-center justify-center text-center h-[calc(100%-32px)] min-h-[240px]">
-              <div className="w-12 h-12 rounded-xl bg-navy/5 flex items-center justify-center mb-4">
-                <Brain className="w-6 h-6 text-navy/20" />
-              </div>
-              <p className="text-base font-bold text-navy/60">Preparation Intelligence</p>
-              <p className="text-sm text-gray-400 mt-2 max-w-[240px]">
-                Complete 3 challenges to unlock personalized preparation intelligence.
-              </p>
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 flex flex-col items-center justify-center text-center">
+            <div className="w-10 h-10 rounded-xl bg-navy/5 flex items-center justify-center mb-3">
+              <Lock className="w-5 h-5 text-navy/20" />
             </div>
-          )}
-        </section>
-      </div>
+            <p className="text-sm font-bold text-navy/60">Locked</p>
+            <p className="text-xs font-medium text-gray-400 mt-1 max-w-[240px]">
+              Complete 3 challenges to unlock personalized recommendations.
+            </p>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
