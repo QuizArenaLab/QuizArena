@@ -253,7 +253,7 @@ export function DashboardShell({ children, currentStreak, currentRank }: Dashboa
                     <Flame className="w-3 h-3" /> {currentStreak || 0} Streak
                   </span>
                   <span className="flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-bold border border-blue-100">
-                    <Trophy className="w-3 h-3" /> {currentRank ? `#${currentRank}` : "Unranked"}
+                    <Trophy className="w-3 h-3" /> {currentRank ? `Arena Rank #${currentRank}` : "Arena: Unranked"}
                   </span>
                 </div>
               )}
@@ -403,7 +403,7 @@ export function DashboardShell({ children, currentStreak, currentRank }: Dashboa
                         </span>
                         <span className="flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-bold border border-blue-100">
                           <Trophy className="w-3 h-3" />{" "}
-                          {currentRank ? `#${currentRank}` : "Unranked"}
+                          {currentRank ? `Arena Rank #${currentRank}` : "Arena: Unranked"}
                         </span>
                       </div>
                     )}

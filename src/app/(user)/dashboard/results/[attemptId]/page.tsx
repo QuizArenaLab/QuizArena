@@ -53,10 +53,10 @@ export default async function ResultPage({ params }: ResultPageProps) {
             We couldn&apos;t find this result. It may not exist or you may not have access.
           </p>
           <Link
-            href="/challenges"
+            href="/arena"
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-colors"
           >
-            Back to Challenges
+            Back to Arena
           </Link>
         </div>
       </div>
@@ -276,11 +276,11 @@ export default async function ResultPage({ params }: ResultPageProps) {
         {/* ─── ACTIONS ─────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
           <Link
-            href="/challenges"
+            href="/arena"
             className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors shadow-sm hover:shadow-md hover:shadow-primary/20"
           >
             <RotateCcw className="w-4 h-4" />
-            Attempt Another Challenge
+            Try Another Challenge
           </Link>
           {challengeEnded && (
             <Link
@@ -292,10 +292,10 @@ export default async function ResultPage({ params }: ResultPageProps) {
             </Link>
           )}
           <Link
-            href="/dashboard"
+            href="/arena"
             className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 text-navy font-bold rounded-xl hover:bg-gray-50 transition-colors"
           >
-            Back to Dashboard
+            Return to Arena
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

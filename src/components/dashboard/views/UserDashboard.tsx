@@ -190,19 +190,19 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
           <div className="shrink-0 mt-4 lg:mt-0">
             {challenge ? (
               <Link
-                href={`/dashboard/challenges/${challenge.slug}`}
+                href="/arena"
                 className="arena-cta-pulse w-full lg:w-auto flex items-center justify-center gap-2.5 bg-primary hover:bg-primary/90 text-white px-10 py-4 rounded-xl font-black text-lg tracking-wide transition-all hover:scale-105 active:scale-95 uppercase"
               >
                 <Swords className="w-5 h-5" />
-                Enter Challenge
+                Enter Arena
               </Link>
             ) : (
               <Link
-                href="/challenges"
+                href="/arena"
                 className="w-full lg:w-auto flex items-center justify-center gap-2.5 bg-white/10 hover:bg-white/15 text-white/80 px-8 py-3.5 rounded-xl font-bold text-base border border-white/10 transition-all hover:scale-105 active:scale-95"
               >
                 <Target className="w-5 h-5" />
-                Browse Challenges
+                Practice Arena
               </Link>
             )}
           </div>
@@ -544,11 +544,11 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
                   </div>
                 </div>
                 <Link
-                  href="/challenges"
+                  href="/arena"
                   className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 bg-white hover:bg-gray-50 text-navy rounded-xl text-sm font-black transition-all hover:scale-105 active:scale-95 uppercase tracking-wide"
                 >
                   <Target className="w-4 h-4" />
-                  Practice Area
+                  Practice Arena
                 </Link>
               </div>
             </div>

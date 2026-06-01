@@ -28,9 +28,9 @@ export function ChallengeGridClient({ challenges }: ChallengeGridClientProps) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 p-8 text-center shadow-sm">
         <Trophy className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-        <h3 className="text-lg font-bold text-gray-900 mb-2">Practice Arena Ready</h3>
+        <h3 className="text-lg font-bold text-gray-900 mb-2">Next ranked competition will appear here.</h3>
         <p className="text-gray-500 text-sm mb-4">
-          New challenges are coming soon. Check back later for more opportunities.
+          Compete to earn leaderboard positions, percentile rankings and achievement badges.
         </p>
         <button
           onClick={() => window.location.reload()}
@@ -56,10 +56,16 @@ export function ChallengeGridClient({ challenges }: ChallengeGridClientProps) {
                 {challenge.category
                   ? EXAM_CATEGORY_LABELS[challenge.category as keyof typeof EXAM_CATEGORY_LABELS] ||
                     challenge.category
-                  : "Practice"}
+                  : "Competition"}
               </span>
               <span className="text-xs font-mono font-bold text-gray-500">
                 {challenge.difficulty}
+              </span>
+            </div>
+            
+            <div className="mb-2">
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-sm uppercase tracking-wider">
+                <Trophy className="w-3 h-3" /> Ranking Enabled
               </span>
             </div>
 
@@ -88,7 +94,7 @@ export function ChallengeGridClient({ challenges }: ChallengeGridClientProps) {
             </div>
 
             <button className="w-full flex items-center justify-center gap-2 bg-primary/10 text-primary border border-primary/20 py-2.5 rounded-lg font-bold text-sm group-hover:bg-primary group-hover:text-white group-hover:shadow-[0_4px_12px_rgba(37,99,235,0.3)] transition-all">
-              <Play className="w-3.5 h-3.5 fill-current" /> Attempt
+              <Play className="w-3.5 h-3.5 fill-current" /> Join Now
             </button>
           </div>
         ))}
