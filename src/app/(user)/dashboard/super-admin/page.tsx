@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { validateSuperAdmin } from "@/lib/super-admin/governance";
-import { ROUTES } from "@/lib/routes";
+import { validateSuperAdmin } from "@/features/super-admin/services/governance";
+import { ROUTES } from '@/constants/routes';
 
 export const dynamic = "force-dynamic";
 

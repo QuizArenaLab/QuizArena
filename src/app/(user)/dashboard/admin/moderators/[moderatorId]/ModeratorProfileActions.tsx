@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { performModeratorAction } from "@/actions/manage/moderator-management";
+import { performModeratorAction } from '@/features/super-admin/services/moderator-management';
 import { AlertTriangle, PlayCircle, ShieldOff, ArrowDownCircle } from "lucide-react";
 
 interface ModeratorProfileActionsProps {

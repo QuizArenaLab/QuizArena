@@ -1,7 +1,7 @@
 import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
-import { hasMinimumRole } from "@/auth/roles/role-hierarchy";
-import { ROLE } from "@/auth/roles/role-types";
+import { hasMinimumRole } from "@/features/rbac/constants/role-hierarchy";
+import { ROLE } from "@/features/rbac/constants/role-types";
 import {
   getDashboardOverview,
   getChallengePerformanceMetrics,
@@ -10,7 +10,7 @@ import {
   getDifficultyInsights,
   getCategoryAnalytics,
   generateInsights,
-} from "@/actions/manage/analytics";
+} from "@/features/analytics/services/analytics";
 import { AnalyticsDashboardClient } from "./AnalyticsDashboardClient";
 
 async function getAnalyticsData() {

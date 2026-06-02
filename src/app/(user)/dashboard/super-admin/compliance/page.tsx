@@ -17,15 +17,15 @@
  */
 
 import { redirect } from "next/navigation";
-import { validateSuperAdmin } from "@/lib/super-admin/governance";
-import { logSuperAdminAudit } from "@/lib/super-admin/audit";
-import { getCompliancePageData } from "@/lib/super-admin/compliance";
-import { ROUTES } from "@/lib/routes";
-import { ComplianceOverviewCards } from "@/components/super-admin/compliance/ComplianceOverviewCards";
-import { GovernanceTimelinePanel } from "@/components/super-admin/compliance/GovernanceTimelinePanel";
-import { SecurityForensicsPanel } from "@/components/super-admin/compliance/SecurityForensicsPanel";
-import { AnomalyEnginePanel } from "@/components/super-admin/compliance/AnomalyEnginePanel";
-import { GovernanceChainPanel } from "@/components/super-admin/compliance/GovernanceChainPanel";
+import { validateSuperAdmin } from "@/features/super-admin/services/governance";
+import { logSuperAdminAudit } from "@/features/super-admin/services/audit";
+import { getCompliancePageData } from "@/features/super-admin/services/compliance";
+import { ROUTES } from '@/constants/routes';
+import { ComplianceOverviewCards } from "@/features/super-admin/components/compliance/ComplianceOverviewCards";
+import { GovernanceTimelinePanel } from "@/features/super-admin/components/compliance/GovernanceTimelinePanel";
+import { SecurityForensicsPanel } from "@/features/super-admin/components/compliance/SecurityForensicsPanel";
+import { AnomalyEnginePanel } from "@/features/super-admin/components/compliance/AnomalyEnginePanel";
+import { GovernanceChainPanel } from "@/features/super-admin/components/compliance/GovernanceChainPanel";
 import {
   Lock,
   ClipboardCheck,

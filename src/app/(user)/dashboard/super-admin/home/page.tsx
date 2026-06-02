@@ -6,16 +6,16 @@
  */
 
 import { redirect } from "next/navigation";
-import { validateSuperAdmin } from "@/lib/super-admin/governance";
-import { ROUTES } from "@/lib/routes";
-import { getSovereignDashboardData } from "@/lib/super-admin/dashboard";
-import { SovereignCommandHeader } from "@/components/super-admin/dashboard/SovereignCommandHeader";
-import { SovereignMetricCard } from "@/components/super-admin/dashboard/SovereignMetricCard";
-import { InfrastructureHealthGrid } from "@/components/super-admin/dashboard/InfrastructureHealthGrid";
-import { SecuritySnapshot } from "@/components/super-admin/dashboard/SecuritySnapshot";
-import { GovernancePanel } from "@/components/super-admin/dashboard/GovernancePanel";
-import { AlertCenter } from "@/components/super-admin/dashboard/AlertCenter";
-import { ActivityTimeline } from "@/components/super-admin/dashboard/ActivityTimeline";
+import { validateSuperAdmin } from "@/features/super-admin/services/governance";
+import { ROUTES } from '@/constants/routes';
+import { getSovereignDashboardData } from "@/features/super-admin/services/dashboard";
+import { SovereignCommandHeader } from "@/features/super-admin/components/dashboard/SovereignCommandHeader";
+import { SovereignMetricCard } from "@/features/super-admin/components/dashboard/SovereignMetricCard";
+import { InfrastructureHealthGrid } from "@/features/super-admin/components/dashboard/InfrastructureHealthGrid";
+import { SecuritySnapshot } from "@/features/super-admin/components/dashboard/SecuritySnapshot";
+import { GovernancePanel } from "@/features/super-admin/components/dashboard/GovernancePanel";
+import { AlertCenter } from "@/features/super-admin/components/dashboard/AlertCenter";
+import { ActivityTimeline } from "@/features/super-admin/components/dashboard/ActivityTimeline";
 import { Users, Activity, Target } from "lucide-react";
 
 export const metadata = {

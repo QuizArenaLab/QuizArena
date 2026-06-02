@@ -1,14 +1,14 @@
-import "@/styles/globals.css";
+import "@/shared/styles/globals.css";
 import { Hanken_Grotesk } from "next/font/google";
-import { SecureClientAuthProvider } from "@/components/auth/SecureClientAuthProvider";
-import { Navbar } from "@/components/layout/Navbar";
-import { MobileNav } from "@/components/layout/MobileNav";
+import { SecureClientAuthProvider } from "@/shared/providers/SecureClientAuthProvider";
+import { Navbar } from "@/shared/layout/Navbar";
+import { MobileNav } from "@/shared/layout/MobileNav";
 import { getServerSession } from "@/lib/session-utils";
 
-import { Footer } from "@/components/layout/Footer";
+import { Footer } from "@/shared/layout/Footer";
 
-import { MaintenanceFallback } from "@/components/maintenance-fallback";
-import { getPlatformState } from "@/lib/super-admin/infrastructure/platform-controls";
+import { MaintenanceFallback } from "@/shared/components/maintenance-fallback";
+import { getPlatformState } from "@/features/super-admin/services/infrastructure/platform-controls";
 
 const hanken = Hanken_Grotesk({ subsets: ["latin"], variable: "--font-hanken" });
 

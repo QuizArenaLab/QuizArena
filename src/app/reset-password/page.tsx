@@ -11,8 +11,8 @@ import {
   ValidationMessage,
   BrandSection,
   PasswordField,
-} from "@/components/auth";
-import { ROUTES } from "@/lib/routes";
+} from "@/features/auth/components";
+import { ROUTES } from '@/constants/routes';
 
 function ResetPasswordForm() {
   const router = useRouter();

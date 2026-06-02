@@ -1,7 +1,7 @@
 "use client";
 
 import { Activity, Database, Server, RefreshCw } from "lucide-react";
-import type { InfrastructureHealth } from "@/lib/super-admin/infrastructure/health";
+import type { InfrastructureHealth } from "@/features/super-admin/services/infrastructure/health";
 
 export function PlatformHealthCenter({ health }: { health: InfrastructureHealth }) {
   const getStatusColor = (status: string) => {

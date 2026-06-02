@@ -3,7 +3,7 @@
  */
 "use client";
 
-import { FullPageLoading } from "@/components/shared/LoadingStates";
+import { FullPageLoading } from "@/shared/components/LoadingStates";
 
 export default function LeaderboardLoading() {
   return (

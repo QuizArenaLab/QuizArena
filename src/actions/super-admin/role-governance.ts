@@ -2,8 +2,8 @@
 
 import { auth } from "@/auth/auth";
 import { prisma } from "@/lib/prisma";
-import { hasMinimumRole } from "@/auth/roles/role-hierarchy";
-import { ROLE } from "@/auth/roles/role-types";
+import { hasMinimumRole } from "@/features/rbac/constants/role-hierarchy";
+import { ROLE } from "@/features/rbac/constants/role-types";
 import { $Enums } from "@/generated/prisma";
 
 async function validateSuperAdminAccess() {

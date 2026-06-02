@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 import { LifeBuoy } from "lucide-react";
-import { EmergencyControlCenter } from "@/components/super-admin/disaster-recovery/EmergencyControlCenter";
-import { RecoveryReadinessDashboard } from "@/components/super-admin/disaster-recovery/RecoveryReadinessDashboard";
-import { ResilienceMonitoring } from "@/components/super-admin/disaster-recovery/ResilienceMonitoring";
-import { RecoveryWorkflows } from "@/components/super-admin/disaster-recovery/RecoveryWorkflows";
+import { EmergencyControlCenter } from "@/features/super-admin/components/disaster-recovery/EmergencyControlCenter";
+import { RecoveryReadinessDashboard } from "@/features/super-admin/components/disaster-recovery/RecoveryReadinessDashboard";
+import { ResilienceMonitoring } from "@/features/super-admin/components/disaster-recovery/ResilienceMonitoring";
+import { RecoveryWorkflows } from "@/features/super-admin/components/disaster-recovery/RecoveryWorkflows";
 import {
   getResilienceOverview,
   getRecoveryWorkflows,
@@ -11,8 +11,8 @@ import {
   activateRecoveryMode,
   activateEmergencyLockdown,
   deactivateEmergencyLockdown,
-} from "@/lib/super-admin/disaster-recovery";
-import { requireSuperAdmin } from "@/lib/super-admin/governance";
+} from "@/features/super-admin/services/disaster-recovery";
+import { requireSuperAdmin } from "@/features/super-admin/services/governance";
 import { revalidatePath } from "next/cache";
 
 export const metadata: Metadata = {

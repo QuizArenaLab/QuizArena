@@ -1,4 +1,4 @@
-import { QuestionAuthoringWizard } from "@/components/question-bank/authoring/QuestionAuthoringWizard";
+import { QuestionAuthoringWizard } from "@/features/admin/components/question-bank/authoring/QuestionAuthoringWizard";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

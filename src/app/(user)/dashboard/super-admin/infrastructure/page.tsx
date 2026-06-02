@@ -1,6 +1,6 @@
-import { requireSuperAdmin } from "@/lib/super-admin/governance";
-import { getPlatformState } from "@/lib/super-admin/infrastructure/platform-controls";
-import { getInfrastructureHealth } from "@/lib/super-admin/infrastructure/health";
+import { requireSuperAdmin } from "@/features/super-admin/services/governance";
+import { getPlatformState } from "@/features/super-admin/services/infrastructure/platform-controls";
+import { getInfrastructureHealth } from "@/features/super-admin/services/infrastructure/health";
 import { PlatformHealthCenter } from "./components/PlatformHealthCenter";
 import { MaintenanceControl } from "./components/MaintenanceControl";
 import { FeatureGovernance } from "./components/FeatureGovernance";

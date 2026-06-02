@@ -5,8 +5,8 @@
  * Fetches all reports data server-side and passes to the client orchestrator.
  * Access: ADMIN and SUPER_ADMIN only.
  */
-import { getReportsDashboardData } from "@/actions/reports";
-import { ReportsDashboardClient } from "@/components/reports/ReportsDashboardClient";
+import { getReportsDashboardData } from "@/features/admin/services/reports";
+import { ReportsDashboardClient } from "@/features/admin/components/reports/ReportsDashboardClient";
 
 export const metadata = {
   title: "Reports & Abuse Management — QuizArena Admin",

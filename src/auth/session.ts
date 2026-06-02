@@ -1,8 +1,8 @@
 import { auth } from "./auth";
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { ROLE, toRole, type Role } from "./roles/role-types";
-import { hasMinimumRole, hasRole } from "./roles/role-hierarchy";
+import { ROLE, toRole, type Role } from "@/features/rbac/constants/role-types";
+import { hasMinimumRole, hasRole } from "@/features/rbac/constants/role-hierarchy";
 import type { User } from "next-auth";
 
 export const getSession = cache(async () => {

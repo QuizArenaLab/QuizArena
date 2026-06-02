@@ -8,10 +8,10 @@
  */
 
 import { redirect } from "next/navigation";
-import { ROUTES } from "@/lib/routes";
-import { validateSuperAdminAccess } from "@/lib/rbac/super-admin";
-import { getSettingsDashboardData, getUnseededSettingsCount } from "@/actions/settings";
-import { SettingsPanel } from "@/components/dashboard/settings/SettingsPanel";
+import { ROUTES } from '@/constants/routes';
+import { validateSuperAdminAccess } from "@/features/rbac/services/super-admin";
+import { getSettingsDashboardData, getUnseededSettingsCount } from "@/features/settings/services/settings";
+import { SettingsPanel } from "@/features/settings/components/SettingsPanel";
 import { Settings2, ShieldAlert } from "lucide-react";
 
 export default async function SuperAdminSettingsPage() {

@@ -1,6 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
 import type { ExamCategory, PreparationLevel } from "@/types/next-auth";
-import type { UserRole } from "@/auth/roles/role-types";
+import type { UserRole } from "@/features/rbac/constants/role-types";
 import Google from "next-auth/providers/google";
 
 export const authConfig = {

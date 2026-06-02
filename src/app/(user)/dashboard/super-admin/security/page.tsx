@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
-import { validateSuperAdmin, logSuperAdminAudit } from "@/lib/super-admin";
-import { getSOCPageData } from "@/lib/super-admin/security";
-import { SecurityOverviewCards } from "@/components/super-admin/security/SecurityOverviewCards";
-import { SecurityAlertCenter } from "@/components/super-admin/security/SecurityAlertCenter";
-import { AuthForensicsPanel } from "@/components/super-admin/security/AuthForensicsPanel";
-import { PrivilegeEscalationPanel } from "@/components/super-admin/security/PrivilegeEscalationPanel";
-import { ThreatTimelinePanel } from "@/components/super-admin/security/ThreatTimelinePanel";
-import { SuspiciousActivityPanel } from "@/components/super-admin/security/SuspiciousActivityPanel";
-import { SessionGovernancePanel } from "@/components/super-admin/security/SessionGovernancePanel";
+import { validateSuperAdmin, logSuperAdminAudit } from "@/features/super-admin/services";
+import { getSOCPageData } from "@/features/super-admin/services/security";
+import { SecurityOverviewCards } from "@/features/super-admin/components/security/SecurityOverviewCards";
+import { SecurityAlertCenter } from "@/features/super-admin/components/security/SecurityAlertCenter";
+import { AuthForensicsPanel } from "@/features/super-admin/components/security/AuthForensicsPanel";
+import { PrivilegeEscalationPanel } from "@/features/super-admin/components/security/PrivilegeEscalationPanel";
+import { ThreatTimelinePanel } from "@/features/super-admin/components/security/ThreatTimelinePanel";
+import { SuspiciousActivityPanel } from "@/features/super-admin/components/security/SuspiciousActivityPanel";
+import { SessionGovernancePanel } from "@/features/super-admin/components/security/SessionGovernancePanel";
 
 // Real-time security dashboard — do not cache
 export const dynamic = "force-dynamic";

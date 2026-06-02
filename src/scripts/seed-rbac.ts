@@ -3,8 +3,8 @@ import {
   PERMISSIONS,
   PERMISSION_LABELS,
   PERMISSION_CATEGORIES,
-} from "../lib/rbac/permission-constants";
-import { ROLE_PERMISSION_MAP } from "../lib/rbac/permission-map";
+} from '@/features/rbac/constants/authorization';
+import { ROLE_PERMISSION_MAP } from '@/features/rbac/constants/authorization';
 
 async function main() {
   console.log("Seeding RBAC system...");

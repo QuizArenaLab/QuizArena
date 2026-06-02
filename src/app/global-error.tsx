@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { AlertTriangle, Home, RefreshCcw } from "lucide-react";
 import Link from "next/link";
-import { ROUTES } from "@/lib/routes";
+import { ROUTES } from '@/constants/routes';
 
 export default function GlobalError({
   error,

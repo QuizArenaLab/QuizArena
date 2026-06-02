@@ -5,8 +5,8 @@
  * Fetches all monitoring data server-side and passes to the client orchestrator.
  * Access: ADMIN and SUPER_ADMIN only.
  */
-import { getMonitoringDashboardData } from "@/actions/monitoring";
-import { MonitoringDashboardClient } from "@/components/monitoring/MonitoringDashboardClient";
+import { getMonitoringDashboardData } from "@/features/admin/services/monitoring";
+import { MonitoringDashboardClient } from "@/features/admin/components/monitoring/MonitoringDashboardClient";
 
 export const metadata = {
   title: "Platform Monitoring — QuizArena Admin",

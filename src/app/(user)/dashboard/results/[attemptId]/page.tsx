@@ -6,8 +6,8 @@
  */
 import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
-import { ROUTES } from "@/lib/routes";
-import { getEvaluationResult } from "@/actions/evaluation";
+import { ROUTES } from '@/constants/routes';
+import { getEvaluationResult } from '@/features/exam/services/evaluation';
 import Link from "next/link";
 import {
   Trophy,

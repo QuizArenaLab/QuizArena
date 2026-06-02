@@ -36,7 +36,7 @@ export default async function AdminChallengesPage() {
           <form
             action={async (formData) => {
               "use server";
-              const { createChallengeDraft } = await import("@/actions/challenge-builder");
+              const { createChallengeDraft } = await import('@/features/admin/services/challenge-builder');
               const res = await createChallengeDraft({ title: "New Challenge - " + Date.now() });
               if (res.success && res.challengeId) {
                 const { redirect } = await import("next/navigation");

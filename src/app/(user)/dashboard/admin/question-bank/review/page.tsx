@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { getQuestions } from "@/actions/question-bank";
-import { QuestionReviewCard } from "@/components/question-bank/QuestionReviewCard";
-import { ReviewQueueTabs } from "@/components/question-bank/ReviewQueueTabs";
+import { getQuestions } from "@/features/admin/services/question-bank";
+import { QuestionReviewCard } from "@/features/admin/components/question-bank/QuestionReviewCard";
+import { ReviewQueueTabs } from "@/features/admin/components/question-bank/ReviewQueueTabs";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import type { Metadata } from "next";

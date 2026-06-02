@@ -1,11 +1,11 @@
 import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
-import { ROUTES } from "@/lib/routes";
-import { getLatestChallenge, getActiveChallenges } from "@/actions/challenge";
-import { getPerformanceOverview, getRecentAttempts, getAnalyticsIntelligence } from "@/actions/performance";
+import { ROUTES } from '@/constants/routes';
+import { getLatestChallenge, getActiveChallenges } from "@/features/challenges/services/challenge";
+import { getPerformanceOverview, getRecentAttempts, getAnalyticsIntelligence } from "@/features/analytics/services/performance";
 import Link from "next/link";
 import { Trophy, Target, Clock, Zap, CheckCircle2, TrendingUp, AlertTriangle, ChevronRight, Activity, Flame, Medal, Lightbulb, Map } from "lucide-react";
-import { RecommendedChallengeCTA } from "@/components/arena/RecommendedChallengeCTA";
+import { RecommendedChallengeCTA } from "@/features/arena/components/RecommendedChallengeCTA";
 import { EXAM_CATEGORY_LABELS } from "@/lib/onboarding";
 import { prisma } from "@/lib/prisma";
 import { AttemptStatus } from "@/generated/prisma";

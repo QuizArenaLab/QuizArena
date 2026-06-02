@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getQuestionById } from "@/actions/question-bank";
-import { QuestionAuthoringWizard } from "@/components/question-bank/authoring/QuestionAuthoringWizard";
+import { QuestionAuthoringWizard } from '@/features/admin/components/question-bank/authoring/QuestionAuthoringWizard';
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

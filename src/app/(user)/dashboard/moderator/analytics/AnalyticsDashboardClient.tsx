@@ -6,7 +6,7 @@ import {
   SimpleBarChart,
   ProgressRing,
   MetricCard,
-} from "@/components/analytics/Charts";
+} from "@/features/analytics/components/Charts";
 import {
   BarChart3,
   TrendingUp,

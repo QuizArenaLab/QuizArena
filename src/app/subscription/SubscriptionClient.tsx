@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Check, Loader2 } from "lucide-react";
-import { createSubscriptionIntent, activateSubscription } from "@/actions/monetization";
+import { createSubscriptionIntent, activateSubscription } from "@/features/billing/services/monetization";
 import { SubscriptionPlan, SubscriptionStatus, UserSubscription } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
 

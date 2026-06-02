@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { toggleRolePermission } from "@/actions/manage/rbac-actions";
-import { type Role, ROLES } from "@/lib/rbac/roles";
+import { toggleRolePermission } from "@/features/rbac/services/rbac-actions";
+import { type Role, ROLES } from "@/features/rbac/services/roles";
 
 interface PermissionMatrixProps {
   permissions: { id: string; key: string; description: string | null; category: string }[];

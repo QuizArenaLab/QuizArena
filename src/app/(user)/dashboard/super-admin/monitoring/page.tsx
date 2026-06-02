@@ -4,9 +4,9 @@
  * Full monitoring access for super administrators.
  * Uses the same monitoring system as admin, with super-admin RBAC layer.
  */
-import { requireSuperAdmin } from "@/lib/rbac/super-admin";
-import { getMonitoringDashboardData } from "@/actions/monitoring";
-import { MonitoringDashboardClient } from "@/components/monitoring/MonitoringDashboardClient";
+import { requireSuperAdmin } from "@/features/rbac/services/super-admin";
+import { getMonitoringDashboardData } from "@/features/admin/services/monitoring";
+import { MonitoringDashboardClient } from "@/features/admin/components/monitoring/MonitoringDashboardClient";
 
 export const metadata = {
   title: "Platform Monitoring — QuizArena Super Admin",

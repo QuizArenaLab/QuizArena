@@ -1,7 +1,7 @@
 import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
-import { ROUTES } from "@/lib/routes";
-import { validateInvite } from "@/actions/engagement";
+import { ROUTES } from '@/constants/routes';
+import { validateInvite } from '@/features/user/services/engagement';
 import Link from "next/link";
 import { ShieldAlert, CheckCircle, ChevronRight } from "lucide-react";
 

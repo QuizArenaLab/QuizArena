@@ -20,6 +20,6 @@ export {
   checkRoleAccess,
   getSafeUserRole,
 } from "./session";
-export * from "./roles";
-export * from "./permissions";
+export * from "@/features/rbac/constants";
+export * from "@/features/rbac/constants";
 export { handlers, auth, signIn, signOut } from "./auth";

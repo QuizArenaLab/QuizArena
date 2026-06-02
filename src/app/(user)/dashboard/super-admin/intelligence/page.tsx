@@ -4,8 +4,8 @@
  * Server Component entry point for the Strategic Intelligence Dashboard.
  * Access: SUPER_ADMIN ONLY.
  */
-import { getStrategicIntelligence } from "@/actions/intelligence";
-import { IntelligenceDashboardClient } from "@/components/dashboard/intelligence/IntelligenceDashboardClient";
+import { getStrategicIntelligence } from "@/features/analytics/services/intelligence";
+import { IntelligenceDashboardClient } from "@/features/analytics/components/intelligence/IntelligenceDashboardClient";
 import { AlertCircle } from "lucide-react";
 
 export const metadata = {

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { requireAdmin } from "@/lib/rbac/guards";
-import { getUsers, getModerationStats } from "@/actions/manage/user-management";
+import { requireAdmin } from "@/features/rbac/services/guards";
+import { getUsers, getModerationStats } from "@/features/super-admin/services/user-management";
 import { Users, Search, ChevronLeft, ChevronRight, CheckCircle, XCircle } from "lucide-react";
 
 interface SearchParams {

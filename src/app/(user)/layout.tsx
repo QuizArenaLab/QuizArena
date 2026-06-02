@@ -6,9 +6,9 @@
  */
 import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
-import { ROUTES } from "@/lib/routes";
-import { DashboardShell } from "@/components/layout/DashboardShell";
-import { getPerformanceOverview, getCompetitivePosition } from "@/actions/performance";
+import { ROUTES } from '@/constants/routes';
+import { DashboardShell } from "@/shared/layout/DashboardShell";
+import { getPerformanceOverview, getCompetitivePosition } from "@/features/analytics/services/performance";
 import { prisma } from "@/lib/prisma";
 
 export default async function UserAppLayout({ children }: { children: React.ReactNode }) {

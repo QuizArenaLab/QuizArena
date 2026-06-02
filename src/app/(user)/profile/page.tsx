@@ -5,15 +5,15 @@
  */
 import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
-import { ROUTES } from "@/lib/routes";
+import { ROUTES } from '@/constants/routes';
 import { prisma } from "@/lib/prisma";
 
-import { ProfileHero } from "./_components/ProfileHero";
-import { PreparationPreferences } from "./_components/PreparationPreferences";
+import { ProfileHero } from "@/features/profile/components/ProfileHero";
+import { PreparationPreferences } from "@/features/profile/components/PreparationPreferences";
 
-import { CompetitiveRecord } from "./_components/CompetitiveRecord";
-import { BadgeCollection } from "./_components/BadgeCollection";
-import { RecentActivity } from "./_components/RecentActivity";
+import { CompetitiveRecord } from "@/features/profile/components/CompetitiveRecord";
+import { BadgeCollection } from "@/features/profile/components/BadgeCollection";
+import { RecentActivity } from "@/features/profile/components/RecentActivity";
 
 export default async function ProfilePage() {
   const session = await auth();

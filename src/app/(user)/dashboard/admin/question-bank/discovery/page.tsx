@@ -11,8 +11,8 @@ import {
   History,
   CheckCircle2,
 } from "lucide-react";
-import { searchQuestions, getSavedFilters } from "@/actions/question-search";
-import { QUESTION_CATEGORIES, COMMON_SUBJECTS } from "@/lib/question-bank/constants";
+import { searchQuestions, getSavedFilters } from "@/features/admin/services/question-search";
+import { QUESTION_CATEGORIES, COMMON_SUBJECTS } from "@/features/admin/services/question-bank/constants";
 import { QUESTION_DIFFICULTIES, QUESTION_STATUSES } from "@/lib/validations/question";
 
 import type { Metadata } from "next";

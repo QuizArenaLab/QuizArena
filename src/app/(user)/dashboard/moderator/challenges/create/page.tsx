@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ROUTES } from "@/lib/routes";
-import { createChallenge } from "@/actions/manage/challenge-management";
+import { ROUTES } from '@/constants/routes';
+import { createChallenge } from "@/features/challenges/services/challenge-management";
 import { createChallengeSchema } from "@/lib/validations/challenge";
 
 interface FormErrors {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { performModerationAction } from "@/actions/manage/user-management";
+import { performModerationAction } from '@/features/super-admin/services/user-management';
 import { Ban, PlayCircle, AlertTriangle, Flag, CheckCircle } from "lucide-react";
 
 interface UserProfileActionsProps {

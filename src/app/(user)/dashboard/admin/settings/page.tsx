@@ -8,11 +8,11 @@
  * SUPER_ADMIN can additionally manage: System (infrastructure)
  */
 
-import { requireAdmin, getCurrentRoleFromSession } from "@/lib/rbac/guards";
-import { getSettingsDashboardData, getUnseededSettingsCount } from "@/actions/settings";
-import { SettingsPanel } from "@/components/dashboard/settings/SettingsPanel";
-import { hasRole } from "@/lib/rbac/hierarchy";
-import { ROLES } from "@/lib/rbac/roles";
+import { requireAdmin, getCurrentRoleFromSession } from "@/features/rbac/services/guards";
+import { getSettingsDashboardData, getUnseededSettingsCount } from "@/features/settings/services/settings";
+import { SettingsPanel } from "@/features/settings/components/SettingsPanel";
+import { hasRole } from "@/features/rbac/services/hierarchy";
+import { ROLES } from "@/features/rbac/services/roles";
 import { Settings2, Shield } from "lucide-react";
 
 export default async function AdminSettingsPage() {

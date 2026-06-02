@@ -1,12 +1,12 @@
 import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
-import { ROUTES } from "@/lib/routes";
+import { ROUTES } from '@/constants/routes';
 import { prisma } from "@/lib/prisma";
 
-import { NotificationsReminders } from "@/components/dashboard/settings/NotificationsReminders";
-import { SecuritySettings } from "@/components/dashboard/settings/SecuritySettings";
-import { SubscriptionSettings } from "@/components/dashboard/settings/SubscriptionSettings";
-import { DangerZone as AccountControls } from "@/components/dashboard/settings/DangerZone";
+import { NotificationsReminders } from "@/features/settings/components/NotificationsReminders";
+import { SecuritySettings } from "@/features/settings/components/SecuritySettings";
+import { SubscriptionSettings } from "@/features/settings/components/SubscriptionSettings";
+import { DangerZone as AccountControls } from "@/features/settings/components/DangerZone";
 
 export const metadata = {
   title: "Settings | QuizArena",

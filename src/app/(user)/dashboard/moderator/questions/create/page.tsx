@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ROUTES } from "@/lib/routes";
-import { createQuestion } from "@/actions/manage/question-management";
+import { ROUTES } from '@/constants/routes';
+import { createQuestion } from "@/features/admin/services/question-management";
 import { COMMON_SUBJECTS, createQuestionSchema } from "@/lib/validations/question";
 import { cn } from "@/lib/utils";
 

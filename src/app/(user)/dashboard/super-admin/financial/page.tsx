@@ -1,12 +1,12 @@
-import { requireSuperAdmin } from "@/lib/super-admin/governance";
+import { requireSuperAdmin } from "@/features/super-admin/services/governance";
 import {
   getRevenueOverview,
   getSubscriptionMetrics,
   getFinancialAlerts,
   generateBusinessInsights,
-} from "@/lib/super-admin/financial";
-import { RevenueTrendChart } from "@/components/super-admin/financial/RevenueTrendChart";
-import { FinancialAlertBanner } from "@/components/super-admin/financial/FinancialAlertBanner";
+} from "@/features/super-admin/services/financial";
+import { RevenueTrendChart } from "@/features/super-admin/components/financial/RevenueTrendChart";
+import { FinancialAlertBanner } from "@/features/super-admin/components/financial/FinancialAlertBanner";
 import { DollarSign, Users, ArrowUpRight, TrendingUp } from "lucide-react";
 
 export default async function FinancialOverviewPage() {

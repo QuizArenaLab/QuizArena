@@ -4,12 +4,12 @@
  */
 import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
-import { ROUTES } from "@/lib/routes";
-import { ROLES } from "@/lib/rbac/roles";
-import { UserDashboardView } from "@/components/dashboard/views/UserDashboard";
-import { AdminDashboardView } from "@/components/dashboard/views/AdminDashboard";
-import { ModeratorDashboardView } from "@/components/dashboard/views/ModeratorDashboard";
-import { SuperAdminDashboardView } from "@/components/dashboard/views/SuperAdminDashboard";
+import { ROUTES } from '@/constants/routes';
+import { ROLE as ROLES } from "@/features/rbac/constants/role-types";
+import { UserDashboardView } from "@/features/dashboard/components/user/UserDashboard";
+import { AdminDashboardView } from "@/features/dashboard/components/admin/AdminDashboard";
+import { ModeratorDashboardView } from "@/features/dashboard/components/moderator/ModeratorDashboard";
+import { SuperAdminDashboardView } from "@/features/dashboard/components/super-admin/SuperAdminDashboard";
 
 export default async function DashboardHomePage() {
   const session = await auth();

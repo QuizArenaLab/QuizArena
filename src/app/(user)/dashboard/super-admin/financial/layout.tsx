@@ -1,5 +1,5 @@
-import { requireSuperAdmin } from "@/lib/super-admin/governance";
-import { FinancialNavigation } from "@/components/super-admin/financial/FinancialNavigation";
+import { requireSuperAdmin } from "@/features/super-admin/services/governance";
+import { FinancialNavigation } from "@/features/super-admin/components/financial/FinancialNavigation";
 
 export const metadata = {
   title: "Financial Governance | Super Admin",

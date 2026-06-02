@@ -4,8 +4,8 @@
  * Server Component entry point for the Operational Intelligence Dashboard.
  * Access: ADMIN and SUPER_ADMIN.
  */
-import { getOperationalIntelligence } from "@/actions/intelligence";
-import { IntelligenceDashboardClient } from "@/components/dashboard/intelligence/IntelligenceDashboardClient";
+import { getOperationalIntelligence } from "@/features/analytics/services/intelligence";
+import { IntelligenceDashboardClient } from "@/features/analytics/components/intelligence/IntelligenceDashboardClient";
 import { AlertCircle } from "lucide-react";
 
 export const metadata = {

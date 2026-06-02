@@ -16,8 +16,8 @@ import {
   ValidationMessage,
   AuthFooterLink,
   BrandSection,
-} from "@/components/auth";
-import { ROUTES } from "@/lib/routes";
+} from "@/features/auth/components";
+import { ROUTES } from '@/constants/routes';
 
 function LoginForm() {
   const searchParams = useSearchParams();

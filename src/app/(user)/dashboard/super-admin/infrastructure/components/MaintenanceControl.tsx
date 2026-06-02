@@ -5,7 +5,7 @@ import { AlertTriangle, ShieldAlert } from "lucide-react";
 import {
   enableMaintenanceMode,
   disableMaintenanceMode,
-} from "@/lib/super-admin/infrastructure/platform-controls";
+} from "@/features/super-admin/services/infrastructure/platform-controls";
 
 export function MaintenanceControl({
   isEnabled,

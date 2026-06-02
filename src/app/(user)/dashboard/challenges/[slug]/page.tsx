@@ -10,7 +10,7 @@
 
 import { redirect } from "next/navigation";
 import { auth } from "@/auth/auth";
-import { ROUTES } from "@/lib/routes";
+import { ROUTES } from '@/constants/routes';
 import { startChallenge, getAttemptAnswers } from "@/actions/challenge";
 import { ExamShell } from "@/components/exam/ExamShell";
 import type { ExamInitData, ExamQuestion } from "@/types/exam";

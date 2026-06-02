@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { requireAdmin } from "@/lib/rbac/guards";
-import { getUserProfile, addModerationNote } from "@/actions/manage/user-management";
+import { requireAdmin } from '@/features/rbac/components/RoleGuard';
+import { getUserProfile, addModerationNote } from '@/features/super-admin/services/user-management';
 import {
   ArrowLeft,
   User,

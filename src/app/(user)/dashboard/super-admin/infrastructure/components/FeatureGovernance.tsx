@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Settings } from "lucide-react";
-import { updateFeatureControl } from "@/lib/super-admin/infrastructure/platform-controls";
-import { INFRASTRUCTURE_KEYS, type InfrastructureKey } from "@/lib/super-admin/infrastructure/keys";
+import { updateFeatureControl } from "@/features/super-admin/services/infrastructure/platform-controls";
+import { INFRASTRUCTURE_KEYS, type InfrastructureKey } from "@/features/super-admin/services/infrastructure/keys";
 
 interface FeatureState {
   enabled: boolean;

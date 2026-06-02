@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/rbac/guards";
+import { requireAdmin } from "@/features/rbac/services/guards";
 import Link from "next/link";
 import {
   Shield,
@@ -11,7 +11,7 @@ import {
   ShieldAlert,
   BookOpen,
 } from "lucide-react";
-import { ROUTES } from "@/lib/routes";
+import { ROUTES } from '@/constants/routes';
 
 export default async function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
   await requireAdmin("/dashboard");

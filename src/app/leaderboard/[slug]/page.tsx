@@ -1,7 +1,7 @@
 import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
-import { ROUTES } from "@/lib/routes";
-import { getChallengeLeaderboardBySlug } from "@/actions/leaderboard";
+import { ROUTES } from '@/constants/routes';
+import { getChallengeLeaderboardBySlug } from '@/features/challenges/services/leaderboard';
 import Link from "next/link";
 import {
   Trophy,
@@ -18,7 +18,7 @@ import {
   Crosshair,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AvatarIdentity } from "@/components/ui/AvatarIdentity";
+import { AvatarIdentity } from '@/shared/components/AvatarIdentity';
 
 interface LeaderboardDetailPageProps {
   params: Promise<{ slug: string }>;

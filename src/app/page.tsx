@@ -3,9 +3,9 @@
  *
  * Public-facing marketing page with navigation to auth.
  */
-import { HeroSection } from "@/components/homePage/HeroSection";
-import { ProblemSolutionSection } from "@/components/homePage/ProblemSolutionSection";
-import { IntelligenceShowcaseSection } from "@/components/homePage/IntelligenceShowcaseSection";
+import { HeroSection } from "@/features/home/components/HeroSection";
+import { ProblemSolutionSection } from "@/features/home/components/ProblemSolutionSection";
+import { IntelligenceShowcaseSection } from "@/features/home/components/IntelligenceShowcaseSection";
 import Link from "next/link";
 
 export default function MarketingLandingPage() {

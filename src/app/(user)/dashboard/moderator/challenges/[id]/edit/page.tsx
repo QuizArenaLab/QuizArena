@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ROUTES } from "@/lib/routes";
+import { ROUTES } from '@/constants/routes';
 import {
   getChallengeById,
   getChallengeQuestions,
@@ -11,9 +11,9 @@ import {
   moveToReview,
   publishChallenge,
   archiveChallenge,
-} from "@/actions/manage/challenge-management";
-import { requireMinimumRole } from "@/lib/rbac/guards";
-import { ROLES } from "@/lib/rbac/roles";
+} from '@/features/challenges/services/challenge-management';
+import { requireMinimumRole } from '@/features/rbac/components/RoleGuard';
+import { ROLE as ROLES } from '@/features/rbac/constants/role-types';
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLES = {

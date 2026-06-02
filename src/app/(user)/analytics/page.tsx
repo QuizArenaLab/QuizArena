@@ -1,6 +1,6 @@
 import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
-import { ROUTES } from "@/lib/routes";
+import { ROUTES } from '@/constants/routes';
 import Link from "next/link";
 import {
   TrendingUp,
@@ -17,8 +17,8 @@ import {
   CheckCircle2,
   Trophy,
 } from "lucide-react";
-import { getAnalyticsIntelligence, type AnalyticsIntelligence } from "@/actions/performance";
-import { PerformanceTrendChart } from "@/components/analytics/PerformanceTrendChart";
+import { getAnalyticsIntelligence, type AnalyticsIntelligence } from "@/features/analytics/services/performance";
+import { PerformanceTrendChart } from "@/features/analytics/components/PerformanceTrendChart";
 
 // ── Preview mock data for UI testing ──
 function getPreviewData(): AnalyticsIntelligence {

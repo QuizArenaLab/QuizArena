@@ -10,8 +10,8 @@
  */
 import { getServerSession } from "@/lib/session-utils";
 import { redirect } from "next/navigation";
-import { ROUTES } from "@/lib/routes";
-import { ProtectedAppLayout } from "@/components/layout/ProtectedAppLayout";
+import { ROUTES } from '@/constants/routes';
+import { ProtectedAppLayout } from "@/shared/layout/ProtectedAppLayout";
 
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
   // Server-side session retrieval — no flicker, always fresh

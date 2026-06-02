@@ -6,7 +6,7 @@
  */
 import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
-import { ROUTES } from "@/lib/routes";
+import { ROUTES } from '@/constants/routes';
 import { prisma } from "@/lib/prisma";
 import { EXAM_CATEGORY_LABELS } from "@/lib/onboarding";
 import Link from "next/link";

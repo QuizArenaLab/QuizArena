@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import NextAuth from "next-auth";
 import { authConfig } from "@/auth/auth.config";
-import { ROUTES } from "@/lib/routes";
-import { ROLE, toRole, type Role } from "@/auth/roles/role-types";
-import { hasMinimumRole } from "@/auth/roles/role-hierarchy";
+import { ROUTES } from "@/constants/routes";
+import { ROLE, toRole, type Role } from "@/features/rbac/constants/role-types";
+import { hasMinimumRole } from "@/features/rbac/constants/role-hierarchy";
 
 const { auth } = NextAuth(authConfig);
 

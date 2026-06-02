@@ -1,11 +1,11 @@
 import {
   syncPerformanceIntelligence,
   generatePerformanceInsights,
-} from "@/actions/performance-intelligence";
-import { PerformanceHeatmap } from "@/components/intelligence/PerformanceHeatmap";
-import { DeterministicInsights } from "@/components/intelligence/DeterministicInsights";
-import { ReadinessRadar } from "@/components/intelligence/ReadinessRadar";
-import { DifficultyProgression } from "@/components/intelligence/DifficultyProgression";
+} from "@/features/analytics/services/performance-intelligence";
+import { PerformanceHeatmap } from "@/features/analytics/components/intelligence/PerformanceHeatmap";
+import { DeterministicInsights } from "@/features/analytics/components/intelligence/DeterministicInsights";
+import { ReadinessRadar } from "@/features/analytics/components/intelligence/ReadinessRadar";
+import { DifficultyProgression } from "@/features/analytics/components/intelligence/DifficultyProgression";
 import { Brain, Activity } from "lucide-react";
 
 export const metadata = {

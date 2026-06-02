@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
-import { validateSuperAdminSession } from "@/lib/super-admin/session";
-import { getFeatureRolloutsData } from "@/lib/super-admin/feature-rollouts";
+import { validateSuperAdminSession } from "@/features/super-admin/services/session";
+import { getFeatureRolloutsData } from "@/features/super-admin/services/feature-rollouts";
 import { Rocket } from "lucide-react";
 
-import { RolloutOverviewCards } from "@/components/super-admin/feature-rollouts/RolloutOverviewCards";
-import { ActiveRolloutsTable } from "@/components/super-admin/feature-rollouts/ActiveRolloutsTable";
-import { FeatureAnalyticsPanel } from "@/components/super-admin/feature-rollouts/FeatureAnalyticsPanel";
+import { RolloutOverviewCards } from "@/features/super-admin/components/feature-rollouts/RolloutOverviewCards";
+import { ActiveRolloutsTable } from "@/features/super-admin/components/feature-rollouts/ActiveRolloutsTable";
+import { FeatureAnalyticsPanel } from "@/features/super-admin/components/feature-rollouts/FeatureAnalyticsPanel";
 
 export const metadata = {
   title: "Feature Rollouts | Super Admin",

@@ -1,6 +1,6 @@
 import { prisma } from "../../../../lib/prisma";
 import { notFound } from "next/navigation";
-import { TournamentDashboard } from "../../../../components/tournaments/TournamentDashboard";
+import { TournamentDashboard } from '@/features/tournaments/components/TournamentDashboard';
 import { requireAuth } from "../../../../lib/session-utils";
 import { TournamentWithDetails } from "../../../../types/tournaments";
 

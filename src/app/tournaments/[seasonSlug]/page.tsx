@@ -1,6 +1,6 @@
 import { prisma } from "../../../lib/prisma";
 import { notFound } from "next/navigation";
-import { SeasonalBanner } from "../../../components/tournaments/SeasonalBanner";
+import { SeasonalBanner } from '@/features/tournaments/components/SeasonalBanner';
 import Link from "next/link";
 import { ChevronRight, Target } from "lucide-react";
 

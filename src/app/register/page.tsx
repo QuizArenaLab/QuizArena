@@ -17,9 +17,9 @@ import {
   ValidationMessage,
   AuthFooterLink,
   BrandSection,
-} from "@/components/auth";
-import { SecureClientAuthProvider } from "@/components/auth/SecureClientAuthProvider";
-import { ROUTES } from "@/lib/routes";
+} from "@/features/auth/components";
+import { SecureClientAuthProvider } from "@/shared/providers/SecureClientAuthProvider";
+import { ROUTES } from '@/constants/routes';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },

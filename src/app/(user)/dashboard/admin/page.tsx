@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { requireAdmin } from "@/lib/rbac/guards";
-import { getAdminDashboardData } from "@/actions/manage/admin-dashboard";
+import { requireAdmin } from "@/features/rbac/services/guards";
+import { getAdminDashboardData } from "@/features/super-admin/services/admin-dashboard";
 import {
   Shield,
   Activity,

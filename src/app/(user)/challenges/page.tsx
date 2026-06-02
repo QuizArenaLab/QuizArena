@@ -1,15 +1,15 @@
 import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
-import { ROUTES } from "@/lib/routes";
-import { getLatestChallenge, getActiveChallenges } from "@/actions/challenge";
-import { getPerformanceOverview } from "@/actions/performance";
+import { ROUTES } from '@/constants/routes';
+import { getLatestChallenge, getActiveChallenges } from "@/features/challenges/services/challenge";
+import { getPerformanceOverview } from "@/features/analytics/services/performance";
 import Link from "next/link";
 import { Trophy, Crown, Key, ArrowRight, Shield, Award, Plus } from "lucide-react";
-import { ChallengeGridClient } from "@/components/challenges/ChallengeGridClient";
-import { FeaturedEvent } from "@/components/challenges/FeaturedEvent";
-import { UpcomingEvents } from "@/components/challenges/UpcomingEvents";
-import { PremiumCompetitions } from "@/components/challenges/PremiumCompetitions";
-import { RecentCompetitions } from "@/components/challenges/RecentCompetitions";
+import { ChallengeGridClient } from "@/features/challenges/components/ChallengeGridClient";
+import { FeaturedEvent } from "@/features/challenges/components/FeaturedEvent";
+import { UpcomingEvents } from "@/features/challenges/components/UpcomingEvents";
+import { PremiumCompetitions } from "@/features/challenges/components/PremiumCompetitions";
+import { RecentCompetitions } from "@/features/challenges/components/RecentCompetitions";
 
 export default async function ChallengesPage() {
   const session = await auth();

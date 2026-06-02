@@ -1,5 +1,5 @@
-import { requireSuperAdmin } from "@/lib/super-admin/governance";
-import { generateBusinessInsights } from "@/lib/super-admin/financial";
+import { requireSuperAdmin } from "@/features/super-admin/services/governance";
+import { generateBusinessInsights } from "@/features/super-admin/services/financial";
 import { LineChart, Zap, TrendingUp } from "lucide-react";
 
 export default async function FinancialAnalyticsPage() {

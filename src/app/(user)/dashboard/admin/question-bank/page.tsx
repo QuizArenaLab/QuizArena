@@ -1,10 +1,10 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { ROUTES } from "@/lib/routes";
-import { getQuestions, getQuestionBankStats, getDraftQuestions } from "@/actions/question-bank";
-import { QuestionBankStatsCards } from "@/components/question-bank/QuestionBankStats";
-import { QuestionTable } from "@/components/question-bank/QuestionTable";
-import { QuestionFilters } from "@/components/question-bank/QuestionFilters";
+import { ROUTES } from '@/constants/routes';
+import { getQuestions, getQuestionBankStats, getDraftQuestions } from "@/features/admin/services/question-bank";
+import { QuestionBankStatsCards } from "@/features/admin/components/question-bank/QuestionBankStats";
+import { QuestionTable } from "@/features/admin/components/question-bank/QuestionTable";
+import { QuestionFilters } from "@/features/admin/components/question-bank/QuestionFilters";
 import { Plus, Eye, Edit3, Clock, Search } from "lucide-react";
 
 import type { Metadata } from "next";

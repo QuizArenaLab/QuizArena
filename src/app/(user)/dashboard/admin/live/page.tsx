@@ -1,5 +1,5 @@
-import { getLiveOperationsDashboardData } from "@/actions/live-operations";
-import { LiveOperationsDashboardClient } from "@/components/live-operations/LiveOperationsDashboardClient";
+import { getLiveOperationsDashboardData } from "@/features/admin/services/live-operations";
+import { LiveOperationsDashboardClient } from "@/features/admin/components/live-operations/LiveOperationsDashboardClient";
 
 export const metadata = {
   title: "Live Operations — QuizArena Admin",

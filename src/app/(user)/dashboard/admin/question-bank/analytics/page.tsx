@@ -14,7 +14,7 @@ import {
   detectWeakQuestions,
   getDifficultyInsights,
   getQuestionUsageAnalytics,
-} from "@/actions/question-analytics";
+} from "@/features/analytics/services/question-analytics";
 
 import type { Metadata } from "next";
 

@@ -1,13 +1,13 @@
 import { Metadata } from "next";
 import { BrainCircuit, RefreshCw } from "lucide-react";
-import { requireSuperAdmin } from "@/lib/super-admin/governance";
-import { generateExecutiveOverview } from "@/lib/super-admin/strategic-intelligence";
+import { requireSuperAdmin } from "@/features/super-admin/services/governance";
+import { generateExecutiveOverview } from "@/features/super-admin/services/strategic-intelligence";
 
-import { ExecutiveOverviewCards } from "@/components/super-admin/strategic-intelligence/ExecutiveOverviewCards";
-import { StrategicInsightsEngine } from "@/components/super-admin/strategic-intelligence/StrategicInsightsEngine";
-import { GrowthRetentionMetrics } from "@/components/super-admin/strategic-intelligence/GrowthRetentionMetrics";
-import { AnomalyDetectionPanel } from "@/components/super-admin/strategic-intelligence/AnomalyDetectionPanel";
-import { OperationalEfficiencyGrid } from "@/components/super-admin/strategic-intelligence/OperationalEfficiencyGrid";
+import { ExecutiveOverviewCards } from "@/features/super-admin/components/strategic-intelligence/ExecutiveOverviewCards";
+import { StrategicInsightsEngine } from "@/features/super-admin/components/strategic-intelligence/StrategicInsightsEngine";
+import { GrowthRetentionMetrics } from "@/features/super-admin/components/strategic-intelligence/GrowthRetentionMetrics";
+import { AnomalyDetectionPanel } from "@/features/super-admin/components/strategic-intelligence/AnomalyDetectionPanel";
+import { OperationalEfficiencyGrid } from "@/features/super-admin/components/strategic-intelligence/OperationalEfficiencyGrid";
 
 export const metadata: Metadata = {
   title: "Strategic Command | Sovereign Control | QuizArena",

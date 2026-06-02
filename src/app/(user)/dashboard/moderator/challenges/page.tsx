@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { ROUTES } from "@/lib/routes";
-import { getChallenges } from "@/actions/manage/challenge-management";
+import { ROUTES } from '@/constants/routes';
+import { getChallenges } from "@/features/challenges/services/challenge-management";
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLES = {

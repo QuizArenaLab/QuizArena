@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { uploadAndPreviewImport } from "@/actions/bulk-import";
-import { ValidatedRow } from "@/lib/question-bank/bulk-import";
-import { ImportPreview } from "@/components/admin/question-bank/bulk-import/import-preview";
-import { ImportHistory } from "@/components/admin/question-bank/bulk-import/import-history";
+import { uploadAndPreviewImport } from "@/features/admin/services/bulk-import";
+import { ValidatedRow } from "@/features/admin/services/question-bank/bulk-import";
+import { ImportPreview } from "@/features/admin/components/question-bank/bulk-import/import-preview";
+import { ImportHistory } from "@/features/admin/components/question-bank/bulk-import/import-history";
 import { FileUp, FileSpreadsheet, FileText, AlertCircle, Loader2 } from "lucide-react";
 
 export default function BulkImportPage() {
