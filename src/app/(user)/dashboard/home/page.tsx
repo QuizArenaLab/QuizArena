@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
 import { ROLE as ROLES } from "@/features/rbac/constants/role-types";
 import { UserDashboardView } from "@/features/dashboard/components/user/UserDashboard";
-import { AdminDashboardView } from "@/features/dashboard/components/admin/AdminDashboard";
+// AdminDashboardView imported directly in /admin/dashboard now
 import { ModeratorDashboardView } from "@/features/dashboard/components/moderator/ModeratorDashboard";
 import { SuperAdminDashboardView } from "@/features/dashboard/components/super-admin/SuperAdminDashboard";
 
@@ -34,7 +34,7 @@ export default async function DashboardHomePage() {
     case ROLES.SUPER_ADMIN:
       return <SuperAdminDashboardView />;
     case ROLES.ADMIN:
-      return <AdminDashboardView />;
+      redirect("/admin/dashboard");
     case ROLES.MODERATOR:
       return <ModeratorDashboardView />;
     default:

@@ -59,14 +59,18 @@ const moderatorNavItems = [
 ];
 
 const adminNavItems = [
-  { href: "/dashboard/home", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/admin/users", label: "Users", icon: Users },
-  { href: "/dashboard/admin/moderators", label: "Moderators", icon: Users },
-  { href: "/dashboard/admin/monitoring", label: "Monitoring", icon: Activity },
-  { href: "/dashboard/admin/intelligence", label: "Intelligence", icon: BarChart3 },
-  { href: "/dashboard/admin/reports", label: "Reports", icon: ShieldAlert },
-  { href: "/dashboard/admin/monitoring?tab=trends", label: "Performance", icon: BarChart3 },
-  { href: "/dashboard/admin/settings", label: "Platform Settings", icon: Settings2 },
+  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard, group: "OPERATIONS" },
+  { href: "/dashboard/admin/users", label: "Users", icon: Users, group: "OPERATIONS" },
+  { href: "/dashboard/admin/reports", label: "Reports", icon: ShieldAlert, group: "OPERATIONS" },
+  
+  { href: "/dashboard/admin/competitions", label: "Competitions", icon: Trophy, group: "COMPETITIONS" },
+  { href: "/dashboard/admin/leaderboards", label: "Leaderboards", icon: Target, group: "COMPETITIONS" },
+  { href: "/dashboard/admin/rewards", label: "Rewards", icon: Flame, group: "COMPETITIONS" },
+  
+  { href: "/dashboard/admin/intelligence", label: "Analytics", icon: BarChart3, group: "INTELLIGENCE" },
+  { href: "/dashboard/admin/monitoring", label: "Monitoring", icon: Activity, group: "INTELLIGENCE" },
+  
+  { href: "/dashboard/admin/settings", label: "Settings", icon: Settings2, group: "PLATFORM" },
 ];
 
 const superAdminNavItems = [
@@ -126,7 +130,7 @@ export function DashboardShell({
   useEffect(() => {
     if (status === "authenticated" && isNotAdmin) {
       const isTargetingAdminRoute =
-        pathname.startsWith("/dashboard/admin") || pathname.startsWith("/dashboard/super-admin");
+        pathname.startsWith("/dashboard/admin") || pathname.startsWith("/dashboard/super-admin") || pathname.startsWith("/admin/");
       if (isTargetingAdminRoute) {
         window.location.href = "/dashboard/home";
       }
@@ -284,31 +288,41 @@ export function DashboardShell({
         {/* NAVIGATION */}
         <nav className="flex-1 px-4 py-6 overflow-y-auto">
           <div className="space-y-1">
-            {navItems.map((item) => {
+            {navItems.map((item, index) => {
+              const group = (item as any).group;
+              const prevGroup = index > 0 ? (navItems[index - 1] as any).group : null;
+              const showGroupHeader = group && group !== prevGroup;
+              
               const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
               const Icon = item.icon;
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onMouseEnter={() => router.prefetch(item.href)}
-                  className={`group relative flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl transition-all duration-200 ${
-                    isActive
-                      ? "bg-orange-50 text-orange-600 shadow-[inset_0_2px_12px_rgba(249,115,22,0.06)]"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-navy"
-                  }`}
-                  title={item.label}
-                >
-                  {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-orange-500 rounded-r-full" />
+                <div key={item.href}>
+                  {showGroupHeader && (
+                    <div className="px-4 py-2 mt-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
+                      {group}
+                    </div>
                   )}
-                  <Icon
-                    className={`w-5 h-5 shrink-0 transition-colors ${isActive ? "text-orange-500" : ""} ${!isActive && role !== ROLES.USER && item.href.includes("dashboard") ? "text-amber-500" : ""}`}
-                  />
-                  <span className={`text-sm ${isActive ? "font-semibold" : "font-medium"}`}>
-                    {item.label}
-                  </span>
-                </Link>
+                  <Link
+                    href={item.href}
+                    onMouseEnter={() => router.prefetch(item.href)}
+                    className={`group relative flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl transition-all duration-200 ${
+                      isActive
+                        ? "bg-orange-50 text-orange-600 shadow-[inset_0_2px_12px_rgba(249,115,22,0.06)]"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-navy"
+                    }`}
+                    title={item.label}
+                  >
+                    {isActive && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-orange-500 rounded-r-full" />
+                    )}
+                    <Icon
+                      className={`w-5 h-5 shrink-0 transition-colors ${isActive ? "text-orange-500" : ""} ${!isActive && role !== ROLES.USER && item.href.includes("dashboard") ? "text-amber-500" : ""}`}
+                    />
+                    <span className={`text-sm ${isActive ? "font-semibold" : "font-medium"}`}>
+                      {item.label}
+                    </span>
+                  </Link>
+                </div>
               );
             })}
           </div>
@@ -423,31 +437,41 @@ export function DashboardShell({
               {/* Navigation */}
               <nav className="flex-1 p-4 overflow-y-auto">
                 <div className="space-y-1">
-                  {navItems.map((item) => {
+                  {navItems.map((item, index) => {
+                    const group = (item as any).group;
+                    const prevGroup = index > 0 ? (navItems[index - 1] as any).group : null;
+                    const showGroupHeader = group && group !== prevGroup;
+                    
                     const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
                     const Icon = item.icon;
                     return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setSidebarOpen(false)}
-                        onMouseEnter={() => router.prefetch(item.href)}
-                        className={`group relative flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl transition-all duration-200 ${
-                          isActive
-                            ? "bg-orange-50 text-orange-600 shadow-[inset_0_2px_12px_rgba(249,115,22,0.06)]"
-                            : "text-gray-600 hover:bg-gray-50 hover:text-navy"
-                        }`}
-                      >
-                        {isActive && (
-                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-orange-500 rounded-r-full" />
+                      <div key={item.href}>
+                        {showGroupHeader && (
+                          <div className="px-4 py-2 mt-2 text-xs font-bold tracking-wider text-gray-400 uppercase">
+                            {group}
+                          </div>
                         )}
-                        <Icon
-                          className={`w-5 h-5 shrink-0 transition-colors ${isActive ? "text-orange-500" : ""} ${!isActive && role !== ROLES.USER && item.href.includes("dashboard") ? "text-amber-500" : ""}`}
-                        />
-                        <span className={`text-sm ${isActive ? "font-semibold" : "font-medium"}`}>
-                          {item.label}
-                        </span>
-                      </Link>
+                        <Link
+                          href={item.href}
+                          onClick={() => setSidebarOpen(false)}
+                          onMouseEnter={() => router.prefetch(item.href)}
+                          className={`group relative flex items-center gap-3 px-4 py-3 min-h-[48px] rounded-xl transition-all duration-200 ${
+                            isActive
+                              ? "bg-orange-50 text-orange-600 shadow-[inset_0_2px_12px_rgba(249,115,22,0.06)]"
+                              : "text-gray-600 hover:bg-gray-50 hover:text-navy"
+                          }`}
+                        >
+                          {isActive && (
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-orange-500 rounded-r-full" />
+                          )}
+                          <Icon
+                            className={`w-5 h-5 shrink-0 transition-colors ${isActive ? "text-orange-500" : ""} ${!isActive && role !== ROLES.USER && item.href.includes("dashboard") ? "text-amber-500" : ""}`}
+                          />
+                          <span className={`text-sm ${isActive ? "font-semibold" : "font-medium"}`}>
+                            {item.label}
+                          </span>
+                        </Link>
+                      </div>
                     );
                   })}
                 </div>
