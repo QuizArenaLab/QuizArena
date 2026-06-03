@@ -77,7 +77,8 @@ export async function logModerationAction(
   actorId: string,
   targetUserId: string,
   action: string,
-  reason: string
+  reason: string,
+  additionalMetadata?: Record<string, unknown>
 ) {
   let severity: AuditSeverity = "MEDIUM";
   if (action === "SUSPEND" || action === "BAN") {
@@ -91,7 +92,7 @@ export async function logModerationAction(
     actorId,
     targetUserId,
     severity,
-    metadata: { action, reason },
+    metadata: { action, reason, ...additionalMetadata },
   });
 }
 
