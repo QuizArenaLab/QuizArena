@@ -114,7 +114,7 @@ export async function AdminDashboardView() {
                 </div>
                 <span className="text-[10px] font-bold px-2 py-1 bg-red-100 text-red-700 rounded uppercase tracking-wider">High Priority</span>
               </div>
-              <Link href="/dashboard/admin/reports" className="text-sm font-semibold text-red-600 flex items-center gap-1 hover:gap-2 transition-all">
+              <Link href="/dashboard/admin/moderation" className="text-sm font-semibold text-red-600 flex items-center gap-1 hover:gap-2 transition-all">
                 Review <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

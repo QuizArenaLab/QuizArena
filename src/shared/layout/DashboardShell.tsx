@@ -61,7 +61,7 @@ const moderatorNavItems = [
 const adminNavItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard, group: "OPERATIONS" },
   { href: "/dashboard/admin/users", label: "Users", icon: Users, group: "OPERATIONS" },
-  { href: "/dashboard/admin/reports", label: "Reports", icon: ShieldAlert, group: "OPERATIONS" },
+  { href: "/dashboard/admin/moderation", label: "Moderation", icon: ShieldAlert, group: "OPERATIONS" },
   
   { href: "/dashboard/admin/competitions", label: "Competitions", icon: Trophy, group: "COMPETITIONS" },
   { href: "/dashboard/admin/leaderboards", label: "Leaderboards", icon: Target, group: "COMPETITIONS" },

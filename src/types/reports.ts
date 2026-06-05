@@ -76,11 +76,36 @@ export interface ReportNoteData {
 
 export interface ReportsDashboardData {
   summary: ReportsSummary;
+  statusCounts: ReportStatusCounts;
+  agingMetrics: ReportAgingMetrics;
+  platformHealth: PlatformHealthMetrics;
   recentReports: ReportData[];
   highPriorityReports: ReportData[];
   recentModActions: ModerationActionRecord[];
   abuseTrends: AbuseTrendPoint[];
   suspiciousActivity: SuspiciousActivitySignal[];
+  abuseIntelligence: AbuseIntelligence;
+}
+
+export interface ReportStatusCounts {
+  OPEN: number;
+  UNDER_REVIEW: number;
+  CRITICAL: number;
+  RESOLVED: number;
+  DISMISSED: number;
+}
+
+export interface ReportAgingMetrics {
+  under24h: number;
+  between24hAnd48h: number;
+  over48h: number;
+}
+
+export interface PlatformHealthMetrics {
+  reportsMonitoredToday: number;
+  competitionsMonitored: number;
+  usersMonitored: number;
+  lastResolvedIncident: string | null;
 }
 
 export interface ReportsSummary {
@@ -93,6 +118,14 @@ export interface ReportsSummary {
   totalReportsToday: number;
   totalReportsWeek: number;
   averageResolutionHours: number;
+  falseReportRate: number;
+}
+
+export interface AbuseIntelligence {
+  topUsers: { id: string; name: string | null; reportCount: number }[];
+  topCompetitions: { id: string; title: string; reportCount: number }[];
+  commonAbuseTypes: { type: ReportType; count: number }[];
+  repeatOffendersCount: number;
 }
 
 export interface ModerationActionRecord {

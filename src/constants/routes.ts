@@ -52,7 +52,7 @@ export const ROUTES = {
     USERS: "/dashboard/admin/users",
     MODERATORS: "/dashboard/admin/moderators",
     MONITORING: "/dashboard/admin/monitoring",
-    REPORTS: "/dashboard/admin/reports",
+    REPORTS: "/dashboard/admin/moderation",
     INTELLIGENCE: "/dashboard/admin/intelligence",
     QUESTION_BANK: "/dashboard/admin/question-bank",
     QUESTION_BANK_CREATE: "/dashboard/admin/question-bank/create",

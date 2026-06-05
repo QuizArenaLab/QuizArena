@@ -31,7 +31,7 @@ export function generateOperationalInsights(data: {
 
     if (anomaly.metric === "Review Backlog" || anomaly.metric === "Moderation Flow") {
       category = "MODERATOR";
-      link = "/dashboard/admin/reports"; // or moderation queue
+      link = "/dashboard/admin/moderation"; // or moderation queue
       label = "Open Moderation Queue";
     } else if (anomaly.metric === "Active Users") {
       category = "ENGAGEMENT";
@@ -39,7 +39,7 @@ export function generateOperationalInsights(data: {
       label = "View Engagement Analytics";
     } else if (anomaly.metric === "Rejection Rate") {
       category = "CONTENT";
-      link = "/dashboard/admin/reports";
+      link = "/dashboard/admin/moderation";
       label = "Review Rejected Content";
     }
 
@@ -74,7 +74,7 @@ export function generateOperationalInsights(data: {
       category: "CONTENT",
       message: `The '${topSubject.subject}' category shows a high failure rate (${topSubject.failureRate.toFixed(1)}%).`,
       status: "WATCH",
-      actionableLink: "/dashboard/admin/reports",
+      actionableLink: "/dashboard/admin/moderation",
       actionableLabel: "Audit Category Content",
       timestamp: new Date(),
     });

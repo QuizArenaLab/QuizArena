@@ -1,163 +1,130 @@
 "use client";
 
-import { useState } from "react";
-import { Search, Filter, X } from "lucide-react";
-import type { ReportFilters } from "@/types/reports";
-import {
-  REPORT_STATUS_OPTIONS,
-  REPORT_PRIORITY_OPTIONS,
-  REPORT_TYPE_OPTIONS,
-  REPORT_STATUS_LABELS,
-  REPORT_PRIORITY_LABELS,
-  REPORT_TYPE_LABELS,
-} from "@/types/reports";
+import { useState, useEffect, useCallback } from "react";
+import { Search } from "lucide-react";
+import type { ReportFilters, ReportStatus, ReportPriority } from "@/types/reports";
 
 interface ReportsFilterBarProps {
   filters: ReportFilters;
+  statusCounts: import("@/types/reports").ReportStatusCounts;
   onApply: (filters: ReportFilters) => void;
 }
 
-export function ReportsFilterBar({ filters, onApply }: ReportsFilterBarProps) {
+type MainTab = "ALL" | "OPEN" | "UNDER_REVIEW" | "CRITICAL" | "RESOLVED" | "DISMISSED";
+type TypeTab = "ALL" | "USER_ABUSE" | "CHALLENGE_ISSUE" | "INAPPROPRIATE_CONTENT" | "OTHER";
+
+export function ReportsFilterBar({ filters, statusCounts, onApply }: ReportsFilterBarProps) {
   const [localSearch, setLocalSearch] = useState(filters.search || "");
-  const [localStatus, setLocalStatus] = useState(filters.status || "");
-  const [localPriority, setLocalPriority] = useState(filters.priority || "");
-  const [localType, setLocalType] = useState(filters.type || "");
-  const [showFilters, setShowFilters] = useState(false);
+  
+  // Derive active tabs from incoming filters
+  const activeMainTab: MainTab = filters.priority === "CRITICAL" 
+    ? "CRITICAL" 
+    : (filters.status as MainTab) || "ALL";
+    
+  const activeTypeTab: TypeTab = (filters.type as TypeTab) || "ALL";
 
-  const hasActiveFilters = localStatus || localPriority || localType || localSearch;
+  // Debounced Search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (localSearch !== (filters.search || "")) {
+        onApply({ ...filters, search: localSearch || undefined });
+      }
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [localSearch, filters, onApply]);
 
-  function handleApply() {
-    onApply({
-      status: localStatus as ReportFilters["status"],
-      priority: localPriority as ReportFilters["priority"],
-      type: localType as ReportFilters["type"],
-      search: localSearch || undefined,
-    });
-  }
+  const handleMainTabClick = (tab: MainTab) => {
+    const newFilters = { ...filters };
+    delete newFilters.priority;
+    delete newFilters.status;
 
-  function handleClear() {
-    setLocalSearch("");
-    setLocalStatus("");
-    setLocalPriority("");
-    setLocalType("");
-    onApply({});
-  }
+    if (tab === "CRITICAL") {
+      newFilters.priority = "CRITICAL";
+    } else if (tab !== "ALL") {
+      newFilters.status = tab as ReportStatus;
+    }
+    
+    onApply(newFilters);
+  };
 
-  function handleSearchSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    handleApply();
-  }
+  const handleTypeTabClick = (tab: TypeTab) => {
+    const newFilters = { ...filters };
+    if (tab === "ALL") {
+      delete newFilters.type;
+    } else {
+      newFilters.type = tab;
+    }
+    onApply(newFilters);
+  };
+
+  const totalAll = statusCounts.OPEN + statusCounts.UNDER_REVIEW + statusCounts.RESOLVED + statusCounts.DISMISSED;
+
+  const mainTabs = [
+    { id: "ALL", label: `All (${totalAll})` },
+    { id: "OPEN", label: `Open (${statusCounts.OPEN})` },
+    { id: "UNDER_REVIEW", label: `Under Review (${statusCounts.UNDER_REVIEW})` },
+    { id: "CRITICAL", label: `Critical (${statusCounts.CRITICAL})` },
+    { id: "RESOLVED", label: `Resolved (${statusCounts.RESOLVED})` },
+    { id: "DISMISSED", label: `Dismissed (${statusCounts.DISMISSED})` },
+  ];
+
+  const typeTabs = [
+    { id: "ALL", label: "All Types" },
+    { id: "USER_ABUSE", label: "User Reports" },
+    { id: "CHALLENGE_ISSUE", label: "Competition Reports" },
+    { id: "INAPPROPRIATE_CONTENT", label: "Content Reports" },
+    { id: "OTHER", label: "Other" },
+  ];
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-3">
-      {/* Search + Toggle */}
-      <div className="flex items-center gap-3">
-        <form onSubmit={handleSearchSubmit} className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
+        {/* Main Status Tabs */}
+        <div className="flex flex-wrap items-center gap-1">
+          {mainTabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => handleMainTabClick(tab.id as MainTab)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                activeMainTab === tab.id
+                  ? "bg-[#0A1C40] text-white"
+                  : "text-gray-500 hover:text-[#0A1C40] hover:bg-gray-100"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Search Input */}
+        <div className="flex items-center w-full sm:max-w-xs bg-white border border-gray-200 rounded-lg focus-within:ring-2 focus-within:ring-[#0A1C40] focus-within:border-transparent transition-all overflow-hidden">
+          <Search className="w-4 h-4 text-gray-400 ml-3 shrink-0 pointer-events-none" />
           <input
             type="text"
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
-            placeholder="Search reports by user, email, or content…"
-            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            placeholder="Search ID, username, competition..."
+            className="w-full bg-transparent pl-2 pr-4 py-2 text-sm focus:outline-none"
           />
-        </form>
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-semibold transition-colors ${
-            showFilters || hasActiveFilters
-              ? "bg-[#0A1C40] text-white"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-          }`}
-        >
-          <Filter className="w-3.5 h-3.5" />
-          Filters
-          {hasActiveFilters && (
-            <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-          )}
-        </button>
+        </div>
       </div>
 
-      {/* Filter Controls */}
-      {showFilters && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-gray-100">
-          {/* Status */}
-          <div>
-            <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">
-              Status
-            </label>
-            <select
-              value={localStatus}
-              onChange={(e) => setLocalStatus(e.target.value)}
-              className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-            >
-              <option value="">All Statuses</option>
-              {REPORT_STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>
-                  {REPORT_STATUS_LABELS[s]}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Priority */}
-          <div>
-            <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">
-              Priority
-            </label>
-            <select
-              value={localPriority}
-              onChange={(e) => setLocalPriority(e.target.value)}
-              className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-            >
-              <option value="">All Priorities</option>
-              {REPORT_PRIORITY_OPTIONS.map((p) => (
-                <option key={p} value={p}>
-                  {REPORT_PRIORITY_LABELS[p]}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Type */}
-          <div>
-            <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">
-              Report Type
-            </label>
-            <select
-              value={localType}
-              onChange={(e) => setLocalType(e.target.value)}
-              className="w-full text-sm px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-            >
-              <option value="">All Types</option>
-              {REPORT_TYPE_OPTIONS.map((t) => (
-                <option key={t} value={t}>
-                  {REPORT_TYPE_LABELS[t]}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="sm:col-span-3 flex items-center gap-2 pt-2">
-            <button
-              onClick={handleApply}
-              className="px-4 py-2 bg-[#0A1C40] text-white rounded-lg text-xs font-semibold hover:bg-[#0A1C40]/80 transition-colors"
-            >
-              Apply Filters
-            </button>
-            {hasActiveFilters && (
-              <button
-                onClick={handleClear}
-                className="flex items-center gap-1 px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-200 transition-colors"
-              >
-                <X className="w-3 h-3" />
-                Clear All
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Second Row: Type Tabs */}
+      <div className="flex flex-wrap items-center gap-1 pt-3 border-t border-gray-100">
+        {typeTabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => handleTypeTabClick(tab.id as TypeTab)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              activeTypeTab === tab.id
+                ? "bg-gray-200 text-gray-800"
+                : "text-gray-500 hover:bg-gray-100"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

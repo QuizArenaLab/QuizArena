@@ -3,117 +3,114 @@
 import {
   AlertTriangle,
   Clock,
-  CheckCircle,
-  XCircle,
-  TrendingUp,
   Shield,
-  BarChart3,
+  CheckCircle,
   Timer,
+  AlertOctagon,
 } from "lucide-react";
-import type { ReportsSummary } from "@/types/reports";
+import type { ReportsSummary, ReportFilters } from "@/types/reports";
 
 interface ReportsSummaryCardsProps {
   summary: ReportsSummary;
+  onFilterClick?: (filters: ReportFilters) => void;
 }
 
-export function ReportsSummaryCards({ summary }: ReportsSummaryCardsProps) {
+export function ReportsSummaryCards({ summary, onFilterClick }: ReportsSummaryCardsProps) {
   const cards = [
     {
+      id: "open",
       label: "Open Reports",
       value: summary.totalOpen,
       icon: Clock,
-      color: "text-amber-600",
-      bg: "bg-amber-50",
-      border: "border-amber-100",
-      accent: "bg-gradient-to-br from-amber-500 to-amber-600",
+      color: "text-gray-700",
+      bg: "bg-gray-50",
+      border: "border-gray-200",
+      accent: "bg-gray-300",
+      filter: { status: "OPEN" as const },
     },
     {
+      id: "review",
       label: "Under Review",
       value: summary.totalUnderReview,
       icon: Shield,
-      color: "text-blue-600",
+      color: "text-blue-700",
       bg: "bg-blue-50",
-      border: "border-blue-100",
-      accent: "bg-gradient-to-br from-blue-500 to-blue-600",
+      border: "border-blue-200",
+      accent: "bg-blue-300",
+      filter: { status: "UNDER_REVIEW" as const },
     },
     {
-      label: "Critical Active",
+      id: "critical",
+      label: "Critical Cases",
       value: summary.totalCritical,
       icon: AlertTriangle,
-      color: "text-red-600",
+      color: "text-red-700",
       bg: "bg-red-50",
-      border: "border-red-100",
-      accent: "bg-gradient-to-br from-red-500 to-red-600",
+      border: "border-red-200",
+      accent: "bg-red-300",
+      filter: { priority: "CRITICAL" as const },
     },
     {
-      label: "High Priority",
-      value: summary.totalHigh,
-      icon: TrendingUp,
-      color: "text-orange-600",
-      bg: "bg-orange-50",
-      border: "border-orange-100",
-      accent: "bg-gradient-to-br from-orange-500 to-orange-600",
-    },
-    {
-      label: "Resolved",
+      id: "resolved",
+      label: "Resolved Today",
       value: summary.totalResolved,
       icon: CheckCircle,
-      color: "text-emerald-600",
+      color: "text-emerald-700",
       bg: "bg-emerald-50",
-      border: "border-emerald-100",
-      accent: "bg-gradient-to-br from-emerald-500 to-emerald-600",
+      border: "border-emerald-200",
+      accent: "bg-emerald-300",
+      filter: { status: "RESOLVED" as const },
     },
     {
-      label: "Dismissed",
-      value: summary.totalDismissed,
-      icon: XCircle,
-      color: "text-gray-500",
-      bg: "bg-gray-50",
-      border: "border-gray-100",
-      accent: "bg-gradient-to-br from-gray-400 to-gray-500",
-    },
-    {
-      label: "Reports Today",
-      value: summary.totalReportsToday,
-      icon: BarChart3,
-      color: "text-indigo-600",
-      bg: "bg-indigo-50",
-      border: "border-indigo-100",
-      accent: "bg-gradient-to-br from-indigo-500 to-indigo-600",
-    },
-    {
-      label: "Avg Resolution",
+      id: "time",
+      label: "Avg Resolution Time",
       value: `${summary.averageResolutionHours}h`,
       icon: Timer,
-      color: "text-violet-600",
-      bg: "bg-violet-50",
-      border: "border-violet-100",
-      accent: "bg-gradient-to-br from-violet-500 to-violet-600",
+      color: "text-purple-700",
+      bg: "bg-purple-50",
+      border: "border-purple-200",
+      accent: "bg-purple-300",
+      filter: {}, // No specific filter
+    },
+    {
+      id: "falseRate",
+      label: "False Report Rate",
+      value: `${summary.falseReportRate}%`,
+      icon: AlertOctagon,
+      color: "text-amber-700",
+      bg: "bg-amber-50",
+      border: "border-amber-200",
+      accent: "bg-amber-300",
+      filter: {}, // No specific filter
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
       {cards.map((card) => {
         const Icon = card.icon;
+        const isClickable = Object.keys(card.filter).length > 0;
+
         return (
           <div
-            key={card.label}
-            className={`${card.bg} ${card.border} border rounded-xl p-4 relative overflow-hidden group hover:shadow-md transition-all duration-300`}
+            key={card.id}
+            onClick={() => isClickable && onFilterClick?.(card.filter)}
+            className={`${card.bg} ${card.border} border rounded-xl p-4 relative overflow-hidden group transition-all duration-300 ${isClickable ? "cursor-pointer hover:shadow-md hover:-translate-y-0.5" : ""
+              }`}
           >
             {/* Subtle gradient accent */}
             <div
-              className={`absolute top-0 right-0 w-16 h-16 ${card.accent} opacity-[0.06] rounded-bl-[40px] group-hover:opacity-[0.1] transition-opacity`}
+              className={`absolute top-0 right-0 w-16 h-16 ${card.accent} opacity-20 rounded-bl-[40px] group-hover:opacity-30 transition-opacity`}
             />
 
             <div className="flex items-start justify-between relative z-10">
-              <div>
-                <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">
+              <div className="flex flex-col">
+                <p className="text-[11px] font-semibold text-gray-600 uppercase tracking-wider mb-1">
                   {card.label}
                 </p>
                 <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
               </div>
-              <div className={`p-2 ${card.bg} rounded-lg`}>
+              <div className={`p-2 bg-white/60 rounded-lg shadow-sm shrink-0 ml-2`}>
                 <Icon className={`w-4 h-4 ${card.color}`} />
               </div>
             </div>

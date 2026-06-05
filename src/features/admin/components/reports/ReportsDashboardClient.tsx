@@ -1,98 +1,86 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import {
-  Shield,
-  RefreshCw,
-  Clock,
-  AlertTriangle,
-  BarChart3,
-  FileText,
-  Search,
-  Eye,
-  Activity,
-  ShieldAlert,
-} from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
+import { Shield, MoreVertical, RefreshCw } from "lucide-react";
 import type { ReportsDashboardData, ReportData, ReportFilters } from "@/types/reports";
 import { ReportsSummaryCards } from "./ReportsSummaryCards";
 import { ReportsTable } from "./ReportsTable";
-import { ReportInvestigationPanel } from "./ReportInvestigationPanel";
-import { AbuseTrendsChart } from "./AbuseTrendsChart";
-import { SuspiciousActivityPanel } from "./SuspiciousActivityPanel";
-import { ModerationActionsLog } from "./ModerationActionsLog";
+import { ReportInvestigationDrawer } from "./ReportInvestigationDrawer";
 import { ReportsFilterBar } from "./ReportsFilterBar";
+import { ModerationActivityFeed } from "./ModerationActivityFeed";
+import { AbuseIntelligencePanel } from "./AbuseIntelligencePanel";
+import { HighPriorityCases } from "./HighPriorityCases";
+import { LiveSyncStatus } from "./LiveSyncStatus";
+import { QuickActionsBar } from "./QuickActionsBar";
+import { ReportAgingTracker } from "./ReportAgingTracker";
 
 interface ReportsDashboardClientProps {
   initialData: ReportsDashboardData;
 }
 
-type ReportsTab = "overview" | "open" | "high_priority" | "trends" | "moderation" | "suspicious";
-
-const TABS: { id: ReportsTab; label: string; icon: typeof Shield }[] = [
-  { id: "overview", label: "Overview", icon: Shield },
-  { id: "open", label: "Open Reports", icon: FileText },
-  { id: "high_priority", label: "High Priority", icon: AlertTriangle },
-  { id: "trends", label: "Abuse Trends", icon: BarChart3 },
-  { id: "moderation", label: "Moderation Log", icon: Activity },
-  { id: "suspicious", label: "Suspicious Activity", icon: ShieldAlert },
-];
-
-function getInitialTab(): ReportsTab {
-  if (typeof window === "undefined") return "overview";
-  const params = new URLSearchParams(window.location.search);
-  const tab = params.get("tab") as ReportsTab | null;
-  if (tab && TABS.some((t) => t.id === tab)) return tab;
-  return "overview";
-}
-
-function formatLastUpdated(date: Date): string {
-  return date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-}
-
 export function ReportsDashboardClient({ initialData }: ReportsDashboardClientProps) {
-  const [activeTab, setActiveTab] = useState<ReportsTab>(getInitialTab);
   const [data, setData] = useState<ReportsDashboardData>(initialData);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState(new Date());
   const [selectedReport, setSelectedReport] = useState<ReportData | null>(null);
-  const [filteredReports, setFilteredReports] = useState<ReportData[] | null>(null);
-  const [activeFilters, setActiveFilters] = useState<ReportFilters>({});
+  const [showMenu, setShowMenu] = useState(false);
 
-  const handleRefresh = useCallback(async () => {
-    setIsRefreshing(true);
+  // Table state
+  const [activeFilters, setActiveFilters] = useState<ReportFilters>({});
+  const [filteredReports, setFilteredReports] = useState<ReportData[]>(initialData.recentReports);
+  const [isLoadingQueue, setIsLoadingQueue] = useState(false);
+
+  const handleRefresh = useCallback(async (isAuto = false) => {
+    if (!isAuto) setIsRefreshing(true);
     try {
-      const { getReportsDashboardData } = await import("@/features/admin/services/reports");
+      const { getReportsDashboardData } = await import("@/features/admin/reports/services/reports.service");
       const freshData = await getReportsDashboardData();
       setData(freshData);
       setLastRefreshed(new Date());
-      setSelectedReport(null);
-      setFilteredReports(null);
+
+      // Re-trigger fetchModerationQueue
+      const { fetchModerationQueue } = await import("@/features/admin/reports/services/reports.service");
+      const results = await fetchModerationQueue(activeFilters);
+      setFilteredReports(results);
     } catch (error) {
       console.error("Failed to refresh reports data:", error);
     } finally {
-      setIsRefreshing(false);
+      if (!isAuto) setIsRefreshing(false);
     }
-  }, []);
+  }, [activeFilters]);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      handleRefresh(true);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [handleRefresh]);
 
   const handleFilterApply = useCallback(async (filters: ReportFilters) => {
     setActiveFilters(filters);
-    const hasFilters = filters.status || filters.priority || filters.type || filters.search;
-    if (!hasFilters) {
-      setFilteredReports(null);
-      return;
-    }
+    setIsLoadingQueue(true);
     try {
-      const { getFilteredReports } = await import("@/features/admin/services/reports");
-      const results = await getFilteredReports(filters);
+      const { fetchModerationQueue } = await import("@/features/admin/reports/services/reports.service");
+      const results = await fetchModerationQueue(filters);
       setFilteredReports(results);
     } catch (error) {
       console.error("Failed to filter reports:", error);
+    } finally {
+      setIsLoadingQueue(false);
     }
   }, []);
+
+  const handleQuickFilterChange = useCallback((status: string | null, priority: string | null) => {
+    const newFilters: ReportFilters = { ...activeFilters };
+    if (status) newFilters.status = status as any;
+    else delete newFilters.status;
+    
+    if (priority) newFilters.priority = priority as any;
+    else delete newFilters.priority;
+
+    handleFilterApply(newFilters);
+  }, [activeFilters, handleFilterApply]);
 
   const handleOpenInvestigation = useCallback((report: ReportData) => {
     setSelectedReport(report);
@@ -103,178 +91,115 @@ export function ReportsDashboardClient({ initialData }: ReportsDashboardClientPr
   }, []);
 
   const handleModerationComplete = useCallback(() => {
-    handleRefresh();
-  }, [handleRefresh]);
-
-  const criticalCount = data.summary.totalCritical;
-  const openCount = data.summary.totalOpen;
-
-  // If a report is selected, show investigation view
-  if (selectedReport) {
-    return (
-      <ReportInvestigationPanel
-        report={selectedReport}
-        onClose={handleCloseInvestigation}
-        onActionComplete={handleModerationComplete}
-      />
-    );
-  }
+    handleCloseInvestigation();
+    handleRefresh(false);
+  }, [handleCloseInvestigation, handleRefresh]);
 
   return (
     <div className="space-y-6">
       {/* Dashboard Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-gradient-to-br from-red-700 to-red-500 rounded-xl shadow-lg shadow-red-500/20">
+          <div className="p-2.5 bg-linear-to-br from-red-700 to-red-500 rounded-xl shadow-lg shadow-red-500/20">
             <Shield className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-[#0A1C40]">Reports & Abuse Management</h1>
-            <p className="text-xs text-gray-500 flex items-center gap-1.5">
-              <Clock className="w-3 h-3" />
-              Last updated: {formatLastUpdated(lastRefreshed)}
+            <h1 className="text-xl font-bold text-[#0A1C40]">Moderation Command Center</h1>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Review reports, investigate abuse, and protect platform integrity.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {criticalCount > 0 && (
-            <button
-              onClick={() => setActiveTab("high_priority")}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-[11px] font-semibold hover:bg-red-100 transition-colors"
-            >
-              <AlertTriangle className="w-3 h-3" />
-              {criticalCount} Critical
-            </button>
-          )}
-          {openCount > 0 && (
-            <button
-              onClick={() => setActiveTab("open")}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-[11px] font-semibold hover:bg-amber-100 transition-colors"
-            >
-              <Eye className="w-3 h-3" />
-              {openCount} Open
-            </button>
-          )}
+        <div className="flex items-center gap-4">
+          <LiveSyncStatus lastUpdated={lastRefreshed} isSyncing={isRefreshing} />
 
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs font-medium text-[#0A1C40] hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
-            Refresh
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="p-2 bg-white border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 transition-colors"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+            
+            {showMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg z-50 py-1 overflow-hidden">
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      handleRefresh(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Manual Refresh
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="bg-white rounded-xl border border-gray-100 p-1 flex items-center gap-1 overflow-x-auto">
-        {TABS.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          const hasNotification =
-            (tab.id === "high_priority" && criticalCount > 0) ||
-            (tab.id === "suspicious" && data.suspiciousActivity.length > 0);
+      {/* Quick Actions */}
+      <QuickActionsBar statusCounts={data.statusCounts} onFilterChange={handleQuickFilterChange} />
 
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-xs font-semibold transition-all duration-200 whitespace-nowrap relative ${
-                isActive
-                  ? "bg-[#0A1C40] text-white shadow-sm"
-                  : "text-gray-500 hover:text-[#0A1C40] hover:bg-gray-50"
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {tab.label}
-              {hasNotification && (
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    isActive ? "bg-red-400" : "bg-red-500"
-                  } animate-pulse`}
+      {/* KPI Section */}
+      <ReportsSummaryCards summary={data.summary} onFilterClick={(filters) => handleFilterApply({ ...activeFilters, ...filters })} />
+
+      {/* Main Content Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        {/* Left Column: Moderation Queue */}
+        <div className="lg:col-span-8 space-y-4">
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col h-[calc(100vh-320px)] min-h-[600px]">
+            <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+              <ReportsFilterBar filters={activeFilters} statusCounts={data.statusCounts} onApply={handleFilterApply} />
+            </div>
+
+            <div className="flex-1 overflow-auto bg-gray-50/30">
+              {isLoadingQueue ? (
+                <div className="p-8 flex justify-center items-center h-full">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0A1C40]"></div>
+                </div>
+              ) : (
+                <ReportsTable
+                  reports={filteredReports}
+                  onInvestigate={handleOpenInvestigation}
+                  platformHealth={data.platformHealth}
+                  summary={data.summary}
+                  totalOpen={data.statusCounts.OPEN}
                 />
               )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Tab Content */}
-      <div className="min-h-[400px]">
-        {activeTab === "overview" && (
-          <div className="space-y-6">
-            <ReportsSummaryCards summary={data.summary} />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <AbuseTrendsChart trends={data.abuseTrends} />
-              <ModerationActionsLog actions={data.recentModActions} />
-            </div>
-            {data.highPriorityReports.length > 0 && (
-              <div>
-                <h2 className="text-sm font-bold text-[#0A1C40] mb-3 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-red-500" />
-                  High Priority Reports Requiring Attention
-                </h2>
-                <ReportsTable
-                  reports={data.highPriorityReports.slice(0, 5)}
-                  onInvestigate={handleOpenInvestigation}
-                />
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === "open" && (
-          <div className="space-y-4">
-            <ReportsFilterBar filters={activeFilters} onApply={handleFilterApply} />
-            <ReportsTable
-              reports={
-                filteredReports ||
-                data.recentReports.filter((r) => r.status === "OPEN" || r.status === "UNDER_REVIEW")
-              }
-              onInvestigate={handleOpenInvestigation}
-              emptyMessage="No open reports found."
-            />
-          </div>
-        )}
-
-        {activeTab === "high_priority" && (
-          <div className="space-y-4">
-            <ReportsFilterBar filters={activeFilters} onApply={handleFilterApply} />
-            <ReportsTable
-              reports={filteredReports || data.highPriorityReports}
-              onInvestigate={handleOpenInvestigation}
-              emptyMessage="No high priority reports. Platform integrity is looking healthy."
-            />
-          </div>
-        )}
-
-        {activeTab === "trends" && (
-          <div className="space-y-6">
-            <AbuseTrendsChart trends={data.abuseTrends} fullWidth />
-            <div className="bg-white rounded-xl border border-gray-100 p-5">
-              <h3 className="text-sm font-bold text-[#0A1C40] mb-3 flex items-center gap-2">
-                <Search className="w-4 h-4 text-gray-400" />
-                Resolved Reports History
-              </h3>
-              <ReportsTable
-                reports={data.recentReports.filter((r) => r.status === "RESOLVED")}
-                onInvestigate={handleOpenInvestigation}
-                emptyMessage="No resolved reports yet."
-              />
             </div>
           </div>
-        )}
+        </div>
 
-        {activeTab === "moderation" && (
-          <ModerationActionsLog actions={data.recentModActions} fullWidth />
-        )}
+        {/* Right Column: Intelligence & Prioritization */}
+        <div className="lg:col-span-4 space-y-6 flex flex-col h-[calc(100vh-320px)] min-h-[600px] overflow-y-auto pr-1">
+          <HighPriorityCases reports={data.highPriorityReports} onInvestigate={handleOpenInvestigation} />
+          
+          <ReportAgingTracker metrics={data.agingMetrics} />
 
-        {activeTab === "suspicious" && (
-          <SuspiciousActivityPanel signals={data.suspiciousActivity} />
-        )}
+          <AbuseIntelligencePanel intelligence={data.abuseIntelligence} />
+        </div>
       </div>
+
+      {/* Bottom Section: Full Width Activity Log */}
+      <div className="w-full">
+        <ModerationActivityFeed actions={data.recentModActions} />
+      </div>
+
+      {/* Investigation Drawer */}
+      {selectedReport && (
+        <ReportInvestigationDrawer
+          report={selectedReport}
+          onClose={handleCloseInvestigation}
+          onActionComplete={handleModerationComplete}
+        />
+      )}
     </div>
   );
 }
