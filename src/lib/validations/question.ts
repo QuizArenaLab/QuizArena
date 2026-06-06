@@ -40,7 +40,7 @@ export const createQuestionSchema = z
       .string()
       .min(10, "Question must be at least 10 characters")
       .max(2000, "Question must not exceed 2000 characters"),
-    explanation: z.string().max(3000, "Explanation must not exceed 3000 characters").optional(),
+    explanation: z.string().min(1, "Explanation is required").max(3000, "Explanation must not exceed 3000 characters"),
     subject: z
       .string()
       .min(1, "Subject is required")
@@ -70,7 +70,7 @@ export const createQuestionSchema = z
           order: z.number().int(),
         })
       )
-      .min(2, "At least 2 options are required")
+      .min(4, "At least 4 options are required")
       .max(6, "Cannot have more than 6 options"),
   })
   .refine((data) => data.options.filter((opt) => opt.isCorrect).length === 1, {
@@ -121,7 +121,7 @@ export const updateQuestionSchema = z
       .min(10, "Question must be at least 10 characters")
       .max(2000, "Question must not exceed 2000 characters")
       .optional(),
-    explanation: z.string().max(3000, "Explanation must not exceed 3000 characters").optional(),
+    explanation: z.string().min(1, "Explanation is required").max(3000, "Explanation must not exceed 3000 characters").optional(),
     subject: z
       .string()
       .min(1, "Subject is required")
@@ -155,7 +155,7 @@ export const updateQuestionSchema = z
           order: z.number().int(),
         })
       )
-      .min(2, "At least 2 options are required")
+      .min(4, "At least 4 options are required")
       .max(6, "Cannot have more than 6 options")
       .optional(),
   })

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getImportHistory } from "@/features/admin/services/bulk-import";
+import { getImportHistory, deleteImportHistory } from "@/features/admin/services/bulk-import";
 import { format } from "date-fns";
-import { FileDown, RefreshCw, AlertCircle } from "lucide-react";
+import { FileDown, RefreshCw, AlertCircle, Trash2, Eye, FileSpreadsheet, AlertTriangle, Loader2 } from "lucide-react";
 
 interface ImportJob {
   id: string;
@@ -23,6 +23,9 @@ export function ImportHistory() {
   const [jobs, setJobs] = useState<ImportJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchHistory = async () => {
     setLoading(true);
@@ -70,30 +73,44 @@ export function ImportHistory() {
     downloadAnchorNode.remove();
   };
 
+  const handleDelete = async () => {
+    if (!jobToDelete) return;
+    setIsDeleting(true);
+    const res = await deleteImportHistory(jobToDelete);
+    if (res.success) {
+      setJobs(jobs.filter(j => j.id !== jobToDelete));
+      setDeleteModalOpen(false);
+      setJobToDelete(null);
+    } else {
+      alert(res.error || "Failed to delete record");
+    }
+    setIsDeleting(false);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "COMPLETED":
-        return "text-emerald-600 bg-emerald-500/10 border-emerald-500/20";
+        return "text-emerald-700 bg-emerald-50 border-emerald-200";
       case "PARTIAL_SUCCESS":
-        return "text-amber-600 bg-amber-500/10 border-amber-500/20";
+        return "text-amber-700 bg-amber-50 border-amber-200";
       case "FAILED":
-        return "text-red-600 bg-red-500/10 border-red-500/20";
+        return "text-red-700 bg-red-50 border-red-200";
       case "PROCESSING":
-        return "text-blue-600 bg-blue-500/10 border-blue-500/20";
+        return "text-blue-700 bg-blue-50 border-blue-200";
       default:
-        return "text-gray-400 bg-gray-500/10 border-gray-500/20";
+        return "text-gray-600 bg-gray-50 border-gray-200";
     }
   };
 
   if (loading && jobs.length === 0) {
-    return <div className="text-sm text-muted-foreground animate-pulse">Loading history...</div>;
+    return <div className="text-sm text-gray-500 animate-pulse">Loading history...</div>;
   }
 
   if (error) {
     return (
-      <div className="bg-destructive/15 text-destructive p-4 rounded-md border border-destructive/20 flex flex-col gap-1">
-        <h5 className="font-medium flex items-center gap-2">
-          <AlertCircle className="w-4 h-4" /> Error Loading History
+      <div className="bg-red-50 text-red-700 p-4 rounded-xl border border-red-200 flex flex-col gap-1">
+        <h5 className="font-semibold flex items-center gap-2">
+          <AlertCircle className="w-5 h-5" /> Error Loading History
         </h5>
         <p className="text-sm">{error}</p>
       </div>
@@ -103,75 +120,146 @@ export function ImportHistory() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium text-foreground">Import History</h3>
+        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Import History</h3>
         <button
           onClick={fetchHistory}
-          className="text-sm flex items-center text-muted-foreground hover:text-foreground"
+          className="text-sm flex items-center text-gray-500 hover:text-gray-900 font-medium transition-colors"
         >
-          <RefreshCw className="w-4 h-4 mr-1" /> Refresh
+          <RefreshCw className="w-4 h-4 mr-1.5" /> Refresh
         </button>
       </div>
 
       {jobs.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No import jobs found.</p>
+        <div className="flex flex-col items-center justify-center p-12 bg-white border border-gray-200 rounded-2xl text-center shadow-sm">
+          <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-gray-100">
+            <FileSpreadsheet className="w-6 h-6 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">No Import History Yet</h3>
+          <p className="text-sm text-gray-500 mb-6 max-w-sm">Upload a CSV template to start importing questions into the platform.</p>
+          <button 
+            onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}
+            className="btn btn-primary shadow-sm"
+          >
+            Upload Dataset
+          </button>
+        </div>
       ) : (
-        <div className="border border-border/50 rounded-xl overflow-hidden bg-card/50">
-          <div className="overflow-x-auto">
+        <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+          <div className="overflow-y-auto max-h-[400px]">
             <table className="w-full text-sm text-left">
-              <thead className="bg-muted/50 border-b border-border/50 text-muted-foreground">
+              <thead className="bg-gray-50/80 border-b border-gray-200 text-gray-500 sticky top-0 z-10 backdrop-blur-sm">
                 <tr>
-                  <th className="px-4 py-3 font-medium">File</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Rows (Valid/Total)</th>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 font-medium">User</th>
-                  <th className="px-4 py-3 font-medium">Actions</th>
+                  <th className="px-5 py-4 font-semibold text-xs uppercase tracking-wider">File</th>
+                  <th className="px-5 py-4 font-semibold text-xs uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-4 font-semibold text-xs uppercase tracking-wider">Rows</th>
+                  <th className="px-5 py-4 font-semibold text-xs uppercase tracking-wider">Date</th>
+                  <th className="px-5 py-4 font-semibold text-xs uppercase tracking-wider">User</th>
+                  <th className="px-5 py-4 font-semibold text-xs uppercase tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/50">
+              <tbody className="divide-y divide-gray-100">
                 {jobs.map((job) => (
-                  <tr key={job.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-3 font-medium text-foreground">{job.fileName}</td>
-                    <td className="px-4 py-3">
+                  <tr key={job.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-5 py-4 font-medium text-gray-900">{job.fileName}</td>
+                    <td className="px-5 py-4">
                       <span
-                        className={`px-2 py-1 rounded-md border text-xs font-medium ${getStatusColor(job.status)}`}
+                        className={`inline-flex items-center px-2.5 py-1 rounded-lg border text-xs font-bold tracking-wide ${getStatusColor(job.status)}`}
                       >
-                        {job.status}
+                        {job.status === "PARTIAL_SUCCESS" ? "REVIEW REQ." : job.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-emerald-500 font-medium">{job.validRows}</span>
-                        <span className="text-muted-foreground">/</span>
-                        <span className="text-foreground">{job.totalRows}</span>
+                    <td className="px-5 py-4">
+                      <div className="flex flex-col gap-1 text-xs font-medium">
+                        <div className="flex items-center gap-1.5 text-emerald-600">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                          {job.validRows} Valid
+                        </div>
                         {job.invalidRows > 0 && (
-                          <span className="text-red-500 text-xs ml-2">
-                            ({job.invalidRows} invalid)
-                          </span>
+                          <div className="flex items-center gap-1.5 text-red-600">
+                            <span className="w-2 h-2 rounded-full bg-red-500" />
+                            {job.invalidRows} Invalid
+                          </div>
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">
+                    <td className="px-5 py-4 text-gray-500 whitespace-nowrap">
                       {format(new Date(job.startedAt), "MMM d, yyyy HH:mm")}
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">
+                    <td className="px-5 py-4 text-gray-500">
                       {job.uploadedBy?.name || job.uploadedBy?.email || "Unknown"}
                     </td>
-                    <td className="px-4 py-3">
-                      {job.errorReport && (
+                    <td className="px-5 py-4">
+                      <div className="flex items-center justify-end gap-3">
                         <button
-                          onClick={() => downloadErrorReport(job)}
-                          className="flex items-center text-amber-500 hover:text-amber-400 text-xs font-medium"
-                          title="Download Error Report"
+                          className="text-gray-400 hover:text-secondary transition-colors"
+                          title="View Details"
                         >
-                          <FileDown className="w-4 h-4 mr-1" /> Errors
+                          <Eye className="w-4 h-4" />
                         </button>
-                      )}
+                        {job.errorReport ? (
+                          <button
+                            onClick={() => downloadErrorReport(job)}
+                            className="text-amber-500 hover:text-amber-600 transition-colors"
+                            title="Download Error Report"
+                          >
+                            <FileDown className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <span className="w-4 h-4" />
+                        )}
+                        <button
+                          onClick={() => {
+                            setJobToDelete(job.id);
+                            setDeleteModalOpen(true);
+                          }}
+                          className="text-gray-400 hover:text-red-500 transition-colors"
+                          title="Delete Record"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6">
+              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
+                <AlertTriangle className="w-6 h-6 text-red-500" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Import Record?</h3>
+              <p className="text-sm text-gray-500">
+                This action only removes the import history record from this table. <strong>Imported questions remain unchanged</strong> in the database.
+              </p>
+            </div>
+            <div className="p-4 bg-gray-50 flex items-center justify-end gap-3 border-t border-gray-100">
+              <button
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setJobToDelete(null);
+                }}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {isDeleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                Delete Record
+              </button>
+            </div>
           </div>
         </div>
       )}

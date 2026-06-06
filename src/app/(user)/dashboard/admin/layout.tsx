@@ -18,7 +18,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
 
   const navItems = [
     { href: "/dashboard/admin", label: "Overview", icon: LayoutDashboard },
-    { href: ROUTES.ADMIN.QUESTION_BANK, label: "Question Bank", icon: BookOpen },
+    { href: ROUTES.ADMIN.QUESTIONS, label: "Question Bank", icon: BookOpen },
     { href: ROUTES.ADMIN.USERS, label: "Users", icon: Users },
     { href: ROUTES.ADMIN.MODERATORS, label: "Moderators", icon: ClipboardList },
     { href: ROUTES.ADMIN.MONITORING, label: "Monitoring", icon: Activity },

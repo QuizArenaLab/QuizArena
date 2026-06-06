@@ -29,13 +29,16 @@ export function QuestionForm() {
   const [question, setQuestion] = useState("");
   const [explanation, setExplanation] = useState("");
   const [category, setCategory] = useState("");
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [subject, setSubject] = useState("");
+  const [isCustomSubject, setIsCustomSubject] = useState(false);
   const [topic, setTopic] = useState("");
   const [difficulty, setDifficulty] = useState<string>("MEDIUM");
   const [language, setLanguage] = useState("en");
   const [marks, setMarks] = useState(1);
   const [negativeMarks, setNegativeMarks] = useState(0);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [customTagInput, setCustomTagInput] = useState("");
   const [options, setOptions] = useState<OptionInput[]>([
     { optionText: "", isCorrect: false, order: 0 },
     { optionText: "", isCorrect: false, order: 1 },
@@ -49,7 +52,7 @@ export function QuestionForm() {
   };
 
   const removeOption = (index: number) => {
-    if (options.length <= 2) return;
+    if (options.length <= 4) return;
     const newOptions = options.filter((_, i) => i !== index);
     setOptions(newOptions.map((opt, i) => ({ ...opt, order: i })));
   };
@@ -71,6 +74,17 @@ export function QuestionForm() {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
+  };
+
+  const handleAddCustomTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      const newTag = customTagInput.trim();
+      if (newTag && !selectedTags.includes(newTag)) {
+        setSelectedTags([...selectedTags, newTag]);
+      }
+      setCustomTagInput("");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -143,41 +157,87 @@ export function QuestionForm() {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Category <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              required
-              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
-            >
-              <option value="">Select category</option>
-              {QUESTION_CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-sm font-medium text-gray-700">
+                Category <span className="text-red-500">*</span>
+              </label>
+              <button 
+                type="button" 
+                onClick={() => {
+                  setIsCustomCategory(!isCustomCategory);
+                  setCategory("");
+                }}
+                className="text-xs text-secondary hover:text-secondary/80 font-medium transition-colors"
+              >
+                {isCustomCategory ? "Select from list" : "+ Custom category"}
+              </button>
+            </div>
+            {isCustomCategory ? (
+              <input
+                type="text"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required
+                placeholder="Enter custom category"
+                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+              />
+            ) : (
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required
+                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+              >
+                <option value="">Select category</option>
+                {QUESTION_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Subject <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              required
-              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
-            >
-              <option value="">Select subject</option>
-              {COMMON_SUBJECTS.map((subj) => (
-                <option key={subj} value={subj}>
-                  {subj}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-sm font-medium text-gray-700">
+                Subject <span className="text-red-500">*</span>
+              </label>
+              <button 
+                type="button" 
+                onClick={() => {
+                  setIsCustomSubject(!isCustomSubject);
+                  setSubject("");
+                }}
+                className="text-xs text-secondary hover:text-secondary/80 font-medium transition-colors"
+              >
+                {isCustomSubject ? "Select from list" : "+ Custom subject"}
+              </button>
+            </div>
+            {isCustomSubject ? (
+              <input
+                type="text"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                required
+                placeholder="Enter custom subject"
+                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+              />
+            ) : (
+              <select
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                required
+                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+              >
+                <option value="">Select subject</option>
+                {COMMON_SUBJECTS.map((subj) => (
+                  <option key={subj} value={subj}>
+                    {subj}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div>
@@ -187,7 +247,7 @@ export function QuestionForm() {
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g., Compound Interest"
-              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
 
@@ -227,7 +287,7 @@ export function QuestionForm() {
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
             >
               {LANGUAGE_OPTIONS.map((lang) => (
                 <option key={lang.value} value={lang.value}>
@@ -246,7 +306,7 @@ export function QuestionForm() {
                 onChange={(e) => setMarks(parseInt(e.target.value) || 1)}
                 min={1}
                 max={10}
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
             <div className="flex-1">
@@ -260,7 +320,7 @@ export function QuestionForm() {
                 min={0}
                 max={1}
                 step={0.25}
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
           </div>
@@ -270,7 +330,20 @@ export function QuestionForm() {
       {/* Section: Tags */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Tags</h3>
+        
+        <div className="mb-4">
+          <input
+            type="text"
+            value={customTagInput}
+            onChange={(e) => setCustomTagInput(e.target.value)}
+            onKeyDown={handleAddCustomTag}
+            placeholder="Type a custom tag and press Enter"
+            className="w-full md:w-1/2 px-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+          />
+        </div>
+
         <div className="flex flex-wrap gap-2">
+          {/* Preset Tags */}
           {TAG_PRESETS.map((tag) => (
             <button
               key={tag}
@@ -278,11 +351,22 @@ export function QuestionForm() {
               onClick={() => toggleTag(tag)}
               className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
                 selectedTags.includes(tag)
-                  ? "bg-indigo-50 text-indigo-700 border-indigo-300"
+                  ? "bg-accent/20 text-secondary border-secondary/30"
                   : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
               }`}
             >
               {tag}
+            </button>
+          ))}
+          {/* Custom Tags that are selected but not in preset */}
+          {selectedTags.filter(tag => !TAG_PRESETS.includes(tag as any)).map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => toggleTag(tag)}
+              className="px-3 py-1.5 text-xs font-medium rounded-lg border transition-all bg-accent/20 text-secondary border-secondary/30"
+            >
+              {tag} <span className="ml-1 opacity-60">×</span>
             </button>
           ))}
         </div>
@@ -306,20 +390,23 @@ export function QuestionForm() {
               minLength={10}
               maxLength={2000}
               placeholder="Enter the question text…"
-              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y"
+              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent resize-y"
             />
             <p className="text-[11px] text-gray-400 mt-1 text-right">{question.length}/2000</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Explanation</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Explanation <span className="text-red-500">*</span>
+            </label>
             <textarea
               value={explanation}
               onChange={(e) => setExplanation(e.target.value)}
+              required
               rows={3}
               maxLength={3000}
               placeholder="Provide a detailed explanation for the correct answer…"
-              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-y"
+              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent resize-y"
             />
           </div>
         </div>
@@ -366,10 +453,10 @@ export function QuestionForm() {
                 onChange={(e) => updateOption(index, "optionText", e.target.value)}
                 required
                 placeholder={`Option ${String.fromCharCode(65 + index)}`}
-                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
               />
 
-              {options.length > 2 && (
+              {options.length > 4 && (
                 <button
                   type="button"
                   onClick={() => removeOption(index)}
@@ -386,7 +473,7 @@ export function QuestionForm() {
           <button
             type="button"
             onClick={addOption}
-            className="mt-3 flex items-center gap-2 px-4 py-2 text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+            className="mt-3 flex items-center gap-2 px-4 py-2 text-sm text-secondary hover:text-secondary/80 font-medium transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Option
@@ -406,7 +493,7 @@ export function QuestionForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-2.5 text-sm font-semibold text-white bg-linear-to-r from-indigo-600 to-violet-600 rounded-xl hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-6 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
           {isSubmitting ? "Creating…" : "Create Question"}

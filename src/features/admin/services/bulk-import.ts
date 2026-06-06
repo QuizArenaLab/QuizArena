@@ -156,14 +156,31 @@ export async function executeBulkImport(
                 .filter(Boolean)
             : [];
 
+          const optionsToCreate = [
+            { optionText: data.optionA, isCorrect: data.correctOption === "A", order: 1 },
+            { optionText: data.optionB, isCorrect: data.correctOption === "B", order: 2 },
+            { optionText: data.optionC, isCorrect: data.correctOption === "C", order: 3 },
+            { optionText: data.optionD, isCorrect: data.correctOption === "D", order: 4 },
+          ];
+          
+          if (data.optionE) {
+            optionsToCreate.push({ optionText: data.optionE, isCorrect: data.correctOption === "E", order: 5 });
+          }
+          if (data.optionF) {
+            optionsToCreate.push({ optionText: data.optionF, isCorrect: data.correctOption === "F", order: 6 });
+          }
+
           await tx.question.create({
             data: {
               questionCode,
               question: data.question,
               explanation: data.explanation || null,
               subject: data.subject,
+              topic: data.topic || null,
               category: data.category,
               language: data.language || "en",
+              marks: data.marks || 1,
+              negativeMarks: data.negativeMarks || 0,
               difficulty: data.difficulty as any,
               tags: tags,
               status: "DRAFT",
@@ -171,12 +188,7 @@ export async function executeBulkImport(
               isActive: true,
               createdById: session.user.id,
               options: {
-                create: [
-                  { optionText: data.optionA, isCorrect: data.correctOption === "A", order: 1 },
-                  { optionText: data.optionB, isCorrect: data.correctOption === "B", order: 2 },
-                  { optionText: data.optionC, isCorrect: data.correctOption === "C", order: 3 },
-                  { optionText: data.optionD, isCorrect: data.correctOption === "D", order: 4 },
-                ],
+                create: optionsToCreate,
               },
             },
           });
@@ -236,5 +248,33 @@ export async function getImportHistory() {
     return { success: true, jobs };
   } catch (error) {
     return { success: false, error: "Failed to fetch import history" };
+  }
+}
+
+export async function deleteImportHistory(jobId: string) {
+  try {
+    await requireSmeSession();
+    
+    // Validate job exists
+    const job = await prisma.questionImportJob.findUnique({
+      where: { id: jobId }
+    });
+    
+    if (!job) {
+      return { success: false, error: "Import job not found" };
+    }
+
+    // Delete the record
+    await prisma.questionImportJob.delete({
+      where: { id: jobId }
+    });
+
+    revalidatePath("/dashboard/admin/question-bank");
+    revalidatePath("/dashboard/admin/questions/import");
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Delete import history error:", error);
+    return { success: false, error: "Failed to delete import history record" };
   }
 }

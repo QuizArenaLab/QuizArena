@@ -186,7 +186,7 @@ export const QUESTION_CODE_PAD_LENGTH = 6;
 
 // ─── Governance Constants ───────────────────────────────────────────────────
 
-export const MIN_OPTIONS = 2;
+export const MIN_OPTIONS = 4;
 export const MAX_OPTIONS = 6;
 export const MIN_QUESTION_LENGTH = 10;
 export const MAX_QUESTION_LENGTH = 2000;

@@ -26,6 +26,7 @@ import {
   Activity,
   ShieldAlert,
   Flame,
+  BookOpen,
 } from "lucide-react";
 
 import { signOut } from "next-auth/react";
@@ -63,9 +64,7 @@ const adminNavItems = [
   { href: "/dashboard/admin/users", label: "Users", icon: Users, group: "OPERATIONS" },
   { href: "/dashboard/admin/moderation", label: "Moderation", icon: ShieldAlert, group: "OPERATIONS" },
   
-  { href: "/dashboard/admin/competitions", label: "Competitions", icon: Trophy, group: "COMPETITIONS" },
-  { href: "/dashboard/admin/leaderboards", label: "Leaderboards", icon: Target, group: "COMPETITIONS" },
-  { href: "/dashboard/admin/rewards", label: "Rewards", icon: Flame, group: "COMPETITIONS" },
+  { href: "/dashboard/admin/questions", label: "Question Bank", icon: BookOpen, group: "QUESTION BANK" },
   
   { href: "/dashboard/admin/intelligence", label: "Analytics", icon: BarChart3, group: "INTELLIGENCE" },
   { href: "/dashboard/admin/monitoring", label: "Monitoring", icon: Activity, group: "INTELLIGENCE" },

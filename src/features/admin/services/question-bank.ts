@@ -90,6 +90,11 @@ async function createQuestionAuditLog(
 function revalidateQuestionPaths(questionId?: string) {
   revalidatePath("/dashboard/admin/question-bank");
   revalidatePath("/dashboard/admin/question-bank/review");
+  revalidatePath("/dashboard/admin/questions");
+  revalidatePath("/dashboard/admin/questions/review");
+  revalidatePath("/dashboard/admin/questions/drafts");
+  revalidatePath("/dashboard/admin/questions/published");
+  revalidatePath("/dashboard/admin/questions/archive");
   revalidatePath("/dashboard/moderator/questions");
   if (questionId) {
     revalidatePath(`/dashboard/admin/question-bank/${questionId}`);
@@ -1123,5 +1128,211 @@ export async function getDraftQuestions() {
     return drafts;
   } catch (error) {
     return [];
+  }
+}
+
+// ─── BULK APPROVE ───────────────────────────────────────────────────────────
+
+export async function bulkApproveQuestions(
+  questionIds: string[]
+): Promise<{ success: boolean; approvedCount?: number; error?: string }> {
+  try {
+    const { session, userRole } = await requireAdminSession();
+
+    if (!questionIds || questionIds.length === 0) {
+      return { success: false, error: "No questions selected" };
+    }
+
+    const questions = await prisma.question.findMany({
+      where: { id: { in: questionIds }, status: "REVIEW" },
+      select: { id: true, status: true, createdById: true },
+    });
+
+    if (questions.length === 0) {
+      return { success: false, error: "No eligible questions found in REVIEW status" };
+    }
+
+    // Filter out self-authored questions for non-super-admins
+    const eligible = questions.filter(
+      (q) => q.createdById !== session.user.id || userRole === "SUPER_ADMIN"
+    );
+
+    if (eligible.length === 0) {
+      return { success: false, error: "Cannot approve your own questions" };
+    }
+
+    const ids = eligible.map((q) => q.id);
+
+    await prisma.question.updateMany({
+      where: { id: { in: ids } },
+      data: {
+        status: "APPROVED",
+        reviewedById: session.user.id,
+        approvedById: session.user.id,
+        reviewedAt: new Date(),
+        rejectionReason: null,
+      },
+    });
+
+    // Create audit entries
+    for (const q of eligible) {
+      await createQuestionAuditLog(
+        q.id,
+        "APPROVED",
+        session.user.id,
+        "REVIEW",
+        "APPROVED",
+        undefined,
+        undefined,
+        "Bulk approved"
+      );
+    }
+
+    revalidateQuestionPaths();
+    return { success: true, approvedCount: ids.length };
+  } catch (error) {
+    return { success: false, error: "Failed to bulk approve questions" };
+  }
+}
+
+// ─── BULK REJECT ────────────────────────────────────────────────────────────
+
+export async function bulkRejectQuestions(
+  questionIds: string[],
+  reason: string
+): Promise<{ success: boolean; rejectedCount?: number; error?: string }> {
+  try {
+    const { session } = await requireAdminSession();
+
+    if (!questionIds || questionIds.length === 0) {
+      return { success: false, error: "No questions selected" };
+    }
+    if (!reason || reason.trim().length === 0) {
+      return { success: false, error: "Rejection reason is required" };
+    }
+
+    const questions = await prisma.question.findMany({
+      where: { id: { in: questionIds }, status: "REVIEW" },
+      select: { id: true },
+    });
+
+    if (questions.length === 0) {
+      return { success: false, error: "No eligible questions found in REVIEW status" };
+    }
+
+    const ids = questions.map((q) => q.id);
+
+    await prisma.question.updateMany({
+      where: { id: { in: ids } },
+      data: {
+        status: "REJECTED",
+        reviewedById: session.user.id,
+        reviewedAt: new Date(),
+        rejectionReason: reason.trim(),
+        reviewNotes: null,
+      },
+    });
+
+    for (const q of questions) {
+      await createQuestionAuditLog(
+        q.id,
+        "REJECTED",
+        session.user.id,
+        "REVIEW",
+        "REJECTED",
+        undefined,
+        undefined,
+        reason.trim()
+      );
+    }
+
+    revalidateQuestionPaths();
+    return { success: true, rejectedCount: ids.length };
+  } catch (error) {
+    return { success: false, error: "Failed to bulk reject questions" };
+  }
+}
+
+// ─── RESTORE ARCHIVED ───────────────────────────────────────────────────────
+
+export async function restoreArchivedQuestion(
+  questionId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { session, userRole } = await requireAdminSession();
+
+    const question = await prisma.question.findUnique({
+      where: { id: questionId },
+      select: { status: true },
+    });
+
+    if (!question) {
+      return { success: false, error: "Question not found" };
+    }
+    if (question.status !== "ARCHIVED") {
+      return { success: false, error: "Question is not archived" };
+    }
+
+    await prisma.question.update({
+      where: { id: questionId },
+      data: { status: "DRAFT", isActive: true },
+    });
+
+    await createQuestionAuditLog(
+      questionId,
+      "UPDATED",
+      session.user.id,
+      "ARCHIVED",
+      "DRAFT",
+      undefined,
+      undefined,
+      "Restored from archive"
+    );
+
+    revalidateQuestionPaths(questionId);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to restore question" };
+  }
+}
+
+// ─── PERMANENT DELETE (Super Admin Only) ────────────────────────────────────
+
+export async function permanentlyDeleteQuestion(
+  questionId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { session, userRole } = await requireAdminSession();
+
+    if (userRole !== "SUPER_ADMIN") {
+      return { success: false, error: "Only Super Admins can permanently delete questions" };
+    }
+
+    const question = await prisma.question.findUnique({
+      where: { id: questionId },
+      select: { status: true, _count: { select: { challenges: true } } },
+    });
+
+    if (!question) {
+      return { success: false, error: "Question not found" };
+    }
+    if (question._count.challenges > 0) {
+      return { success: false, error: "Cannot delete a question attached to challenges" };
+    }
+
+    await prisma.question.delete({ where: { id: questionId } });
+
+    await createAuditLog({
+      action: "QUESTION_PERMANENTLY_DELETED",
+      entityType: "QUESTION",
+      entityId: questionId,
+      actorId: session.user.id,
+      severity: "HIGH",
+    });
+
+    revalidateQuestionPaths();
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to permanently delete question" };
   }
 }

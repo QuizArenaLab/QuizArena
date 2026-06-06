@@ -11,15 +11,20 @@ export const importRowSchema = z.object({
   optionB: z.string().min(1, "Option B is required"),
   optionC: z.string().min(1, "Option C is required"),
   optionD: z.string().min(1, "Option D is required"),
-  correctOption: z.enum(["A", "B", "C", "D"], {
-    message: "Correct option must be A, B, C, or D",
+  optionE: z.string().optional(),
+  optionF: z.string().optional(),
+  correctOption: z.enum(["A", "B", "C", "D", "E", "F"], {
+    message: "Correct option must be A, B, C, D, E, or F",
   }),
-  explanation: z.string().optional(),
+  explanation: z.string().min(1, "Explanation is required"),
   category: z.string().min(2, "Category is required"),
   subject: z.string().min(2, "Subject is required"),
+  topic: z.string().optional(),
   difficulty: z.enum(["BEGINNER", "MEDIUM", "HARDCORE"], {
     message: "Difficulty must be BEGINNER, MEDIUM, or HARDCORE",
   }),
+  marks: z.coerce.number().min(1).default(1),
+  negativeMarks: z.coerce.number().min(0).default(0),
   tags: z.string().optional(), // Comma-separated tags
   language: z.string().default("en"),
 });
