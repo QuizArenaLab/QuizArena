@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuestionAuthoringStore } from "@/features/admin/store/question-authoring";
+import { useFormContext } from "react-hook-form";
 import {
   QUESTION_CATEGORIES,
   COMMON_SUBJECTS,
@@ -10,15 +10,25 @@ import {
 } from "@/features/admin/services/question-bank/constants";
 
 export function MetadataStep() {
-  const { formData, setFormData } = useQuestionAuthoringStore();
+  const {
+    register,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useFormContext();
+  const formData = watch();
 
   const toggleTag = (tag: string) => {
     const currentTags = formData.tags || [];
     if (currentTags.includes(tag)) {
-      setFormData({ tags: currentTags.filter((t) => t !== tag) });
+      setValue(
+        "tags",
+        currentTags.filter((t: string) => t !== tag),
+        { shouldValidate: true, shouldDirty: true }
+      );
     } else {
       if (currentTags.length < 20) {
-        setFormData({ tags: [...currentTags, tag] });
+        setValue("tags", [...currentTags, tag], { shouldValidate: true, shouldDirty: true });
       }
     }
   };
@@ -35,9 +45,8 @@ export function MetadataStep() {
               Category <span className="text-red-500">*</span>
             </label>
             <select
-              value={formData.category || ""}
-              onChange={(e) => setFormData({ category: e.target.value })}
-              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+              {...register("category")}
+              className={`w-full px-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white ${errors.category ? "border-red-300" : "border-gray-300"}`}
             >
               <option value="">Select category</option>
               {QUESTION_CATEGORIES.map((cat) => (
@@ -53,9 +62,8 @@ export function MetadataStep() {
               Subject <span className="text-red-500">*</span>
             </label>
             <select
-              value={formData.subject || ""}
-              onChange={(e) => setFormData({ subject: e.target.value })}
-              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+              {...register("subject")}
+              className={`w-full px-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white ${errors.subject ? "border-red-300" : "border-gray-300"}`}
             >
               <option value="">Select subject</option>
               {COMMON_SUBJECTS.map((subj) => (
@@ -70,8 +78,7 @@ export function MetadataStep() {
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Topic</label>
             <input
               type="text"
-              value={formData.topic || ""}
-              onChange={(e) => setFormData({ topic: e.target.value })}
+              {...register("topic")}
               placeholder="e.g., Compound Interest"
               className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
@@ -86,7 +93,9 @@ export function MetadataStep() {
                 <button
                   key={key}
                   type="button"
-                  onClick={() => setFormData({ difficulty: key as any })}
+                  onClick={() =>
+                    setValue("difficulty", key as any, { shouldValidate: true, shouldDirty: true })
+                  }
                   className={`flex-1 px-3 py-2.5 text-sm font-semibold rounded-xl border-2 transition-all ${
                     formData.difficulty === key
                       ? "shadow-sm"
@@ -111,8 +120,7 @@ export function MetadataStep() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Language</label>
             <select
-              value={formData.language || "en"}
-              onChange={(e) => setFormData({ language: e.target.value })}
+              {...register("language")}
               className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
             >
               {LANGUAGE_OPTIONS.map((lang) => (
@@ -128,8 +136,7 @@ export function MetadataStep() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Marks</label>
               <input
                 type="number"
-                value={formData.marks ?? 1}
-                onChange={(e) => setFormData({ marks: parseInt(e.target.value) || 1 })}
+                {...register("marks", { valueAsNumber: true })}
                 min={1}
                 max={10}
                 className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -141,8 +148,7 @@ export function MetadataStep() {
               </label>
               <input
                 type="number"
-                value={formData.negativeMarks ?? 0}
-                onChange={(e) => setFormData({ negativeMarks: parseFloat(e.target.value) || 0 })}
+                {...register("negativeMarks", { valueAsNumber: true })}
                 min={0}
                 max={1}
                 step={0.25}

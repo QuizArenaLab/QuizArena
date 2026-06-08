@@ -96,9 +96,11 @@ export async function getContentHealthMetrics(): Promise<ContentHealthMetrics> {
         prisma.question.count({
           where: { OR: [{ explanation: null }, { explanation: "" }] },
         }),
-        prisma.question.count({
-          where: { tags: { isEmpty: true } },
-        }).catch(() => prisma.question.count({ where: { tags: { equals: [] } } })),
+        prisma.question
+          .count({
+            where: { tags: { isEmpty: true } },
+          })
+          .catch(() => prisma.question.count({ where: { tags: { equals: [] } } })),
         prisma.question.count({
           where: { OR: [{ topic: null }, { topic: "" }] },
         }),
@@ -266,16 +268,19 @@ export async function getQuestionHealthBreakdown(): Promise<QuestionBankHealth> 
   try {
     await requireAdminSession();
 
-    const [byExamRaw, byDiffRaw, missingExplanation, unusedQuestions, pendingReview] = await Promise.all([
-      prisma.question.groupBy({ by: ["examCategory"], _count: true }),
-      prisma.question.groupBy({ by: ["difficulty"], _count: true }),
-      prisma.question.count({ where: { OR: [{ explanation: null }, { explanation: "" }] } }),
-      prisma.question.count({ where: { usageCount: 0 } }),
-      prisma.question.count({ where: { status: "REVIEW" } }),
-    ]);
+    const [byExamRaw, byDiffRaw, missingExplanation, unusedQuestions, pendingReview] =
+      await Promise.all([
+        prisma.question.groupBy({ by: ["examCategory"], _count: true }),
+        prisma.question.groupBy({ by: ["difficulty"], _count: true }),
+        prisma.question.count({ where: { OR: [{ explanation: null }, { explanation: "" }] } }),
+        prisma.question.count({ where: { usageCount: 0 } }),
+        prisma.question.count({ where: { status: "REVIEW" } }),
+      ]);
 
     return {
-      byExam: byExamRaw.filter((r) => r.examCategory).map((r) => ({ exam: r.examCategory!, count: r._count })),
+      byExam: byExamRaw
+        .filter((r) => r.examCategory)
+        .map((r) => ({ exam: r.examCategory!, count: r._count })),
       byDifficulty: byDiffRaw.map((r) => ({ difficulty: r.difficulty, count: r._count })),
       missingExplanation,
       unusedQuestions,
@@ -328,4 +333,3 @@ export async function getRecentQuestionActivity(limit = 7): Promise<RecentActivi
     return [];
   }
 }
-

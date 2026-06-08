@@ -13,7 +13,12 @@ export function DangerZone() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [isPending, startTransition] = useTransition();
-  const [pendingToast, setPendingToast] = useState<{ id: string; title: string; desc?: string; reload?: boolean } | null>(null);
+  const [pendingToast, setPendingToast] = useState<{
+    id: string;
+    title: string;
+    desc?: string;
+    reload?: boolean;
+  } | null>(null);
 
   useEffect(() => {
     if (!isPending && pendingToast) {
@@ -24,7 +29,7 @@ export function DangerZone() {
       if (pendingToast.reload) {
         window.location.href = "/";
       }
-      setPendingToast(null);
+      setTimeout(() => setPendingToast(null), 0);
     }
   }, [isPending, pendingToast]);
 

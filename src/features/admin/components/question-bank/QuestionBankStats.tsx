@@ -7,6 +7,7 @@ import {
   Flag,
   TrendingUp,
   BookOpen,
+  AlertTriangle,
 } from "lucide-react";
 import type { QuestionBankStats } from "@/features/admin/services/question-bank";
 
@@ -71,11 +72,18 @@ const STAT_CARDS = [
     gradient: "from-blue-500 to-cyan-600",
     bgGlow: "bg-blue-50",
   },
+  {
+    key: "duplicates" as const,
+    label: "Duplicates Detected",
+    icon: AlertTriangle,
+    gradient: "from-amber-500 to-yellow-600",
+    bgGlow: "bg-amber-50",
+  },
 ];
 
 export function QuestionBankStatsCards({ stats }: QuestionBankStatsProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
       {STAT_CARDS.map((card) => {
         const Icon = card.icon;
         const value = stats[card.key];

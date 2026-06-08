@@ -116,7 +116,9 @@ export async function fetchStatusCounts() {
   const [OPEN, UNDER_REVIEW, CRITICAL, RESOLVED, DISMISSED] = await Promise.all([
     prisma.report.count({ where: { status: "OPEN" } }),
     prisma.report.count({ where: { status: "UNDER_REVIEW" } }),
-    prisma.report.count({ where: { priority: "CRITICAL", status: { in: ["OPEN", "UNDER_REVIEW"] } } }),
+    prisma.report.count({
+      where: { priority: "CRITICAL", status: { in: ["OPEN", "UNDER_REVIEW"] } },
+    }),
     prisma.report.count({ where: { status: "RESOLVED" } }),
     prisma.report.count({ where: { status: "DISMISSED" } }),
   ]);
@@ -157,16 +159,20 @@ export async function fetchPlatformHealth() {
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
 
-  const [reportsMonitoredToday, competitionsMonitored, usersMonitored, lastResolvedAudit] = await Promise.all([
-    prisma.report.count({ where: { createdAt: { gte: todayStart } } }),
-    prisma.challenge.count(),
-    prisma.user.count(),
-    prisma.auditLog.findFirst({
-      where: { action: { in: ["REPORT_RESOLVED", "REPORT_DISMISSED"] }, entityType: "MODERATION" },
-      orderBy: { createdAt: "desc" },
-      select: { createdAt: true },
-    }),
-  ]);
+  const [reportsMonitoredToday, competitionsMonitored, usersMonitored, lastResolvedAudit] =
+    await Promise.all([
+      prisma.report.count({ where: { createdAt: { gte: todayStart } } }),
+      prisma.challenge.count(),
+      prisma.user.count(),
+      prisma.auditLog.findFirst({
+        where: {
+          action: { in: ["REPORT_RESOLVED", "REPORT_DISMISSED"] },
+          entityType: "MODERATION",
+        },
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      }),
+    ]);
 
   return {
     reportsMonitoredToday,
@@ -224,7 +230,8 @@ export async function fetchReportOverview(): Promise<ReportsSummary> {
 
   // False report rate calculation
   const totalActioned = totalResolved + totalDismissed;
-  const falseReportRate = totalActioned > 0 ? Math.round((totalDismissed / totalActioned) * 100) : 0;
+  const falseReportRate =
+    totalActioned > 0 ? Math.round((totalDismissed / totalActioned) * 100) : 0;
 
   return {
     totalOpen,
@@ -271,10 +278,7 @@ export async function fetchModerationQueue(
   const reports = await prisma.report.findMany({
     where,
     select: reportSelectClause,
-    orderBy: [
-      { priority: "desc" },
-      { createdAt: "desc" }
-    ],
+    orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
     skip: (page - 1) * limit,
     take: limit,
   });
@@ -322,7 +326,10 @@ export async function fetchAbuseIntelligence(): Promise<AbuseIntelligence> {
 
   const topUsers = await Promise.all(
     topUsersGroups.map(async (u) => {
-      const user = await prisma.user.findUnique({ where: { id: u.targetUserId! }, select: { name: true } });
+      const user = await prisma.user.findUnique({
+        where: { id: u.targetUserId! },
+        select: { name: true },
+      });
       return { id: u.targetUserId!, name: user?.name || "Unknown", reportCount: u._count.id };
     })
   );
@@ -338,8 +345,15 @@ export async function fetchAbuseIntelligence(): Promise<AbuseIntelligence> {
 
   const topCompetitions = await Promise.all(
     topCompsGroups.map(async (c) => {
-      const comp = await prisma.challenge.findUnique({ where: { id: c.targetChallengeId! }, select: { title: true } });
-      return { id: c.targetChallengeId!, title: comp?.title || "Unknown", reportCount: c._count.id };
+      const comp = await prisma.challenge.findUnique({
+        where: { id: c.targetChallengeId! },
+        select: { title: true },
+      });
+      return {
+        id: c.targetChallengeId!,
+        title: comp?.title || "Unknown",
+        reportCount: c._count.id,
+      };
     })
   );
 
@@ -373,7 +387,10 @@ export async function fetchAbuseIntelligence(): Promise<AbuseIntelligence> {
 
 // ─── MODERATION ACTIVITY LOG (AuditLog) ───────────────────────
 
-export async function fetchModerationActivity(page = 1, limit = 20): Promise<ModerationActionRecord[]> {
+export async function fetchModerationActivity(
+  page = 1,
+  limit = 20
+): Promise<ModerationActionRecord[]> {
   const audits = await prisma.auditLog.findMany({
     where: { entityType: "MODERATION" },
     orderBy: { createdAt: "desc" },
@@ -382,7 +399,7 @@ export async function fetchModerationActivity(page = 1, limit = 20): Promise<Mod
     include: { actor: { select: { name: true } } },
   });
 
-  return audits.map(a => {
+  return audits.map((a) => {
     let desc = a.action;
     if (a.metadata && typeof a.metadata === "object" && "reason" in a.metadata) {
       desc = (a.metadata as any).reason;
@@ -435,7 +452,11 @@ export async function resolveReport(
   }
 }
 
-export async function warnUser(userId: string, reportId: string, warningTemplate: string): Promise<ActionResult> {
+export async function warnUser(
+  userId: string,
+  reportId: string,
+  warningTemplate: string
+): Promise<ActionResult> {
   const admin = await requireAdmin("/dashboard");
   if (!admin?.id) return { success: false, message: "Authentication required" };
 
@@ -468,9 +489,9 @@ export async function warnUser(userId: string, reportId: string, warningTemplate
         data: {
           userId,
           createdById: admin.id,
-          note: `WARNING ISSUED: ${warningTemplate}`
-        }
-      })
+          note: `WARNING ISSUED: ${warningTemplate}`,
+        },
+      }),
     ]);
     return { success: true, message: "User warned successfully" };
   } catch {
@@ -478,7 +499,12 @@ export async function warnUser(userId: string, reportId: string, warningTemplate
   }
 }
 
-export async function restrictUser(userId: string, reportId: string, durationDays: number, reason: string): Promise<ActionResult> {
+export async function restrictUser(
+  userId: string,
+  reportId: string,
+  durationDays: number,
+  reason: string
+): Promise<ActionResult> {
   const admin = await requireAdmin("/dashboard");
   if (!admin?.id) return { success: false, message: "Authentication required" };
 
@@ -511,9 +537,9 @@ export async function restrictUser(userId: string, reportId: string, durationDay
         data: {
           userId,
           createdById: admin.id,
-          note: `RESTRICTED (${durationDays} days): ${reason}`
-        }
-      })
+          note: `RESTRICTED (${durationDays} days): ${reason}`,
+        },
+      }),
     ]);
     return { success: true, message: "User restricted successfully" };
   } catch {
@@ -521,7 +547,11 @@ export async function restrictUser(userId: string, reportId: string, durationDay
   }
 }
 
-export async function suspendUser(userId: string, reportId: string, reason: string): Promise<ActionResult> {
+export async function suspendUser(
+  userId: string,
+  reportId: string,
+  reason: string
+): Promise<ActionResult> {
   const admin = await requireAdmin("/dashboard");
   if (!admin?.id) return { success: false, message: "Authentication required" };
 
@@ -554,9 +584,9 @@ export async function suspendUser(userId: string, reportId: string, reason: stri
         data: {
           userId,
           createdById: admin.id,
-          note: `SUSPENDED: ${reason}`
-        }
-      })
+          note: `SUSPENDED: ${reason}`,
+        },
+      }),
     ]);
     return { success: true, message: "User suspended successfully" };
   } catch {
@@ -631,7 +661,10 @@ async function detectSuspiciousActivity(): Promise<SuspiciousActivitySignal[]> {
 
   for (const target of repeatedTargets) {
     if (!target.targetUserId) continue;
-    const user = await prisma.user.findUnique({ where: { id: target.targetUserId }, select: { name: true } });
+    const user = await prisma.user.findUnique({
+      where: { id: target.targetUserId },
+      select: { name: true },
+    });
     signals.push({
       id: `suspicious-repeated-${target.targetUserId}`,
       type: "repeated_reports",

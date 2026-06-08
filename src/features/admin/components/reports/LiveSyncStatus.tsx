@@ -16,7 +16,9 @@ export function LiveSyncStatus({ lastUpdated, isSyncing = false }: LiveSyncStatu
     <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm">
       <div className="flex items-center gap-2">
         <div className="relative flex h-2.5 w-2.5">
-          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 ${isSyncing ? "opacity-100" : ""}`}></span>
+          <span
+            className={`animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 ${isSyncing ? "opacity-100" : ""}`}
+          ></span>
           <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
         </div>
         <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wide">

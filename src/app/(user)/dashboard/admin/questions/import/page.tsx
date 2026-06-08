@@ -5,16 +5,32 @@ import { uploadAndPreviewImport } from "@/features/admin/services/bulk-import";
 import { ValidatedRow } from "@/features/admin/services/question-bank/bulk-import";
 import { ImportPreview } from "@/features/admin/components/question-bank/bulk-import/import-preview";
 import { ImportHistory } from "@/features/admin/components/question-bank/bulk-import/import-history";
-import { FileUp, FileSpreadsheet, FileText, AlertCircle, Loader2, CheckCircle2, ArrowRight, Check, Download } from "lucide-react";
+import {
+  FileUp,
+  FileSpreadsheet,
+  FileText,
+  AlertCircle,
+  Loader2,
+  CheckCircle2,
+  ArrowRight,
+  Check,
+  Download,
+} from "lucide-react";
 
 export default function BulkImportPage() {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const [previewJobId, setPreviewJobId] = useState<string | null>(null);
   const [previewRows, setPreviewRows] = useState<ValidatedRow[]>([]);
-  const [stats, setStats] = useState<{ total: number; valid: number; invalid: number } | null>(null);
+  const [fileMetadata, setFileMetadata] = useState<{
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+  } | null>(null);
+  const [stats, setStats] = useState<{ total: number; valid: number; invalid: number } | null>(
+    null
+  );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -33,13 +49,17 @@ export default function BulkImportPage() {
 
     const res = await uploadAndPreviewImport(formData);
 
-    if (res.success && res.jobId && res.previewRows) {
-      setPreviewJobId(res.jobId);
+    if (res.success && res.previewRows) {
       setPreviewRows(res.previewRows);
+      setFileMetadata({
+        fileName: res.fileName || file.name,
+        fileType: res.fileType || file.type,
+        fileSize: res.fileSize || file.size,
+      });
       setStats({
         total: res.totalRows ?? 0,
         valid: res.validRows ?? 0,
-        invalid: res.invalidRows ?? 0,
+        invalid: res.blockedRows ?? 0,
       });
     } else {
       setUploadError(res.error || "Failed to process file");
@@ -49,16 +69,14 @@ export default function BulkImportPage() {
   };
 
   const handleCancelPreview = () => {
-    setPreviewJobId(null);
     setPreviewRows([]);
-    setStats(null);
+    setFileMetadata(null);
     setFile(null);
   };
 
   const handleImportComplete = () => {
-    setPreviewJobId(null);
     setPreviewRows([]);
-    setStats(null);
+    setFileMetadata(null);
     setFile(null);
   };
 
@@ -80,7 +98,8 @@ export default function BulkImportPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Bulk Import Questions</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Upload large question datasets via CSV. All imports enter as Draft and require admin approval.
+          Upload large question datasets via CSV. All imports enter as Draft and require admin
+          approval.
         </p>
       </div>
 
@@ -90,40 +109,56 @@ export default function BulkImportPage() {
           <span className="text-gray-900">Draft Publishing Workflow:</span>
         </div>
         <div className="flex items-center gap-3 text-xs font-medium text-gray-500 whitespace-nowrap">
-          <span className="px-2.5 py-1 bg-white border border-gray-200 rounded-lg shadow-sm">Imported Questions</span>
+          <span className="px-2.5 py-1 bg-white border border-gray-200 rounded-lg shadow-sm">
+            Imported Questions
+          </span>
           <ArrowRight className="w-3 h-3 text-gray-400" />
-          <span className="px-2.5 py-1 bg-white border border-gray-200 rounded-lg shadow-sm">Draft</span>
+          <span className="px-2.5 py-1 bg-white border border-gray-200 rounded-lg shadow-sm">
+            Draft
+          </span>
           <ArrowRight className="w-3 h-3 text-gray-400" />
-          <span className="px-2.5 py-1 bg-white border border-gray-200 rounded-lg shadow-sm">Review</span>
+          <span className="px-2.5 py-1 bg-white border border-gray-200 rounded-lg shadow-sm">
+            Review
+          </span>
           <ArrowRight className="w-3 h-3 text-gray-400" />
-          <span className="px-2.5 py-1 bg-white border border-gray-200 rounded-lg shadow-sm">Approve</span>
+          <span className="px-2.5 py-1 bg-white border border-gray-200 rounded-lg shadow-sm">
+            Approve
+          </span>
           <ArrowRight className="w-3 h-3 text-gray-400" />
-          <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg shadow-sm font-bold">Published</span>
+          <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg shadow-sm font-bold">
+            Published
+          </span>
         </div>
       </div>
 
-      {previewJobId ? (
+      {previewRows.length > 0 && fileMetadata ? (
         <>
           {/* Preview Stats */}
           {stats && (
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-white rounded-xl border border-gray-200 p-4 text-center">
                 <p className="text-2xl font-bold text-gray-800 tabular-nums">{stats.total}</p>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mt-1">Total Rows</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mt-1">
+                  Total Rows
+                </p>
               </div>
               <div className="bg-emerald-50 rounded-xl border border-emerald-200 p-4 text-center">
                 <p className="text-2xl font-bold text-emerald-700 tabular-nums">{stats.valid}</p>
-                <p className="text-xs font-medium text-emerald-600 uppercase tracking-wider mt-1">Valid Rows</p>
+                <p className="text-xs font-medium text-emerald-600 uppercase tracking-wider mt-1">
+                  Valid Rows
+                </p>
               </div>
               <div className="bg-red-50 rounded-xl border border-red-200 p-4 text-center">
                 <p className="text-2xl font-bold text-red-700 tabular-nums">{stats.invalid}</p>
-                <p className="text-xs font-medium text-red-600 uppercase tracking-wider mt-1">Invalid Rows</p>
+                <p className="text-xs font-medium text-red-600 uppercase tracking-wider mt-1">
+                  Invalid Rows
+                </p>
               </div>
             </div>
           )}
           <ImportPreview
-            jobId={previewJobId}
             rows={previewRows}
+            fileMetadata={fileMetadata}
             onComplete={handleImportComplete}
             onCancel={handleCancelPreview}
           />
@@ -144,16 +179,15 @@ export default function BulkImportPage() {
                 <label className="cursor-pointer btn btn-primary h-11 px-6 shadow-sm relative z-10 inline-flex items-center">
                   <FileUp className="w-4 h-4 mr-2" />
                   Upload Question File
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept=".csv"
-                    onChange={handleFileChange}
-                  />
+                  <input type="file" className="hidden" accept=".csv" onChange={handleFileChange} />
                 </label>
                 <div className="flex items-center justify-center gap-3 mt-6 text-xs font-medium text-gray-400">
-                  <span className="px-2 py-1 bg-white border border-gray-200 rounded-md">Supported: CSV</span>
-                  <span className="px-2 py-1 bg-white border border-gray-200 rounded-md">Maximum Size: 10 MB</span>
+                  <span className="px-2 py-1 bg-white border border-gray-200 rounded-md">
+                    Supported: CSV
+                  </span>
+                  <span className="px-2 py-1 bg-white border border-gray-200 rounded-md">
+                    Maximum Size: 10 MB
+                  </span>
                 </div>
               </div>
 
@@ -176,7 +210,9 @@ export default function BulkImportPage() {
                       <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                     </div>
                     <div className="overflow-hidden">
-                      <p className="text-sm font-bold text-gray-900 truncate" title={file.name}>{file.name}</p>
+                      <p className="text-sm font-bold text-gray-900 truncate" title={file.name}>
+                        {file.name}
+                      </p>
                       <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
                     </div>
                   </>
@@ -223,7 +259,9 @@ export default function BulkImportPage() {
           {/* Guidelines & Templates */}
           <div className="space-y-6">
             <div className="p-6 border border-gray-200 rounded-2xl bg-white shadow-sm">
-              <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4">Templates</h3>
+              <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-4">
+                Templates
+              </h3>
               <div className="space-y-3">
                 <button
                   onClick={downloadCSVTemplate}
@@ -271,7 +309,7 @@ export default function BulkImportPage() {
                   "Correct answer must match one option",
                   "Difficulty: BEGINNER / MEDIUM / HARDCORE",
                   "Empty rows are ignored",
-                  "Duplicate questions are flagged"
+                  "Duplicate questions are flagged",
                 ].map((rule, idx) => (
                   <li key={idx} className="flex items-start gap-2.5 text-sm text-gray-600">
                     <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />

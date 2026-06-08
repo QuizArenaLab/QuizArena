@@ -25,7 +25,10 @@ export default function AdminDashboardLoading() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
           {[...Array(7)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm h-[74px]">
+            <div
+              key={i}
+              className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm h-[74px]"
+            >
               <div className="w-24 h-3 bg-gray-200 rounded-md mb-2.5" />
               <div className="w-12 h-6 bg-gray-200 rounded-md" />
             </div>
@@ -43,10 +46,13 @@ export default function AdminDashboardLoading() {
             </div>
             <div className="w-16 h-4 bg-gray-200 rounded-md" />
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm h-[86px]">
+              <div
+                key={i}
+                className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm h-[86px]"
+              >
                 <div className="flex items-center gap-2 mb-2.5">
                   <div className="w-4 h-4 bg-gray-200 rounded-md shrink-0" />
                   <div className="w-20 h-3 bg-gray-200 rounded-md" />
@@ -60,7 +66,10 @@ export default function AdminDashboardLoading() {
             <div className="w-40 h-4 bg-gray-200 rounded-md mb-5" />
             <div className="space-y-4">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                <div
+                  key={i}
+                  className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0"
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-gray-200 rounded-full shrink-0" />
                     <div className="space-y-2">
@@ -106,7 +115,10 @@ export default function AdminDashboardLoading() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             {[...Array(2)].map((_, i) => (
-              <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm h-[74px]">
+              <div
+                key={i}
+                className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm h-[74px]"
+              >
                 <div className="w-24 h-3 bg-gray-200 rounded-md mb-2.5" />
                 <div className="w-12 h-6 bg-gray-200 rounded-md" />
               </div>
@@ -116,7 +128,10 @@ export default function AdminDashboardLoading() {
             <div className="w-32 h-4 bg-gray-200 rounded-md mb-5" />
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                <div
+                  key={i}
+                  className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0"
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-gray-200 rounded-full shrink-0" />
                     <div className="space-y-2">
@@ -138,7 +153,10 @@ export default function AdminDashboardLoading() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm h-[74px]">
+              <div
+                key={i}
+                className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm h-[74px]"
+              >
                 <div className="w-24 h-3 bg-gray-200 rounded-md mb-2.5" />
                 <div className="w-12 h-6 bg-gray-200 rounded-md" />
               </div>
@@ -158,9 +176,9 @@ export default function AdminDashboardLoading() {
             {[...Array(7)].map((_, i) => (
               <div key={i} className="text-center flex flex-col justify-end">
                 <div className="h-24 flex flex-col items-center justify-end mb-3">
-                  <div 
-                    className="w-full bg-gray-100 rounded-t-md" 
-                    style={{ height: `${20 + i * 10}%` }} 
+                  <div
+                    className="w-full bg-gray-100 rounded-t-md"
+                    style={{ height: `${20 + i * 10}%` }}
                   />
                 </div>
                 <div className="w-8 h-3 bg-gray-200 rounded-md mx-auto mb-2" />
@@ -180,7 +198,10 @@ export default function AdminDashboardLoading() {
         <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm h-[250px]">
           <div className="space-y-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
+              <div
+                key={i}
+                className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0"
+              >
                 <div className="w-2 h-2 bg-gray-200 rounded-full shrink-0" />
                 <div className="space-y-2">
                   <div className="w-64 h-3.5 bg-gray-200 rounded-md" />

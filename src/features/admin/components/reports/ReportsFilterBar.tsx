@@ -15,12 +15,11 @@ type TypeTab = "ALL" | "USER_ABUSE" | "CHALLENGE_ISSUE" | "INAPPROPRIATE_CONTENT
 
 export function ReportsFilterBar({ filters, statusCounts, onApply }: ReportsFilterBarProps) {
   const [localSearch, setLocalSearch] = useState(filters.search || "");
-  
+
   // Derive active tabs from incoming filters
-  const activeMainTab: MainTab = filters.priority === "CRITICAL" 
-    ? "CRITICAL" 
-    : (filters.status as MainTab) || "ALL";
-    
+  const activeMainTab: MainTab =
+    filters.priority === "CRITICAL" ? "CRITICAL" : (filters.status as MainTab) || "ALL";
+
   const activeTypeTab: TypeTab = (filters.type as TypeTab) || "ALL";
 
   // Debounced Search
@@ -43,7 +42,7 @@ export function ReportsFilterBar({ filters, statusCounts, onApply }: ReportsFilt
     } else if (tab !== "ALL") {
       newFilters.status = tab as ReportStatus;
     }
-    
+
     onApply(newFilters);
   };
 
@@ -57,7 +56,8 @@ export function ReportsFilterBar({ filters, statusCounts, onApply }: ReportsFilt
     onApply(newFilters);
   };
 
-  const totalAll = statusCounts.OPEN + statusCounts.UNDER_REVIEW + statusCounts.RESOLVED + statusCounts.DISMISSED;
+  const totalAll =
+    statusCounts.OPEN + statusCounts.UNDER_REVIEW + statusCounts.RESOLVED + statusCounts.DISMISSED;
 
   const mainTabs = [
     { id: "ALL", label: `All (${totalAll})` },

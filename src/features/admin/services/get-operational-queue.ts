@@ -21,14 +21,14 @@ export const getOperationalQueue = unstable_cache(
       where: { status: "OPEN" },
       orderBy: { createdAt: "desc" },
       take: 5,
-      include: { reviewedBy: true }
+      include: { reviewedBy: true },
     });
 
     const rawApprovals = await prisma.challenge.findMany({
       where: { status: "DRAFT" },
       orderBy: { createdAt: "desc" },
       take: 5,
-      include: { reviewedBy: true }
+      include: { reviewedBy: true },
     });
 
     const queueItems = [
@@ -36,10 +36,17 @@ export const getOperationalQueue = unstable_cache(
         id: `report-${r.id}`,
         type: "Report",
         title: r.reason || "Report Issue",
-        priority: r.priority === 'CRITICAL' ? 'High' : r.priority === 'HIGH' ? 'High' : r.priority === 'MEDIUM' ? 'Medium' : 'Low',
+        priority:
+          r.priority === "CRITICAL"
+            ? "High"
+            : r.priority === "HIGH"
+              ? "High"
+              : r.priority === "MEDIUM"
+                ? "Medium"
+                : "Low",
         createdAt: r.createdAt,
         assignedTo: r.reviewedBy?.name || "Unassigned",
-        action: "Review"
+        action: "Review",
       })),
       ...rawApprovals.map((c: any) => ({
         id: `challenge-${c.id}`,
@@ -48,9 +55,11 @@ export const getOperationalQueue = unstable_cache(
         priority: "Medium",
         createdAt: c.createdAt,
         assignedTo: c.reviewedBy?.name || "Unassigned",
-        action: "Approve"
-      }))
-    ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 10);
+        action: "Approve",
+      })),
+    ]
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, 10);
 
     return { attentionRequires, queueItems };
   },

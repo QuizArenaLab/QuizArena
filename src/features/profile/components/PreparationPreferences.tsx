@@ -24,7 +24,11 @@ export function PreparationPreferences({ user }: PreparationPreferencesProps) {
   const [recommendationEngine, setRecommendationEngine] = useState<boolean>(
     (user as any).recommendationEngine ?? true
   );
-  const [pendingToast, setPendingToast] = useState<{ id: string; title: string; desc?: string } | null>(null);
+  const [pendingToast, setPendingToast] = useState<{
+    id: string;
+    title: string;
+    desc?: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!isPending && pendingToast) {
@@ -32,7 +36,7 @@ export function PreparationPreferences({ user }: PreparationPreferencesProps) {
         id: pendingToast.id,
         description: pendingToast.desc,
       });
-      setPendingToast(null);
+      setTimeout(() => setPendingToast(null), 0);
     }
   }, [isPending, pendingToast]);
 

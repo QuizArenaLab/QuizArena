@@ -25,7 +25,11 @@ export function ProfileWorkspaceModal({ isOpen, onClose, user }: ProfileWorkspac
     email: user.email || "",
   });
 
-  const [pendingToast, setPendingToast] = useState<{ id: string; title: string; desc?: string } | null>(null);
+  const [pendingToast, setPendingToast] = useState<{
+    id: string;
+    title: string;
+    desc?: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!isPending && pendingToast) {
@@ -33,7 +37,7 @@ export function ProfileWorkspaceModal({ isOpen, onClose, user }: ProfileWorkspac
         id: pendingToast.id,
         description: pendingToast.desc,
       });
-      setPendingToast(null);
+      setTimeout(() => setPendingToast(null), 0);
       onClose();
     }
   }, [isPending, pendingToast, onClose]);

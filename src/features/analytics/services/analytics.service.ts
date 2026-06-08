@@ -1,5 +1,3 @@
-
-
 import { prisma } from "@/lib/prisma";
 import { AttemptStatus } from "@/generated/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
@@ -26,7 +24,7 @@ export class AnalyticsService {
         where: { userId },
         orderBy: { rank: "asc" },
       });
-      
+
       snapshot = await prisma.userPerformanceSnapshot.upsert({
         where: { userId },
         create: {
@@ -53,25 +51,27 @@ export class AnalyticsService {
    */
   static async updateSnapshotAfterEvaluation(userId: string) {
     // 1. Fetch comprehensive metrics
-    const [profile, categoryPerfs, bestRankEntry, totalAttemptsCount, competitionsCount] = await Promise.all([
-      prisma.userPerformanceProfile.findUnique({ where: { userId } }),
-      prisma.userCategoryPerformance.findMany({
-        where: { userId },
-        orderBy: { averageAccuracy: "desc" },
-      }),
-      prisma.leaderboardEntry.findFirst({
-        where: { userId },
-        orderBy: { rank: "asc" },
-      }),
-      prisma.attempt.count({ where: { userId, status: AttemptStatus.EVALUATED } }),
-      prisma.attempt.count({
-        where: { userId, status: AttemptStatus.EVALUATED, challenge: { visibility: "PUBLIC" } },
-      }),
-    ]);
+    const [profile, categoryPerfs, bestRankEntry, totalAttemptsCount, competitionsCount] =
+      await Promise.all([
+        prisma.userPerformanceProfile.findUnique({ where: { userId } }),
+        prisma.userCategoryPerformance.findMany({
+          where: { userId },
+          orderBy: { averageAccuracy: "desc" },
+        }),
+        prisma.leaderboardEntry.findFirst({
+          where: { userId },
+          orderBy: { rank: "asc" },
+        }),
+        prisma.attempt.count({ where: { userId, status: AttemptStatus.EVALUATED } }),
+        prisma.attempt.count({
+          where: { userId, status: AttemptStatus.EVALUATED, challenge: { visibility: "PUBLIC" } },
+        }),
+      ]);
 
     const overallAccuracy = profile?.averageAccuracy ?? 0;
     const bestCategory = categoryPerfs.length > 0 ? categoryPerfs[0].category : null;
-    const weakestCategory = categoryPerfs.length > 1 ? categoryPerfs[categoryPerfs.length - 1].category : null;
+    const weakestCategory =
+      categoryPerfs.length > 1 ? categoryPerfs[categoryPerfs.length - 1].category : null;
 
     // 2. Upsert Snapshot
     await prisma.userPerformanceSnapshot.upsert({
@@ -97,7 +97,7 @@ export class AnalyticsService {
         weakestCategory,
         totalAttempts: totalAttemptsCount,
         competitionsPlayed: competitionsCount,
-      }
+      },
     });
 
     // 3. Invalidate caches

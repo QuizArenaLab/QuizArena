@@ -12,8 +12,12 @@ export default function BulkImportPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const [previewJobId, setPreviewJobId] = useState<string | null>(null);
   const [previewRows, setPreviewRows] = useState<ValidatedRow[]>([]);
+  const [fileMetadata, setFileMetadata] = useState<{
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+  } | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -32,9 +36,13 @@ export default function BulkImportPage() {
 
     const res = await uploadAndPreviewImport(formData);
 
-    if (res.success && res.jobId && res.previewRows) {
-      setPreviewJobId(res.jobId);
+    if (res.success && res.previewRows) {
       setPreviewRows(res.previewRows);
+      setFileMetadata({
+        fileName: res.fileName!,
+        fileType: res.fileType!,
+        fileSize: res.fileSize!,
+      });
     } else {
       setUploadError(res.error || "Failed to process file");
     }
@@ -43,14 +51,14 @@ export default function BulkImportPage() {
   };
 
   const handleCancelPreview = () => {
-    setPreviewJobId(null);
     setPreviewRows([]);
+    setFileMetadata(null);
     setFile(null);
   };
 
   const handleImportComplete = () => {
-    setPreviewJobId(null);
     setPreviewRows([]);
+    setFileMetadata(null);
     setFile(null);
     // The history component will refresh itself, or we can force it by triggering a state if needed
     // But since it's unmounted/remounted when previewJobId changes, it should refresh.
@@ -79,10 +87,10 @@ export default function BulkImportPage() {
         </p>
       </div>
 
-      {previewJobId ? (
+      {previewRows.length > 0 && fileMetadata ? (
         <ImportPreview
-          jobId={previewJobId}
           rows={previewRows}
+          fileMetadata={fileMetadata}
           onComplete={handleImportComplete}
           onCancel={handleCancelPreview}
         />

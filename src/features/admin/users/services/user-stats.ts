@@ -26,29 +26,23 @@ export async function fetchUserStats() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [
-    totalUsers,
-    activeUsers,
-    premiumUsers,
-    suspendedUsers,
-    newToday,
-    flaggedAccounts,
-  ] = await Promise.all([
-    prisma.user.count(),
-    prisma.user.count({ where: { accountState: "ACTIVE" } }),
-    prisma.user.count({
-      where: {
-        subscriptions: {
-          some: {
-            status: "ACTIVE",
+  const [totalUsers, activeUsers, premiumUsers, suspendedUsers, newToday, flaggedAccounts] =
+    await Promise.all([
+      prisma.user.count(),
+      prisma.user.count({ where: { accountState: "ACTIVE" } }),
+      prisma.user.count({
+        where: {
+          subscriptions: {
+            some: {
+              status: "ACTIVE",
+            },
           },
         },
-      },
-    }),
-    prisma.user.count({ where: { accountState: "SUSPENDED" } }),
-    prisma.user.count({ where: { createdAt: { gte: today } } }),
-    prisma.user.count({ where: { flagged: true } }),
-  ]);
+      }),
+      prisma.user.count({ where: { accountState: "SUSPENDED" } }),
+      prisma.user.count({ where: { createdAt: { gte: today } } }),
+      prisma.user.count({ where: { flagged: true } }),
+    ]);
 
   return {
     totalUsers,

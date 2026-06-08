@@ -117,11 +117,17 @@ export async function createQuestion(data: unknown): Promise<{
     const { options, tags, ...questionData } = parsed;
 
     // Duplicate detection
-    const duplicateCheck = await checkForDuplicates(parsed.question, parsed.category);
-    if (duplicateCheck.isDuplicate) {
+    const duplicateCheck = await checkForDuplicates({
+      question: parsed.question,
+      category: parsed.category,
+      subject: parsed.subject,
+      explanation: parsed.explanation,
+      options: options,
+    });
+    if (duplicateCheck.status === "EXACT") {
       return {
         success: false,
-        error: `Duplicate question detected (${duplicateCheck.duplicateCode || duplicateCheck.duplicateId})`,
+        error: `Duplicate question detected (${duplicateCheck.candidates[0]?.questionCode || duplicateCheck.candidates[0]?.id})`,
       };
     }
 
@@ -142,6 +148,10 @@ export async function createQuestion(data: unknown): Promise<{
         negativeMarks: questionData.negativeMarks,
         difficulty: questionData.difficulty,
         tags,
+        qualityScore: questionData.qualityScore,
+        questionHealth: questionData.questionHealth,
+        validationStatus: questionData.validationStatus || "PENDING",
+        lastValidatedAt: new Date(),
         status: "DRAFT",
         version: 1,
         isActive: true,
@@ -190,9 +200,10 @@ export async function createQuestion(data: unknown): Promise<{
       success: true,
       questionId: question.id,
       questionCode,
-      warning: duplicateCheck.isNearDuplicate
-        ? `Near-duplicate detected (${Math.round((duplicateCheck.similarity ?? 0) * 100)}% similar to ${duplicateCheck.duplicateCode || duplicateCheck.duplicateId})`
-        : undefined,
+      warning:
+        duplicateCheck.status === "SIMILAR"
+          ? `Near-duplicate detected (${Math.round((duplicateCheck.highestScore ?? 0) * 100)}% similar to ${duplicateCheck.candidates[0]?.questionCode || duplicateCheck.candidates[0]?.id})`
+          : undefined,
     };
   } catch (error) {
     if (error instanceof Error) {
@@ -271,6 +282,14 @@ export async function updateQuestion(data: unknown): Promise<{ success: boolean;
       updateData.negativeMarks = questionData.negativeMarks;
     if (questionData.difficulty !== undefined) updateData.difficulty = questionData.difficulty;
     if (tags !== undefined) updateData.tags = tags;
+    if (questionData.qualityScore !== undefined)
+      updateData.qualityScore = questionData.qualityScore;
+    if (questionData.questionHealth !== undefined)
+      updateData.questionHealth = questionData.questionHealth;
+    if (questionData.validationStatus !== undefined) {
+      updateData.validationStatus = questionData.validationStatus;
+      updateData.lastValidatedAt = new Date();
+    }
 
     // If question was rejected, return to draft on edit
     if (existing.status === "REJECTED") {
@@ -338,11 +357,18 @@ export async function submitForReview(
 
     const question = await prisma.question.findUnique({
       where: { id: questionId },
-      select: { status: true, createdById: true },
+      select: { status: true, createdById: true, qualityScore: true, validationStatus: true },
     });
 
     if (!question) {
       return { success: false, error: "Question not found" };
+    }
+
+    if ((question.qualityScore ?? 0) < 75 || question.validationStatus !== "VALID") {
+      return {
+        success: false,
+        error: "Question must have a score >= 75 and VALID status to be submitted for review.",
+      };
     }
 
     // Moderators can only submit their own
@@ -757,6 +783,10 @@ export async function getQuestions(filters: unknown): Promise<QuestionBankListRe
           isActive: true,
           createdAt: true,
           updatedAt: true,
+          qualityScore: true,
+          questionHealth: true,
+          validationStatus: true,
+          lastValidatedAt: true,
           createdBy: {
             select: { id: true, name: true, email: true },
           },
@@ -850,21 +880,24 @@ export interface QuestionBankStats {
   archived: number;
   flagged: number;
   totalActive: number;
+  duplicates: number;
 }
 
 export async function getQuestionBankStats(): Promise<QuestionBankStats> {
   try {
     await requireAdminSession();
 
-    const [total, draft, review, approved, rejected, archived, flagged] = await Promise.all([
-      prisma.question.count(),
-      prisma.question.count({ where: { status: "DRAFT" } }),
-      prisma.question.count({ where: { status: "REVIEW" } }),
-      prisma.question.count({ where: { status: "APPROVED" } }),
-      prisma.question.count({ where: { status: "REJECTED" } }),
-      prisma.question.count({ where: { status: "ARCHIVED" } }),
-      prisma.question.count({ where: { status: "FLAGGED" } }),
-    ]);
+    const [total, draft, review, approved, rejected, archived, flagged, duplicates] =
+      await Promise.all([
+        prisma.question.count(),
+        prisma.question.count({ where: { status: "DRAFT" } }),
+        prisma.question.count({ where: { status: "REVIEW" } }),
+        prisma.question.count({ where: { status: "APPROVED" } }),
+        prisma.question.count({ where: { status: "REJECTED" } }),
+        prisma.question.count({ where: { status: "ARCHIVED" } }),
+        prisma.question.count({ where: { status: "FLAGGED" } }),
+        prisma.question.count({ where: { duplicateStatus: { in: ["EXACT", "SIMILAR"] } } as any }),
+      ]);
 
     return {
       total,
@@ -875,6 +908,7 @@ export async function getQuestionBankStats(): Promise<QuestionBankStats> {
       archived,
       flagged,
       totalActive: approved,
+      duplicates,
     };
   } catch {
     return {
@@ -886,6 +920,7 @@ export async function getQuestionBankStats(): Promise<QuestionBankStats> {
       archived: 0,
       flagged: 0,
       totalActive: 0,
+      duplicates: 0,
     };
   }
 }
@@ -1092,16 +1127,25 @@ export async function validateQuestionLive(
   }
 }
 
-export async function checkDuplicateLive(question: string, category?: string, excludeId?: string) {
+export async function checkDuplicateLive(
+  data: {
+    question: string;
+    category?: string;
+    subject?: string;
+    explanation?: string;
+    options?: { optionText: string; isCorrect: boolean }[];
+  },
+  excludeId?: string
+) {
   try {
     const { session } = await requireModeratorSession();
-    if (!question || question.trim().length < 10) {
-      return { isDuplicate: false, isNearDuplicate: false };
+    if (!data.question || data.question.trim().length < 10) {
+      return { status: "NONE", highestScore: 0, candidates: [], explanationWarning: false };
     }
-    const result = await checkForDuplicates(question, category, excludeId);
+    const result = await checkForDuplicates(data, excludeId);
     return result;
   } catch (e) {
-    return { isDuplicate: false, isNearDuplicate: false };
+    return { status: "NONE", highestScore: 0, candidates: [], explanationWarning: false };
   }
 }
 

@@ -55,20 +55,20 @@ export function HighPriorityCases({ reports, onInvestigate }: HighPriorityCasesP
         {reports.map((report) => (
           <div key={report.id} className="p-4 hover:bg-gray-50 transition-colors group">
             <div className="flex justify-between items-start mb-2">
-              <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getPriorityClasses(report.priority)}`}>
+              <span
+                className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getPriorityClasses(report.priority)}`}
+              >
                 {REPORT_PRIORITY_LABELS[report.priority]}
               </span>
               <span className="text-[10px] text-gray-400">
                 {new Date(report.createdAt).toLocaleDateString()}
               </span>
             </div>
-            
+
             <h3 className="text-sm font-semibold text-[#0A1C40] mb-1">
               {REPORT_TYPE_LABELS[report.type]}
             </h3>
-            <p className="text-xs text-gray-500 line-clamp-2 mb-3">
-              {report.reason}
-            </p>
+            <p className="text-xs text-gray-500 line-clamp-2 mb-3">{report.reason}</p>
 
             <button
               onClick={() => onInvestigate(report)}

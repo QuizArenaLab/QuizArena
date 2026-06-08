@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  AlertTriangle,
-  Clock,
-  Shield,
-  CheckCircle,
-  Timer,
-  AlertOctagon,
-} from "lucide-react";
+import { AlertTriangle, Clock, Shield, CheckCircle, Timer, AlertOctagon } from "lucide-react";
 import type { ReportsSummary, ReportFilters } from "@/types/reports";
 
 interface ReportsSummaryCardsProps {
@@ -95,8 +88,9 @@ export function ReportsSummaryCards({ summary, onFilterClick }: ReportsSummaryCa
           <div
             key={card.id}
             onClick={() => isClickable && onFilterClick?.(card.filter)}
-            className={`${card.bg} ${card.border} border rounded-xl p-4 relative overflow-hidden group transition-all duration-300 ${isClickable ? "cursor-pointer hover:shadow-md hover:-translate-y-0.5" : ""
-              }`}
+            className={`${card.bg} ${card.border} border rounded-xl p-4 relative overflow-hidden group transition-all duration-300 ${
+              isClickable ? "cursor-pointer hover:shadow-md hover:-translate-y-0.5" : ""
+            }`}
           >
             {/* Subtle gradient accent */}
             <div

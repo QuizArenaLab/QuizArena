@@ -34,21 +34,39 @@ async function ImportJobsContent() {
         <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
           <ClipboardList className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <p className="text-sm text-gray-500">No import jobs found</p>
-          <p className="text-xs text-gray-400 mt-1">Upload questions via the Import page to see jobs here</p>
+          <p className="text-xs text-gray-400 mt-1">
+            Upload questions via the Import page to see jobs here
+          </p>
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
-                <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">File Name</th>
-                <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Uploaded By</th>
-                <th className="px-5 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Total</th>
-                <th className="px-5 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Valid</th>
-                <th className="px-5 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Failed</th>
-                <th className="px-5 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Created</th>
-                <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Completed</th>
+                <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  File Name
+                </th>
+                <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                  Uploaded By
+                </th>
+                <th className="px-5 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Total
+                </th>
+                <th className="px-5 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                  Valid
+                </th>
+                <th className="px-5 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                  Failed
+                </th>
+                <th className="px-5 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                  Created
+                </th>
+                <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                  Completed
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -61,7 +79,9 @@ async function ImportJobsContent() {
                       <span className="text-sm font-medium text-gray-900 truncate block max-w-[200px]">
                         {job.fileName}
                       </span>
-                      <span className="text-[10px] text-gray-400 font-mono">{job.id.slice(0, 8)}</span>
+                      <span className="text-[10px] text-gray-400 font-mono">
+                        {job.id.slice(0, 8)}
+                      </span>
                     </td>
                     <td className="px-5 py-3.5 hidden md:table-cell">
                       <span className="text-xs text-gray-600">

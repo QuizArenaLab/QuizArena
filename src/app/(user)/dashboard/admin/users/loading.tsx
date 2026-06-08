@@ -18,7 +18,10 @@ export default function AdminUsersLoading() {
       <div className="shrink-0 space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex items-center justify-between h-[74px]">
+            <div
+              key={i}
+              className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm flex items-center justify-between h-[74px]"
+            >
               <div className="space-y-2 w-full mr-4">
                 <div className="h-3 w-20 bg-gray-200 rounded-md" />
                 <div className="h-6 w-12 bg-gray-200 rounded-md" />
@@ -46,10 +49,8 @@ export default function AdminUsersLoading() {
       {/* User Management Dashboard Skeleton */}
       <div className="flex-1 min-h-[500px]">
         <div className="space-y-6 flex flex-col h-full min-h-[calc(100vh-250px)] relative">
-          
           <div className="pb-4 pt-2 -mt-2">
             <div className="flex flex-col gap-4">
-              
               {/* Quick Filters */}
               <div className="flex items-center gap-2 overflow-x-hidden pb-2 shrink-0">
                 {[...Array(7)].map((_, i) => (
@@ -95,13 +96,27 @@ export default function AdminUsersLoading() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3"><div className="h-5 bg-gray-200 rounded w-16" /></td>
-                        <td className="px-4 py-3"><div className="h-5 bg-gray-200 rounded w-16" /></td>
-                        <td className="px-4 py-3"><div className="h-5 bg-gray-200 rounded w-16" /></td>
-                        <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-8" /></td>
-                        <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-16" /></td>
-                        <td className="px-4 py-3"><div className="h-4 bg-gray-200 rounded w-20" /></td>
-                        <td className="px-4 py-3 text-right"><div className="h-4 bg-gray-200 rounded w-12 ml-auto" /></td>
+                        <td className="px-4 py-3">
+                          <div className="h-5 bg-gray-200 rounded w-16" />
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="h-5 bg-gray-200 rounded w-16" />
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="h-5 bg-gray-200 rounded w-16" />
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="h-4 bg-gray-200 rounded w-8" />
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="h-4 bg-gray-200 rounded w-16" />
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="h-4 bg-gray-200 rounded w-20" />
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="h-4 bg-gray-200 rounded w-12 ml-auto" />
+                        </td>
                       </tr>
                     ))}
                   </tbody>

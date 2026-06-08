@@ -34,9 +34,7 @@ export function ReviewQueueClient({ questions, total, page, totalPages }: Review
   const [isPending, startTransition] = useTransition();
 
   const toggleSelect = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
   };
 
   const toggleAll = () => {
@@ -89,7 +87,10 @@ export function ReviewQueueClient({ questions, total, page, totalPages }: Review
       <BulkActionToolbar
         selectedIds={selectedIds}
         onClear={() => setSelectedIds([])}
-        onComplete={() => { setSelectedIds([]); router.refresh(); }}
+        onComplete={() => {
+          setSelectedIds([]);
+          router.refresh();
+        }}
       />
 
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -104,11 +105,21 @@ export function ReviewQueueClient({ questions, total, page, totalPages }: Review
                   className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
               </th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Question</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Subject</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Difficulty</th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Created By</th>
-              <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                Question
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                Subject
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                Difficulty
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                Created By
+              </th>
+              <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -134,7 +145,9 @@ export function ReviewQueueClient({ questions, total, page, totalPages }: Review
                   <span className="text-xs text-gray-600">{q.subject || "—"}</span>
                 </td>
                 <td className="px-4 py-3 hidden lg:table-cell">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${difficultyColors[q.difficulty] || "bg-gray-100 text-gray-800"}`}>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${difficultyColors[q.difficulty] || "bg-gray-100 text-gray-800"}`}
+                  >
                     {q.difficulty}
                   </span>
                 </td>
@@ -156,10 +169,17 @@ export function ReviewQueueClient({ questions, total, page, totalPages }: Review
                         disabled={isPending}
                         className="text-xs font-medium text-white bg-red-600 px-2 py-1 rounded-lg hover:bg-red-700 disabled:opacity-50"
                       >
-                        {actionPending === q.id ? <Loader2 className="w-3 h-3 animate-spin" /> : "Reject"}
+                        {actionPending === q.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          "Reject"
+                        )}
                       </button>
                       <button
-                        onClick={() => { setRejectingId(null); setRejectReason(""); }}
+                        onClick={() => {
+                          setRejectingId(null);
+                          setRejectReason("");
+                        }}
                         className="text-xs text-gray-400 hover:text-gray-600"
                       >
                         ✕
@@ -172,7 +192,11 @@ export function ReviewQueueClient({ questions, total, page, totalPages }: Review
                         disabled={isPending && actionPending === q.id}
                         className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 disabled:opacity-50 transition-colors"
                       >
-                        {actionPending === q.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                        {actionPending === q.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="w-3 h-3" />
+                        )}
                         Approve
                       </button>
                       <button

@@ -49,7 +49,9 @@ export interface UserDirectoryResponse {
   totalPages: number;
 }
 
-export async function fetchUserDirectory(params: UserDirectoryParams): Promise<UserDirectoryResponse> {
+export async function fetchUserDirectory(
+  params: UserDirectoryParams
+): Promise<UserDirectoryResponse> {
   await validateAdminAccess();
 
   const { page = 1, limit = 20, search, filter = "all" } = params;

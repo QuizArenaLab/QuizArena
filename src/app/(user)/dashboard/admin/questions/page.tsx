@@ -20,7 +20,7 @@ import {
   Plus,
   UploadCloud,
   CheckSquare,
-  ArrowRight
+  ArrowRight,
 } from "lucide-react";
 import {
   getQuestionBankOverview,
@@ -52,12 +52,7 @@ function formatTimeAgo(date: Date): string {
 }
 
 async function OverviewContent() {
-  const [
-    overview,
-    contentHealth,
-    reviewSnapshot,
-    recentPublishing,
-  ] = await Promise.all([
+  const [overview, contentHealth, reviewSnapshot, recentPublishing] = await Promise.all([
     getQuestionBankOverview(),
     getContentHealthMetrics(),
     getReviewQueueSnapshot(),
@@ -66,18 +61,47 @@ async function OverviewContent() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-
       {/* KPI Hierarchy */}
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <KPICard label="Total Questions" value={overview.totalQuestions} icon={Database} variant="primary" />
-          <KPICard label="Published" value={overview.publishedQuestions} icon={CheckCircle2} variant="primary" />
-          <KPICard label="Pending Review" value={overview.pendingReview} icon={ClipboardList} variant="primary" />
+          <KPICard
+            label="Total Questions"
+            value={overview.totalQuestions}
+            icon={Database}
+            variant="primary"
+          />
+          <KPICard
+            label="Published"
+            value={overview.publishedQuestions}
+            icon={CheckCircle2}
+            variant="primary"
+          />
+          <KPICard
+            label="Pending Review"
+            value={overview.pendingReview}
+            icon={ClipboardList}
+            variant="primary"
+          />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <KPICard label="Drafts" value={overview.draftQuestions} icon={FileEdit} variant="secondary" />
-          <KPICard label="Archived" value={overview.archivedQuestions} icon={Archive} variant="secondary" />
-          <KPICard label="Failed Imports" value={overview.failedImports} icon={AlertTriangle} variant="secondary" />
+          <KPICard
+            label="Drafts"
+            value={overview.draftQuestions}
+            icon={FileEdit}
+            variant="secondary"
+          />
+          <KPICard
+            label="Archived"
+            value={overview.archivedQuestions}
+            icon={Archive}
+            variant="secondary"
+          />
+          <KPICard
+            label="Failed Imports"
+            value={overview.failedImports}
+            icon={AlertTriangle}
+            variant="secondary"
+          />
         </div>
       </div>
 
@@ -87,17 +111,39 @@ async function OverviewContent() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-sm font-bold text-slate-900">Content Health Center</h3>
-              <p className="text-[11px] text-slate-500 mt-1">Metrics requiring moderation attention</p>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Metrics requiring moderation attention
+              </p>
             </div>
             <div className="p-1.5 bg-white rounded-lg border border-slate-200/60 shadow-sm text-slate-500">
               <Activity className="w-5 h-5" strokeWidth={1.5} />
             </div>
           </div>
           <div className="flex-1 divide-y divide-slate-100/80">
-            <HealthRow icon={FileText} label="Missing Explanations" count={contentHealth.missingExplanations} severity="HIGH" />
-            <HealthRow icon={Tag} label="Missing Tags" count={contentHealth.missingTags} severity="MEDIUM" />
-            <HealthRow icon={Map} label="Missing Topic Mapping" count={contentHealth.missingTopicMapping} severity="MEDIUM" />
-            <HealthRow icon={Copy} label="Duplicate Candidates" count={contentHealth.duplicateCandidates} severity="LOW" />
+            <HealthRow
+              icon={FileText}
+              label="Missing Explanations"
+              count={contentHealth.missingExplanations}
+              severity="HIGH"
+            />
+            <HealthRow
+              icon={Tag}
+              label="Missing Tags"
+              count={contentHealth.missingTags}
+              severity="MEDIUM"
+            />
+            <HealthRow
+              icon={Map}
+              label="Missing Topic Mapping"
+              count={contentHealth.missingTopicMapping}
+              severity="MEDIUM"
+            />
+            <HealthRow
+              icon={Copy}
+              label="Duplicate Candidates"
+              count={contentHealth.duplicateCandidates}
+              severity="LOW"
+            />
           </div>
         </div>
 
@@ -113,10 +159,34 @@ async function OverviewContent() {
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4 flex-1">
-            <QueueCard icon={FilePlus} label="Draft Questions" count={reviewSnapshot.draftQuestions} link="/dashboard/admin/questions?status=DRAFT" linkText="Open Queue" />
-            <QueueCard icon={Clock} label="Pending Review" count={reviewSnapshot.pendingReview} link="/dashboard/admin/questions?status=PENDING_REVIEW" linkText="Review" />
-            <QueueCard icon={CheckCircle} label="Approved Today" count={reviewSnapshot.approvedToday} link="/dashboard/admin/questions?status=PUBLISHED" linkText="View" />
-            <QueueCard icon={XCircle} label="Rejected Today" count={reviewSnapshot.rejectedToday} link="/dashboard/admin/questions?status=REJECTED" linkText="View" />
+            <QueueCard
+              icon={FilePlus}
+              label="Draft Questions"
+              count={reviewSnapshot.draftQuestions}
+              link="/dashboard/admin/questions?status=DRAFT"
+              linkText="Open Queue"
+            />
+            <QueueCard
+              icon={Clock}
+              label="Pending Review"
+              count={reviewSnapshot.pendingReview}
+              link="/dashboard/admin/questions?status=PENDING_REVIEW"
+              linkText="Review"
+            />
+            <QueueCard
+              icon={CheckCircle}
+              label="Approved Today"
+              count={reviewSnapshot.approvedToday}
+              link="/dashboard/admin/questions?status=PUBLISHED"
+              linkText="View"
+            />
+            <QueueCard
+              icon={XCircle}
+              label="Rejected Today"
+              count={reviewSnapshot.rejectedToday}
+              link="/dashboard/admin/questions?status=REJECTED"
+              linkText="View"
+            />
           </div>
         </div>
       </div>
@@ -127,7 +197,9 @@ async function OverviewContent() {
           <div className="flex items-center justify-between mb-6 shrink-0">
             <div>
               <h3 className="text-sm font-bold text-slate-900">Publishing Timeline</h3>
-              <p className="text-[11px] text-slate-500 mt-1">Latest approved additions (Newest first)</p>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Latest approved additions (Newest first)
+              </p>
             </div>
             <div className="p-1.5 bg-white rounded-lg border border-slate-200/60 shadow-sm text-slate-500">
               <CheckCircle2 className="w-5 h-5" strokeWidth={1.5} />
@@ -148,13 +220,19 @@ async function OverviewContent() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded uppercase tracking-wider">Published</span>
-                        <span className="text-xs font-semibold text-slate-900">{item.questionCode || item.id.slice(0, 8)}</span>
+                        <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded uppercase tracking-wider">
+                          Published
+                        </span>
+                        <span className="text-xs font-semibold text-slate-900">
+                          {item.questionCode || item.id.slice(0, 8)}
+                        </span>
                       </div>
                       <p className="text-[13px] text-slate-600 line-clamp-1">{item.question}</p>
                     </div>
                     <div className="text-left sm:text-right shrink-0">
-                      <p className="text-xs font-semibold text-slate-900">{formatTimeAgo(item.publishedAt)}</p>
+                      <p className="text-xs font-semibold text-slate-900">
+                        {formatTimeAgo(item.publishedAt)}
+                      </p>
                       <p className="text-[11px] text-slate-500">by {item.publisherName}</p>
                     </div>
                   </div>
@@ -167,19 +245,29 @@ async function OverviewContent() {
                 <CheckCircle2 className="w-6 h-6 text-emerald-500" strokeWidth={1.5} />
               </div>
               <h4 className="text-sm font-bold text-slate-900 mb-1">Question Bank Healthy</h4>
-              <p className="text-xs text-slate-500 mb-6">No publishing actions require attention.</p>
+              <p className="text-xs text-slate-500 mb-6">
+                No publishing actions require attention.
+              </p>
 
               <div className="grid grid-cols-3 gap-4 w-full max-w-sm">
                 <div className="p-3 bg-white border border-slate-200/60 rounded-lg shadow-sm">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Last Published</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    Last Published
+                  </p>
                   <p className="text-xs font-semibold text-slate-900">Unknown</p>
                 </div>
                 <div className="p-3 bg-white border border-slate-200/60 rounded-lg shadow-sm">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">This Week</p>
-                  <p className="text-xs font-semibold text-slate-900">{overview.publishedQuestions}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    This Week
+                  </p>
+                  <p className="text-xs font-semibold text-slate-900">
+                    {overview.publishedQuestions}
+                  </p>
                 </div>
                 <div className="p-3 bg-white border border-slate-200/60 rounded-lg shadow-sm">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pending</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    Pending
+                  </p>
                   <p className="text-xs font-semibold text-slate-900">{overview.pendingReview}</p>
                 </div>
               </div>
@@ -191,7 +279,17 @@ async function OverviewContent() {
   );
 }
 
-function HealthRow({ icon: Icon, label, count, severity }: { icon: any; label: string; count: number; severity: "HIGH" | "MEDIUM" | "LOW" }) {
+function HealthRow({
+  icon: Icon,
+  label,
+  count,
+  severity,
+}: {
+  icon: any;
+  label: string;
+  count: number;
+  severity: "HIGH" | "MEDIUM" | "LOW";
+}) {
   const isZero = count === 0;
 
   let badgeColor = "bg-slate-100 text-slate-500";
@@ -208,9 +306,17 @@ function HealthRow({ icon: Icon, label, count, severity }: { icon: any; label: s
           <Icon className="w-4 h-4" strokeWidth={1.5} />
         </div>
         <div>
-          <span className={`block text-[13px] font-semibold transition-colors duration-300 ${isZero ? "text-slate-500" : "text-slate-900"}`}>{label}</span>
+          <span
+            className={`block text-[13px] font-semibold transition-colors duration-300 ${isZero ? "text-slate-500" : "text-slate-900"}`}
+          >
+            {label}
+          </span>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${badgeColor}`}>{severity}</span>
+            <span
+              className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${badgeColor}`}
+            >
+              {severity}
+            </span>
             <span className="text-[11px] font-medium text-slate-500">{count} Questions</span>
           </div>
         </div>
@@ -220,28 +326,45 @@ function HealthRow({ icon: Icon, label, count, severity }: { icon: any; label: s
           Review <ArrowRight className="w-3 h-3" />
         </button>
       )}
-      {isZero && (
-        <Check className="w-4 h-4 text-emerald-500 mr-2" strokeWidth={2} />
-      )}
+      {isZero && <Check className="w-4 h-4 text-emerald-500 mr-2" strokeWidth={2} />}
     </div>
   );
 }
 
-function QueueCard({ icon: Icon, label, count, link, linkText }: { icon: any; label: string; count: number; link: string; linkText: string }) {
+function QueueCard({
+  icon: Icon,
+  label,
+  count,
+  link,
+  linkText,
+}: {
+  icon: any;
+  label: string;
+  count: number;
+  link: string;
+  linkText: string;
+}) {
   return (
     <div className="p-4 bg-slate-50/50 rounded-xl border border-slate-200/60 flex flex-col hover:bg-slate-50 transition-colors">
       <div className="flex items-center gap-2 mb-3">
         <div className="p-1 bg-white rounded-md border border-slate-200/60 shadow-sm text-slate-500">
           <Icon className="w-3.5 h-3.5" strokeWidth={1.5} />
         </div>
-        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{label}</span>
+        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+          {label}
+        </span>
       </div>
       <div className="mb-4">
-        <span className={`text-2xl font-extrabold tabular-nums ${count === 0 ? "text-slate-400" : "text-slate-900"}`}>
+        <span
+          className={`text-2xl font-extrabold tabular-nums ${count === 0 ? "text-slate-400" : "text-slate-900"}`}
+        >
           {count.toLocaleString()}
         </span>
       </div>
-      <Link href={link} className="text-xs font-semibold text-slate-700 hover:text-slate-900 transition-colors inline-flex items-center gap-1 mt-auto">
+      <Link
+        href={link}
+        className="text-xs font-semibold text-slate-700 hover:text-slate-900 transition-colors inline-flex items-center gap-1 mt-auto"
+      >
         {linkText} <ArrowRight className="w-3 h-3" />
       </Link>
     </div>

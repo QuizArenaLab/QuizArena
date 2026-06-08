@@ -62,13 +62,33 @@ const moderatorNavItems = [
 const adminNavItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard, group: "OPERATIONS" },
   { href: "/dashboard/admin/users", label: "Users", icon: Users, group: "OPERATIONS" },
-  { href: "/dashboard/admin/moderation", label: "Moderation", icon: ShieldAlert, group: "OPERATIONS" },
-  
-  { href: "/dashboard/admin/questions", label: "Question Bank", icon: BookOpen, group: "QUESTION BANK" },
-  
-  { href: "/dashboard/admin/intelligence", label: "Analytics", icon: BarChart3, group: "INTELLIGENCE" },
-  { href: "/dashboard/admin/monitoring", label: "Monitoring", icon: Activity, group: "INTELLIGENCE" },
-  
+  {
+    href: "/dashboard/admin/moderation",
+    label: "Moderation",
+    icon: ShieldAlert,
+    group: "OPERATIONS",
+  },
+
+  {
+    href: "/dashboard/admin/questions",
+    label: "Question Bank",
+    icon: BookOpen,
+    group: "QUESTION BANK",
+  },
+
+  {
+    href: "/dashboard/admin/intelligence",
+    label: "Analytics",
+    icon: BarChart3,
+    group: "INTELLIGENCE",
+  },
+  {
+    href: "/dashboard/admin/monitoring",
+    label: "Monitoring",
+    icon: Activity,
+    group: "INTELLIGENCE",
+  },
+
   { href: "/dashboard/admin/settings", label: "Settings", icon: Settings2, group: "PLATFORM" },
 ];
 
@@ -93,11 +113,7 @@ function getNavItemsForRole(role: string | undefined) {
   }
 }
 
-export function DashboardShell({
-  children,
-  userStatsNode,
-  freshUser,
-}: DashboardShellProps) {
+export function DashboardShell({ children, userStatsNode, freshUser }: DashboardShellProps) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const router = useRouter();
@@ -129,7 +145,9 @@ export function DashboardShell({
   useEffect(() => {
     if (status === "authenticated" && isNotAdmin) {
       const isTargetingAdminRoute =
-        pathname.startsWith("/dashboard/admin") || pathname.startsWith("/dashboard/super-admin") || pathname.startsWith("/admin/");
+        pathname.startsWith("/dashboard/admin") ||
+        pathname.startsWith("/dashboard/super-admin") ||
+        pathname.startsWith("/admin/");
       if (isTargetingAdminRoute) {
         window.location.href = "/dashboard/home";
       }
@@ -291,7 +309,7 @@ export function DashboardShell({
               const group = (item as any).group;
               const prevGroup = index > 0 ? (navItems[index - 1] as any).group : null;
               const showGroupHeader = group && group !== prevGroup;
-              
+
               const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
               const Icon = item.icon;
               return (
@@ -440,7 +458,7 @@ export function DashboardShell({
                     const group = (item as any).group;
                     const prevGroup = index > 0 ? (navItems[index - 1] as any).group : null;
                     const showGroupHeader = group && group !== prevGroup;
-                    
+
                     const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
                     const Icon = item.icon;
                     return (

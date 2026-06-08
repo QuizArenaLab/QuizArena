@@ -386,7 +386,9 @@ export async function getCompetitivePosition(userId: string): Promise<Competitiv
   // Calculate approximate percentile based on total users on leaderboard
   let percentile = 0;
   if (bestRankEntry && bestRankEntry.rank > 0) {
-    const totalUsers = await LeaderboardService.getChallengeParticipantCount(bestRankEntry.challengeId);
+    const totalUsers = await LeaderboardService.getChallengeParticipantCount(
+      bestRankEntry.challengeId
+    );
     if (totalUsers > 1) {
       percentile = Math.max(0, Math.round(100 - (bestRankEntry.rank / totalUsers) * 100));
     }

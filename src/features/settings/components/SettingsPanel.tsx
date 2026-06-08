@@ -97,7 +97,12 @@ export function SettingsPanel({
     return (settings[cat]?.length ?? 0) > 0;
   });
 
-  const [pendingToast, setPendingToast] = useState<{ id: string; title: string; desc?: string; reload?: boolean } | null>(null);
+  const [pendingToast, setPendingToast] = useState<{
+    id: string;
+    title: string;
+    desc?: string;
+    reload?: boolean;
+  } | null>(null);
 
   useEffect(() => {
     if (!isPending && pendingToast) {
@@ -108,7 +113,7 @@ export function SettingsPanel({
       if (pendingToast.reload) {
         window.location.reload();
       }
-      setPendingToast(null);
+      setTimeout(() => setPendingToast(null), 0);
     }
   }, [isPending, pendingToast]);
 

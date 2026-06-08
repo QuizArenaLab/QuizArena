@@ -47,14 +47,14 @@ export function NotificationCard({ notification, onDismiss }: NotificationCardPr
   useEffect(() => {
     // Reset timer state when notification identity or type changes
     if (notification.duration > 0) {
-      setIsPaused(false);
+      setTimeout(() => setIsPaused(false), 0);
       remainingTimeRef.current = notification.duration;
       startTimer(notification.duration);
     } else {
       // For infinite duration (e.g. LOADING), clear the timer
       if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
     }
-    
+
     return () => {
       if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
     };

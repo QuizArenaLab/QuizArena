@@ -13,7 +13,8 @@ export default function CreateQuestionPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Create Question</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Author a new question. All new questions enter as Draft and require review before publishing.
+          Author a new question. All new questions enter as Draft and require review before
+          publishing.
         </p>
       </div>
       <QuestionForm />

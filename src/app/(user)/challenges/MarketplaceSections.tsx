@@ -35,9 +35,7 @@ export async function PrimaryMarketplace({ userId }: { userId: string }) {
             <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">
               Ranked Competitions
             </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Compete against aspirants across India.
-            </p>
+            <p className="text-sm text-gray-500 mt-1">Compete against aspirants across India.</p>
           </div>
           <span className="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-bold">
             {activeChallenges.length} Live

@@ -36,19 +36,54 @@ export interface ParsedRow {
   data: Record<string, any>;
 }
 
+export interface ValidationIssue {
+  severity: "WARNING" | "ERROR";
+  message: string;
+  suggestedFix?: string;
+}
+
 export interface ValidatedRow extends ParsedRow {
-  isValid: boolean;
-  errors?: string[];
+  status: "VALID" | "WARNING" | "BLOCKED";
+  issues: ValidationIssue[];
   parsedData?: ImportRow;
   duplicateCheck?: {
-    isDuplicate: boolean;
-    isNearDuplicate: boolean;
+    status: "NONE" | "SIMILAR" | "EXACT";
+    highestScore: number;
     duplicateCode?: string;
     similarity?: number;
   };
+  qualityScore: number;
 }
 
 // ─── Parsers ───────────────────────────────────────────────────────────────
+
+const REQUIRED_HEADERS = [
+  "question",
+  "optiona",
+  "optionb",
+  "optionc",
+  "optiond",
+  "correctoption",
+  "explanation",
+  "category",
+  "subject",
+  "difficulty",
+];
+
+function validateHeaders(headers: string[]) {
+  const normalizedHeaders = headers.map((h) => h.toLowerCase().trim());
+  const missing = REQUIRED_HEADERS.filter((req) => !normalizedHeaders.includes(req));
+
+  // Provide helpful fallbacks in error messages (e.g. CorrectAnswer vs correctoption)
+  if (missing.length > 0) {
+    const missingStr = missing
+      .map((m) => (m === "correctoption" ? "correctOption (or CorrectAnswer)" : m))
+      .join(", ");
+    throw new Error(
+      `Missing required columns: ${missingStr}. Please fix the template and re-upload.`
+    );
+  }
+}
 
 export async function parseCSV(file: File): Promise<ParsedRow[]> {
   const text = await file.text();
@@ -57,6 +92,15 @@ export async function parseCSV(file: File): Promise<ParsedRow[]> {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
+        if (!results.meta.fields || results.meta.fields.length === 0) {
+          return reject(new Error("File is empty or corrupted."));
+        }
+        try {
+          validateHeaders(results.meta.fields);
+        } catch (e) {
+          return reject(e);
+        }
+
         const rows: ParsedRow[] = results.data.map((row: any, index) => ({
           rowNumber: index + 2, // 1-indexed, +1 for header
           data: row,
@@ -76,6 +120,13 @@ export async function parseXLSX(file: File): Promise<ParsedRow[]> {
 
   const rawData: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
+  if (rawData.length === 0) {
+    throw new Error("File is empty or corrupted.");
+  }
+
+  const headers = Object.keys(rawData[0]);
+  validateHeaders(headers);
+
   return rawData.map((row, index) => ({
     rowNumber: index + 2,
     data: row,
@@ -83,71 +134,143 @@ export async function parseXLSX(file: File): Promise<ParsedRow[]> {
 }
 
 export async function parseFile(file: File): Promise<ParsedRow[]> {
-  if (file.name.endsWith(".csv")) {
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(
+      `File exceeds maximum allowed size of 10MB. Actual size: ${(file.size / 1024 / 1024).toFixed(2)}MB`
+    );
+  }
+
+  if (file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv") {
     return parseCSV(file);
-  } else if (file.name.endsWith(".xlsx")) {
+  } else if (file.name.toLowerCase().endsWith(".xlsx") || file.type.includes("spreadsheetml")) {
     return parseXLSX(file);
   }
-  throw new Error("Unsupported file format. Please upload a .csv or .xlsx file.");
+  throw new Error(
+    "Unsupported file format. Please upload a .csv or .xlsx file. PDF, DOCX, TXT, ZIP are rejected."
+  );
 }
 
 // ─── Validation ─────────────────────────────────────────────────────────────
 
+import { calculateQuestionQuality } from "@/lib/validations/question-engine";
+
 export async function validateRows(rows: ParsedRow[]): Promise<ValidatedRow[]> {
   const validatedRows: ValidatedRow[] = [];
+  const questionSet = new Set<string>();
 
-  // We process rows sequentially for duplicate checks to prevent overloading the DB
   for (const row of rows) {
+    const issues: ValidationIssue[] = [];
+    let parsedData: ImportRow | undefined;
+    let duplicateResult: any;
+    let qualityScore = 0;
+
     try {
-      // Clean and normalize keys to handle trailing spaces from headers
+      // Step 14: Auto-Correction Engine
       const cleanedData: Record<string, any> = {};
       for (const [key, value] of Object.entries(row.data)) {
-        cleanedData[key.trim()] = typeof value === "string" ? value.trim() : value;
+        if (typeof value === "string") {
+          // Normalize line breaks and remove duplicate whitespace
+          cleanedData[key.trim()] = value.replace(/\r\n/g, "\n").replace(/ {2,}/g, " ").trim();
+        } else {
+          cleanedData[key.trim()] = value;
+        }
       }
 
-      const parsedData = importRowSchema.parse(cleanedData);
+      parsedData = importRowSchema.parse(cleanedData);
 
-      // Check for duplicates
-      const duplicateCheck = await checkForDuplicates(parsedData.question, parsedData.category);
+      const options = [
+        { optionText: parsedData.optionA, isCorrect: parsedData.correctOption === "A", order: 1 },
+        { optionText: parsedData.optionB, isCorrect: parsedData.correctOption === "B", order: 2 },
+        { optionText: parsedData.optionC, isCorrect: parsedData.correctOption === "C", order: 3 },
+        { optionText: parsedData.optionD, isCorrect: parsedData.correctOption === "D", order: 4 },
+      ];
+      if (parsedData.optionE)
+        options.push({
+          optionText: parsedData.optionE,
+          isCorrect: parsedData.correctOption === "E",
+          order: 5,
+        });
+      if (parsedData.optionF)
+        options.push({
+          optionText: parsedData.optionF,
+          isCorrect: parsedData.correctOption === "F",
+          order: 6,
+        });
 
-      validatedRows.push({
-        ...row,
-        isValid: true,
-        parsedData,
-        duplicateCheck,
-        errors: duplicateCheck.isDuplicate
-          ? ["Duplicate question detected in the database"]
-          : undefined,
+      // Step 5: Duplicate Scan
+      duplicateResult = await checkForDuplicates({
+        question: parsedData.question,
+        category: parsedData.category,
+        subject: parsedData.subject,
+        explanation: parsedData.explanation,
+        options,
       });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        validatedRows.push({
-          ...row,
-          isValid: false,
-          errors: error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`),
-        });
-      } else {
-        validatedRows.push({
-          ...row,
-          isValid: false,
-          errors: ["Unknown validation error occurred"],
-        });
-      }
-    }
-  }
 
-  // Intra-upload duplicate detection
-  const questionSet = new Set<string>();
-  for (const row of validatedRows) {
-    if (row.parsedData) {
-      const normalizedQuestion = row.parsedData.question.toLowerCase().trim();
+      // Step 4: Question Validation using Engine
+      const qualityResult = calculateQuestionQuality(
+        {
+          question: parsedData.question,
+          explanation: parsedData.explanation,
+          category: parsedData.category,
+          subject: parsedData.subject,
+          topic: parsedData.topic,
+          difficulty: parsedData.difficulty as any,
+          options: options as any,
+        },
+        duplicateResult
+      );
+
+      qualityScore = qualityResult.score;
+
+      // Map Engine Results to Issues
+      qualityResult.blockingErrors.forEach((err) => {
+        issues.push({ severity: "ERROR", message: err });
+      });
+      qualityResult.warnings.forEach((warn) => {
+        issues.push({ severity: "WARNING", message: warn });
+      });
+
+      // Intra-upload Duplicate Check
+      const normalizedQuestion = parsedData.question.toLowerCase().trim();
       if (questionSet.has(normalizedQuestion)) {
-        row.isValid = false;
-        row.errors = [...(row.errors || []), "Duplicate question within the same upload file"];
+        issues.push({
+          severity: "ERROR",
+          message: "Duplicate question within the same upload file.",
+          suggestedFix: "Remove the duplicate row.",
+        });
       } else {
         questionSet.add(normalizedQuestion);
       }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        error.issues.forEach((issue) => {
+          issues.push({ severity: "ERROR", message: `${issue.path.join(".")}: ${issue.message}` });
+        });
+      } else {
+        issues.push({ severity: "ERROR", message: "Unknown validation error occurred" });
+      }
     }
+
+    const hasErrors = issues.some((i) => i.severity === "ERROR");
+    const hasWarnings = issues.some((i) => i.severity === "WARNING");
+    const status = hasErrors ? "BLOCKED" : hasWarnings ? "WARNING" : "VALID";
+
+    validatedRows.push({
+      ...row,
+      status,
+      issues,
+      parsedData,
+      qualityScore,
+      duplicateCheck: duplicateResult
+        ? {
+            status: duplicateResult.status,
+            highestScore: duplicateResult.highestScore,
+            duplicateCode: duplicateResult.candidates?.[0]?.questionCode,
+            similarity: duplicateResult.highestScore,
+          }
+        : undefined,
+    });
   }
 
   return validatedRows;

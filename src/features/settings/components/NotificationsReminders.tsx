@@ -28,7 +28,11 @@ export function NotificationsReminders({ user }: NotificationsRemindersProps) {
         };
 
   const [prefs, setPrefs] = useState(currentPrefs);
-  const [pendingToast, setPendingToast] = useState<{ id: string; title: string; desc?: string } | null>(null);
+  const [pendingToast, setPendingToast] = useState<{
+    id: string;
+    title: string;
+    desc?: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!isPending && pendingToast) {
@@ -36,7 +40,7 @@ export function NotificationsReminders({ user }: NotificationsRemindersProps) {
         id: pendingToast.id,
         description: pendingToast.desc,
       });
-      setPendingToast(null);
+      setTimeout(() => setPendingToast(null), 0);
     }
   }, [isPending, pendingToast]);
 

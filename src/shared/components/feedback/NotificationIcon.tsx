@@ -28,7 +28,7 @@ export function NotificationIcon({ type }: NotificationIconProps) {
           <AlertTriangle className="w-5 h-5" />
         </div>
       );
-      case "ERROR":
+    case "ERROR":
       return (
         <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-red-500/10 text-red-500">
           <XCircle className="w-5 h-5" />

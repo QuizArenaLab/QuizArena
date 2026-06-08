@@ -539,6 +539,13 @@ model Question {
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
   reviewedAt       DateTime?
+  
+  // Validation Engine
+  qualityScore     Int                 @default(100)
+  questionHealth   String?             @default("EXCELLENT")
+  validationStatus String?             @default("PENDING")
+  lastValidatedAt  DateTime?
+
   options          QuestionOption[]
   challenges       ChallengeQuestion[]
   reports          Report[]            @relation("ReportedQuestion")
@@ -628,11 +635,11 @@ model QuestionCodeCounter {
 }
 
 enum ImportJobStatus {
-  PENDING
-  PROCESSING
+  QUEUED
+  RUNNING
   COMPLETED
   FAILED
-  PARTIAL_SUCCESS
+  CANCELLED
 }
 
 model QuestionImportJob {
@@ -642,24 +649,97 @@ model QuestionImportJob {
 
   fileName String
   fileType String
+  fileSize Int      @default(0)
 
-  totalRows   Int @default(0)
-  validRows   Int @default(0)
-  invalidRows Int @default(0)
-
-  status ImportJobStatus
+  status ImportJobStatus @default(QUEUED)
+  
+  // Stats
+  totalRows     Int @default(0)
+  validRows     Int @default(0)
+  invalidRows   Int @default(0)
+  warningRows   Int @default(0)
+  duplicateRows Int @default(0)
+  
+  // Progress & Execution
+  progressPercentage Int @default(0)
+  processedRows      Int @default(0)
+  failureReason      String? @db.Text
+  
+  // Health & Metrics
+  healthScore   Int?
+  averageQuality Int?
 
   startedAt   DateTime  @default(now())
   completedAt DateTime?
+  durationMs  Int?
 
   errorReport Json?
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   uploadedBy User @relation(fields: [uploadedById], references: [id])
+  issues     ImportIssue[]
+  report     ImportReport?
 
   @@index([status])
   @@map("question_import_jobs")
+}
+
+enum IssueSeverity {
+  WARNING
+  ERROR
+}
+
+model ImportIssue {
+  id            String   @id @default(cuid())
+  importJobId   String
+  rowNumber     Int
+  severity      IssueSeverity
+  message       String   @db.Text
+  suggestedFix  String?  @db.Text
+
+  createdAt     DateTime @default(now())
+
+  job           QuestionImportJob @relation(fields: [importJobId], references: [id], onDelete: Cascade)
+
+  @@index([importJobId])
+  @@map("import_issues")
+}
+
+model ImportReport {
+  id            String   @id @default(cuid())
+  jobId         String   @unique
+  
+  duplicatesPrevented Int @default(0)
+  totalImported       Int @default(0)
+  averageQuality      Int @default(0)
+  failedRows          Int @default(0)
+  
+  job           QuestionImportJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime @default(now())
+
+  @@map("import_reports")
+}
+
+model ImportAudit {
+  id            String   @id @default(cuid())
+  jobId         String
+  performedById String
+  
+  action        String   
+  fileName      String
+  
+  rowsImported  Int @default(0)
+  warningsCount Int @default(0)
+  errorsCount   Int @default(0)
+
+  performedAt   DateTime @default(now())
+
+  @@index([jobId])
+  @@index([performedById])
+  @@map("import_audits")
 }
 
 model ChallengeQuestion {

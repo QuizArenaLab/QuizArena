@@ -1,40 +1,11 @@
 "use client";
 
-import { useQuestionAuthoringStore } from "@/features/admin/store/question-authoring";
-import { submitForReview } from "@/features/admin/services/question-bank";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { useFormContext, useWatch } from "react-hook-form";
+import { CheckCircle2 } from "lucide-react";
 
 export function PreviewStep() {
-  const { formData, validationErrors, syncStatus } = useQuestionAuthoringStore();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const router = useRouter();
-
-  const handleSubmitReview = async () => {
-    if (!formData.id) {
-      setSubmitError("Question must be saved first.");
-      return;
-    }
-    setIsSubmitting(true);
-    setSubmitError(null);
-    try {
-      const res = await submitForReview(formData.id);
-      if (res.success) {
-        router.push("/dashboard/admin/question-bank");
-        router.refresh();
-      } else {
-        setSubmitError(res.error || "Failed to submit for review");
-        setIsSubmitting(false);
-      }
-    } catch (e) {
-      setSubmitError("An unexpected error occurred");
-      setIsSubmitting(false);
-    }
-  };
-
-  const hasErrors = validationErrors.length > 0;
+  const { control } = useFormContext();
+  const formData = useWatch({ control });
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -53,7 +24,7 @@ export function PreviewStep() {
             {formData.difficulty || "MEDIUM"}
           </span>
           <span className="px-2 py-1 bg-gray-100 rounded-md border border-gray-200">
-            +{formData.marks} / -{formData.negativeMarks} Marks
+            +{formData.marks || 1} / -{formData.negativeMarks || 0} Marks
           </span>
         </div>
 
@@ -66,7 +37,7 @@ export function PreviewStep() {
 
         {/* Options */}
         <div className="space-y-3 mb-8">
-          {(formData.options || []).map((opt, idx) => (
+          {(formData.options || []).map((opt: any, idx: number) => (
             <div
               key={idx}
               className={`flex items-start gap-4 p-4 rounded-xl border-2 ${
@@ -104,35 +75,6 @@ export function PreviewStep() {
             <p className="text-sm text-blue-900 whitespace-pre-wrap">{formData.explanation}</p>
           </div>
         )}
-      </div>
-
-      {/* Submission Status */}
-      {submitError && (
-        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
-          <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
-          <p className="text-sm text-red-700">{submitError}</p>
-        </div>
-      )}
-
-      {hasErrors && (
-        <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-          <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
-          <div className="text-sm text-amber-700">
-            <p className="font-bold mb-1">Cannot submit for review</p>
-            <p>Please fix the validation errors shown in the sidebar before submitting.</p>
-          </div>
-        </div>
-      )}
-
-      <div className="flex justify-end pt-4">
-        <button
-          onClick={handleSubmitReview}
-          disabled={hasErrors || syncStatus !== "saved" || isSubmitting}
-          className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-linear-to-r from-emerald-500 to-emerald-600 rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-md disabled:opacity-50"
-        >
-          {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-          {isSubmitting ? "Submitting..." : "Submit for Review"}
-        </button>
       </div>
     </div>
   );

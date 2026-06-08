@@ -30,24 +30,29 @@ export function ReportsDashboardClient({ initialData }: ReportsDashboardClientPr
   const [filteredReports, setFilteredReports] = useState<ReportData[]>(initialData.recentReports);
   const [isLoadingQueue, setIsLoadingQueue] = useState(false);
 
-  const handleRefresh = useCallback(async (isAuto = false) => {
-    if (!isAuto) setIsRefreshing(true);
-    try {
-      const { getReportsDashboardData } = await import("@/features/admin/reports/services/reports.service");
-      const freshData = await getReportsDashboardData();
-      setData(freshData);
-      setLastRefreshed(new Date());
+  const handleRefresh = useCallback(
+    async (isAuto = false) => {
+      if (!isAuto) setIsRefreshing(true);
+      try {
+        const { getReportsDashboardData } =
+          await import("@/features/admin/reports/services/reports.service");
+        const freshData = await getReportsDashboardData();
+        setData(freshData);
+        setLastRefreshed(new Date());
 
-      // Re-trigger fetchModerationQueue
-      const { fetchModerationQueue } = await import("@/features/admin/reports/services/reports.service");
-      const results = await fetchModerationQueue(activeFilters);
-      setFilteredReports(results);
-    } catch (error) {
-      console.error("Failed to refresh reports data:", error);
-    } finally {
-      if (!isAuto) setIsRefreshing(false);
-    }
-  }, [activeFilters]);
+        // Re-trigger fetchModerationQueue
+        const { fetchModerationQueue } =
+          await import("@/features/admin/reports/services/reports.service");
+        const results = await fetchModerationQueue(activeFilters);
+        setFilteredReports(results);
+      } catch (error) {
+        console.error("Failed to refresh reports data:", error);
+      } finally {
+        if (!isAuto) setIsRefreshing(false);
+      }
+    },
+    [activeFilters]
+  );
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
@@ -61,7 +66,8 @@ export function ReportsDashboardClient({ initialData }: ReportsDashboardClientPr
     setActiveFilters(filters);
     setIsLoadingQueue(true);
     try {
-      const { fetchModerationQueue } = await import("@/features/admin/reports/services/reports.service");
+      const { fetchModerationQueue } =
+        await import("@/features/admin/reports/services/reports.service");
       const results = await fetchModerationQueue(filters);
       setFilteredReports(results);
     } catch (error) {
@@ -71,16 +77,19 @@ export function ReportsDashboardClient({ initialData }: ReportsDashboardClientPr
     }
   }, []);
 
-  const handleQuickFilterChange = useCallback((status: string | null, priority: string | null) => {
-    const newFilters: ReportFilters = { ...activeFilters };
-    if (status) newFilters.status = status as any;
-    else delete newFilters.status;
-    
-    if (priority) newFilters.priority = priority as any;
-    else delete newFilters.priority;
+  const handleQuickFilterChange = useCallback(
+    (status: string | null, priority: string | null) => {
+      const newFilters: ReportFilters = { ...activeFilters };
+      if (status) newFilters.status = status as any;
+      else delete newFilters.status;
 
-    handleFilterApply(newFilters);
-  }, [activeFilters, handleFilterApply]);
+      if (priority) newFilters.priority = priority as any;
+      else delete newFilters.priority;
+
+      handleFilterApply(newFilters);
+    },
+    [activeFilters, handleFilterApply]
+  );
 
   const handleOpenInvestigation = useCallback((report: ReportData) => {
     setSelectedReport(report);
@@ -121,7 +130,7 @@ export function ReportsDashboardClient({ initialData }: ReportsDashboardClientPr
             >
               <MoreVertical className="w-4 h-4" />
             </button>
-            
+
             {showMenu && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
@@ -147,16 +156,22 @@ export function ReportsDashboardClient({ initialData }: ReportsDashboardClientPr
       <QuickActionsBar statusCounts={data.statusCounts} onFilterChange={handleQuickFilterChange} />
 
       {/* KPI Section */}
-      <ReportsSummaryCards summary={data.summary} onFilterClick={(filters) => handleFilterApply({ ...activeFilters, ...filters })} />
+      <ReportsSummaryCards
+        summary={data.summary}
+        onFilterClick={(filters) => handleFilterApply({ ...activeFilters, ...filters })}
+      />
 
       {/* Main Content Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
         {/* Left Column: Moderation Queue */}
         <div className="lg:col-span-8 space-y-4">
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col h-[calc(100vh-320px)] min-h-[600px]">
             <div className="p-4 border-b border-gray-100 bg-gray-50/50">
-              <ReportsFilterBar filters={activeFilters} statusCounts={data.statusCounts} onApply={handleFilterApply} />
+              <ReportsFilterBar
+                filters={activeFilters}
+                statusCounts={data.statusCounts}
+                onApply={handleFilterApply}
+              />
             </div>
 
             <div className="flex-1 overflow-auto bg-gray-50/30">
@@ -179,8 +194,11 @@ export function ReportsDashboardClient({ initialData }: ReportsDashboardClientPr
 
         {/* Right Column: Intelligence & Prioritization */}
         <div className="lg:col-span-4 space-y-6 flex flex-col h-[calc(100vh-320px)] min-h-[600px] overflow-y-auto pr-1">
-          <HighPriorityCases reports={data.highPriorityReports} onInvestigate={handleOpenInvestigation} />
-          
+          <HighPriorityCases
+            reports={data.highPriorityReports}
+            onInvestigate={handleOpenInvestigation}
+          />
+
           <ReportAgingTracker metrics={data.agingMetrics} />
 
           <AbuseIntelligencePanel intelligence={data.abuseIntelligence} />

@@ -2,7 +2,11 @@ import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
 import { Suspense } from "react";
-import { PrimaryMarketplace, SecondaryMarketplace, TertiaryMarketplace } from "./MarketplaceSections";
+import {
+  PrimaryMarketplace,
+  SecondaryMarketplace,
+  TertiaryMarketplace,
+} from "./MarketplaceSections";
 
 export default async function ChallengesPage() {
   const session = await auth();
@@ -20,14 +24,18 @@ export default async function ChallengesPage() {
             <PrimaryMarketplace userId={session.user.id} />
           </Suspense>
 
-          <Suspense fallback={<div className="h-48 bg-gray-200 rounded-xl animate-pulse mt-12"></div>}>
+          <Suspense
+            fallback={<div className="h-48 bg-gray-200 rounded-xl animate-pulse mt-12"></div>}
+          >
             <TertiaryMarketplace />
           </Suspense>
         </div>
 
         {/* Right Column: Sidebar */}
         <div className="lg:col-span-3 space-y-10">
-          <Suspense fallback={<div className="h-screen bg-gray-200 rounded-xl animate-pulse"></div>}>
+          <Suspense
+            fallback={<div className="h-screen bg-gray-200 rounded-xl animate-pulse"></div>}
+          >
             <SecondaryMarketplace userId={session.user.id} />
           </Suspense>
         </div>

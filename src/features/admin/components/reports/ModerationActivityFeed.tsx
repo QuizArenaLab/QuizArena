@@ -1,6 +1,14 @@
 "use client";
 
-import { Activity, Shield, UserX, AlertTriangle, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Activity,
+  Shield,
+  UserX,
+  AlertTriangle,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import type { ModerationActionRecord } from "@/types/reports";
 import { useState } from "react";
 
@@ -15,11 +23,14 @@ export function ModerationActivityFeed({ actions: initialActions }: ModerationAc
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
   const totalPages = Math.ceil(initialActions.length / itemsPerPage);
-  
+
   const currentActions = initialActions.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm" id="moderation-activity-feed">
+    <div
+      className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm"
+      id="moderation-activity-feed"
+    >
       <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
         <div className="flex items-center gap-2">
           <Activity className="w-5 h-5 text-navy" />
@@ -48,7 +59,9 @@ export function ModerationActivityFeed({ actions: initialActions }: ModerationAc
               {currentActions.map((action, idx) => {
                 let actionColor = "text-gray-700 bg-gray-100";
                 let actionLabel = action.action;
-                let targetLabel = action.reportId ? `Report #${action.reportId.substring(0, 6)}` : "Unknown";
+                let targetLabel = action.reportId
+                  ? `Report #${action.reportId.substring(0, 6)}`
+                  : "Unknown";
 
                 if (action.action.includes("SUSPENDED") || action.action.includes("RESTRICTED")) {
                   actionColor = "text-red-700 bg-red-100";
@@ -68,23 +81,27 @@ export function ModerationActivityFeed({ actions: initialActions }: ModerationAc
                 }
 
                 const timeString = new Date(action.timestamp).toLocaleString("en-US", {
-                  month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
+                  month: "short",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
                 });
 
                 return (
                   <tr key={action.id || idx} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-5 py-3">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${actionColor}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${actionColor}`}
+                      >
                         {actionLabel}
                       </span>
                     </td>
-                    <td className="px-5 py-3 font-medium text-navy">
-                      {action.performedBy}
-                    </td>
-                    <td className="px-5 py-3 text-gray-600 font-mono text-xs">
-                      {targetLabel}
-                    </td>
-                    <td className="px-5 py-3 text-gray-600 max-w-xs truncate" title={action.description}>
+                    <td className="px-5 py-3 font-medium text-navy">{action.performedBy}</td>
+                    <td className="px-5 py-3 text-gray-600 font-mono text-xs">{targetLabel}</td>
+                    <td
+                      className="px-5 py-3 text-gray-600 max-w-xs truncate"
+                      title={action.description}
+                    >
                       {action.description || "—"}
                     </td>
                     <td className="px-5 py-3 text-right text-xs text-gray-500 whitespace-nowrap">
@@ -102,7 +119,9 @@ export function ModerationActivityFeed({ actions: initialActions }: ModerationAc
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 bg-gray-50/50">
           <span className="text-xs text-gray-500 font-medium">
-            Showing {((page - 1) * itemsPerPage) + 1} to {Math.min(page * itemsPerPage, initialActions.length)} of {initialActions.length} entries
+            Showing {(page - 1) * itemsPerPage + 1} to{" "}
+            {Math.min(page * itemsPerPage, initialActions.length)} of {initialActions.length}{" "}
+            entries
           </span>
           <div className="flex items-center gap-1">
             <button

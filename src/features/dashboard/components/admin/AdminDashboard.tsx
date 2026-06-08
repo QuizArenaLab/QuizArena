@@ -1,8 +1,20 @@
-import { 
-  Users, ClipboardList, Shield, 
-  CheckCircle, ArrowRight, Activity, Trophy, 
-  Target, BarChart3, Database, Globe, 
-  Bell, Key, HardDrive, AlertCircle, Clock
+import {
+  Users,
+  ClipboardList,
+  Shield,
+  CheckCircle,
+  ArrowRight,
+  Activity,
+  Trophy,
+  Target,
+  BarChart3,
+  Database,
+  Globe,
+  Bell,
+  Key,
+  HardDrive,
+  AlertCircle,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -15,9 +27,18 @@ import { getUserIntelligence } from "../../../admin/services/get-user-intelligen
 import { getPlatformHealth } from "../../../admin/services/get-platform-health";
 
 const IconMap: Record<string, any> = {
-  Database, Globe, Bell, Key, HardDrive, 
-  Users, Trophy, CheckCircle, Shield, 
-  Target, AlertCircle, Activity
+  Database,
+  Globe,
+  Bell,
+  Key,
+  HardDrive,
+  Users,
+  Trophy,
+  CheckCircle,
+  Shield,
+  Target,
+  AlertCircle,
+  Activity,
 };
 
 export async function AdminDashboardView() {
@@ -29,14 +50,14 @@ export async function AdminDashboardView() {
     liveActivity,
     compIntel,
     userIntel,
-    platformHealth
+    platformHealth,
   ] = await Promise.all([
     getPlatformOverview(),
     getOperationalQueue(),
     getLiveActivity(),
     getCompetitionIntelligence(),
     getUserIntelligence(),
-    getPlatformHealth()
+    getPlatformHealth(),
   ]);
 
   return (
@@ -45,7 +66,6 @@ export async function AdminDashboardView() {
       <div className="flex flex-col lg:flex-row gap-6 max-w-[1600px] mx-auto items-start">
         {/* Main Column */}
         <div className="flex-1 space-y-8 min-w-0">
-          
           {/* PAGE HEADER */}
           <div className="flex items-center justify-between h-[72px] bg-white rounded-xl border border-gray-100 px-6 shrink-0 shadow-sm">
             <div className="flex items-center gap-4">
@@ -54,7 +74,9 @@ export async function AdminDashboardView() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-navy leading-tight">Admin Dashboard</h1>
-                <p className="text-xs text-gray-500 font-medium">Platform Operations & Competition Management</p>
+                <p className="text-xs text-gray-500 font-medium">
+                  Platform Operations & Competition Management
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-6">
@@ -76,28 +98,36 @@ export async function AdminDashboardView() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
               <p className="text-sm font-semibold text-gray-500 mb-1">Total Users</p>
-              <p className="text-3xl font-bold text-navy mb-1 group-hover:text-blue-600 transition-colors">{overview.totalUsers.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-navy mb-1 group-hover:text-blue-600 transition-colors">
+                {overview.totalUsers.toLocaleString()}
+              </p>
               <div className="w-full h-1 bg-blue-100 rounded-full mt-3 overflow-hidden">
                 <div className="h-full bg-blue-500 w-full"></div>
               </div>
             </div>
             <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
               <p className="text-sm font-semibold text-gray-500 mb-1">Active Competitions</p>
-              <p className="text-3xl font-bold text-navy mb-1 group-hover:text-green-600 transition-colors">{overview.activeCompetitions.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-navy mb-1 group-hover:text-green-600 transition-colors">
+                {overview.activeCompetitions.toLocaleString()}
+              </p>
               <div className="w-full h-1 bg-green-100 rounded-full mt-3 overflow-hidden">
                 <div className="h-full bg-green-500 w-full"></div>
               </div>
             </div>
             <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
               <p className="text-sm font-semibold text-gray-500 mb-1">Pending Reports</p>
-              <p className="text-3xl font-bold text-navy mb-1 group-hover:text-orange-600 transition-colors">{overview.pendingReports.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-navy mb-1 group-hover:text-orange-600 transition-colors">
+                {overview.pendingReports.toLocaleString()}
+              </p>
               <div className="w-full h-1 bg-orange-100 rounded-full mt-3 overflow-hidden">
                 <div className="h-full bg-orange-500 w-full"></div>
               </div>
             </div>
             <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
               <p className="text-sm font-semibold text-gray-500 mb-1">Critical Alerts</p>
-              <p className="text-3xl font-bold text-navy mb-1 group-hover:text-red-600 transition-colors">{overview.criticalAlerts.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-navy mb-1 group-hover:text-red-600 transition-colors">
+                {overview.criticalAlerts.toLocaleString()}
+              </p>
               <div className="w-full h-1 bg-red-100 rounded-full mt-3 overflow-hidden">
                 <div className="h-full bg-red-500 w-full"></div>
               </div>
@@ -112,9 +142,14 @@ export async function AdminDashboardView() {
                   <p className="text-sm font-bold text-navy">Pending Reports</p>
                   <p className="text-2xl font-bold mt-1">{attentionRequires.pendingReports}</p>
                 </div>
-                <span className="text-[10px] font-bold px-2 py-1 bg-red-100 text-red-700 rounded uppercase tracking-wider">High Priority</span>
+                <span className="text-[10px] font-bold px-2 py-1 bg-red-100 text-red-700 rounded uppercase tracking-wider">
+                  High Priority
+                </span>
               </div>
-              <Link href="/dashboard/admin/moderation" className="text-sm font-semibold text-red-600 flex items-center gap-1 hover:gap-2 transition-all">
+              <Link
+                href="/dashboard/admin/moderation"
+                className="text-sm font-semibold text-red-600 flex items-center gap-1 hover:gap-2 transition-all"
+              >
                 Review <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -124,9 +159,14 @@ export async function AdminDashboardView() {
                   <p className="text-sm font-bold text-navy">Competition Approval</p>
                   <p className="text-2xl font-bold mt-1">{attentionRequires.pendingApprovals}</p>
                 </div>
-                <span className="text-[10px] font-bold px-2 py-1 bg-orange-100 text-orange-700 rounded uppercase tracking-wider">Medium</span>
+                <span className="text-[10px] font-bold px-2 py-1 bg-orange-100 text-orange-700 rounded uppercase tracking-wider">
+                  Medium
+                </span>
               </div>
-              <Link href="/dashboard/admin/challenges" className="text-sm font-semibold text-orange-600 flex items-center gap-1 hover:gap-2 transition-all">
+              <Link
+                href="/dashboard/admin/challenges"
+                className="text-sm font-semibold text-orange-600 flex items-center gap-1 hover:gap-2 transition-all"
+              >
                 Approve <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -136,9 +176,14 @@ export async function AdminDashboardView() {
                   <p className="text-sm font-bold text-navy">User Appeals</p>
                   <p className="text-2xl font-bold mt-1">{attentionRequires.userAppeals}</p>
                 </div>
-                <span className="text-[10px] font-bold px-2 py-1 bg-amber-100 text-amber-700 rounded uppercase tracking-wider">Medium</span>
+                <span className="text-[10px] font-bold px-2 py-1 bg-amber-100 text-amber-700 rounded uppercase tracking-wider">
+                  Medium
+                </span>
               </div>
-              <Link href="/dashboard/admin/users" className="text-sm font-semibold text-amber-600 flex items-center gap-1 hover:gap-2 transition-all">
+              <Link
+                href="/dashboard/admin/users"
+                className="text-sm font-semibold text-amber-600 flex items-center gap-1 hover:gap-2 transition-all"
+              >
                 Review <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -159,9 +204,14 @@ export async function AdminDashboardView() {
                     <p className="text-sm font-bold text-navy">Content Review</p>
                     <p className="text-2xl font-bold mt-1">{attentionRequires.contentReview}</p>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-1 bg-blue-100 text-blue-700 rounded uppercase tracking-wider">Low</span>
+                  <span className="text-[10px] font-bold px-2 py-1 bg-blue-100 text-blue-700 rounded uppercase tracking-wider">
+                    Low
+                  </span>
                 </div>
-                <Link href="/dashboard/admin/question-bank/review" className="text-sm font-semibold text-blue-600 flex items-center gap-1 hover:gap-2 transition-all">
+                <Link
+                  href="/dashboard/admin/question-bank/review"
+                  className="text-sm font-semibold text-blue-600 flex items-center gap-1 hover:gap-2 transition-all"
+                >
                   Review <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -206,14 +256,23 @@ export async function AdminDashboardView() {
                       <td className="px-6 py-3 font-medium text-navy">{item.type}</td>
                       <td className="px-6 py-3">{item.title}</td>
                       <td className="px-6 py-3">
-                        <span className={`px-2 py-1 text-[10px] font-bold rounded uppercase tracking-wider
-                          ${item.priority === 'High' ? 'bg-red-100 text-red-700' : 
-                            item.priority === 'Medium' ? 'bg-orange-100 text-orange-700' : 
-                            'bg-gray-100 text-gray-700'}`}>
+                        <span
+                          className={`px-2 py-1 text-[10px] font-bold rounded uppercase tracking-wider
+                          ${
+                            item.priority === "High"
+                              ? "bg-red-100 text-red-700"
+                              : item.priority === "Medium"
+                                ? "bg-orange-100 text-orange-700"
+                                : "bg-gray-100 text-gray-700"
+                          }`}
+                        >
                           {item.priority}
                         </span>
                       </td>
-                      <td className="px-6 py-3 flex items-center gap-1.5"><Clock className="w-3 h-3 text-gray-400"/> {format(new Date(item.createdAt), 'MMM dd, HH:mm')}</td>
+                      <td className="px-6 py-3 flex items-center gap-1.5">
+                        <Clock className="w-3 h-3 text-gray-400" />{" "}
+                        {format(new Date(item.createdAt), "MMM dd, HH:mm")}
+                      </td>
                       <td className="px-6 py-3 text-gray-500">{item.assignedTo}</td>
                       <td className="px-6 py-3 text-right">
                         <button className="text-primary font-semibold text-xs hover:underline opacity-0 group-hover:opacity-100 transition-opacity">
@@ -233,7 +292,9 @@ export async function AdminDashboardView() {
               </table>
             </div>
             <div className="px-6 py-3 border-t border-gray-100 flex justify-center bg-gray-50/50">
-              <button className="text-xs font-semibold text-gray-500 hover:text-navy transition-colors">View All Items</button>
+              <button className="text-xs font-semibold text-gray-500 hover:text-navy transition-colors">
+                View All Items
+              </button>
             </div>
           </div>
 
@@ -314,11 +375,29 @@ export async function AdminDashboardView() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
               {platformHealth.map((health, idx) => {
                 const Icon = IconMap[health.iconName] || Activity;
-                const statusColor = health.status === "Healthy" ? "text-green-600" : (health.status === "Warning" ? "text-amber-600" : "text-red-600");
-                const statusBg = health.status === "Healthy" ? "bg-green-100" : (health.status === "Warning" ? "bg-amber-100" : "bg-red-100");
-                const dotBg = health.status === "Healthy" ? "bg-green-500" : (health.status === "Warning" ? "bg-amber-500" : "bg-red-500");
+                const statusColor =
+                  health.status === "Healthy"
+                    ? "text-green-600"
+                    : health.status === "Warning"
+                      ? "text-amber-600"
+                      : "text-red-600";
+                const statusBg =
+                  health.status === "Healthy"
+                    ? "bg-green-100"
+                    : health.status === "Warning"
+                      ? "bg-amber-100"
+                      : "bg-red-100";
+                const dotBg =
+                  health.status === "Healthy"
+                    ? "bg-green-500"
+                    : health.status === "Warning"
+                      ? "bg-amber-500"
+                      : "bg-red-500";
                 return (
-                  <div key={idx} className="p-3 bg-gray-50 rounded-lg border border-gray-100 flex items-center gap-3">
+                  <div
+                    key={idx}
+                    className="p-3 bg-gray-50 rounded-lg border border-gray-100 flex items-center gap-3"
+                  >
                     <div className={`p-2 rounded-lg ${statusBg}`}>
                       <Icon className={`w-4 h-4 ${statusColor}`} />
                     </div>
@@ -326,15 +405,16 @@ export async function AdminDashboardView() {
                       <p className="text-xs font-bold text-navy">{health.name}</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <span className={`w-1.5 h-1.5 rounded-full ${dotBg}`}></span>
-                        <span className="text-[10px] font-semibold text-gray-500 uppercase">{health.status}</span>
+                        <span className="text-[10px] font-semibold text-gray-500 uppercase">
+                          {health.status}
+                        </span>
                       </div>
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           </div>
-
         </div>
 
         {/* Right Column: SECTION 6: LIVE PLATFORM ACTIVITY */}
@@ -357,32 +437,39 @@ export async function AdminDashboardView() {
                 {liveActivity.map((activity) => {
                   const Icon = IconMap[activity.iconName] || Activity;
                   return (
-                    <div key={activity.id} className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-default">
+                    <div
+                      key={activity.id}
+                      className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-default"
+                    >
                       <div className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${activity.bg}`}>
                         <Icon className={`w-3.5 h-3.5 ${activity.color}`} />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-navy leading-tight">{activity.message}</p>
-                        <p className="text-xs text-gray-400 mt-1">{format(new Date(activity.createdAt), 'HH:mm:ss a')}</p>
+                        <p className="text-sm font-medium text-navy leading-tight">
+                          {activity.message}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {format(new Date(activity.createdAt), "HH:mm:ss a")}
+                        </p>
                       </div>
                     </div>
-                  )
+                  );
                 })}
                 {liveActivity.length === 0 && (
-                  <div className="p-4 text-center text-sm text-gray-500">
-                    No recent activity.
-                  </div>
+                  <div className="p-4 text-center text-sm text-gray-500">No recent activity.</div>
                 )}
               </div>
             </div>
             <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50 text-center">
-              <Link href="/dashboard/admin/monitoring" className="text-xs font-semibold text-primary hover:underline">
+              <Link
+                href="/dashboard/admin/monitoring"
+                className="text-xs font-semibold text-primary hover:underline"
+              >
                 View Full Audit Log
               </Link>
             </div>
           </div>
         </div>
-
       </div>
     </>
   );

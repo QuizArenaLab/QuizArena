@@ -1,6 +1,15 @@
 "use client";
 
-import { Eye, User, Trophy, FileText, Clock, AlertTriangle, ShieldCheck, Activity } from "lucide-react";
+import {
+  Eye,
+  User,
+  Trophy,
+  FileText,
+  Clock,
+  AlertTriangle,
+  ShieldCheck,
+  Activity,
+} from "lucide-react";
 import type { ReportData } from "@/types/reports";
 import { REPORT_TYPE_LABELS, REPORT_PRIORITY_LABELS, REPORT_STATUS_LABELS } from "@/types/reports";
 
@@ -71,7 +80,13 @@ function formatTimeAgo(dateStr: string) {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export function ReportsTable({ reports, onInvestigate, platformHealth, summary, totalOpen }: ReportsTableProps) {
+export function ReportsTable({
+  reports,
+  onInvestigate,
+  platformHealth,
+  summary,
+  totalOpen,
+}: ReportsTableProps) {
   if (reports.length === 0) {
     const isHealthyState = totalOpen === 0;
 
@@ -84,27 +99,39 @@ export function ReportsTable({ reports, onInvestigate, platformHealth, summary, 
             </div>
             <div>
               <h3 className="text-lg font-bold text-emerald-700">Platform Healthy</h3>
-              <p className="text-sm text-gray-500">No active moderation actions currently required.</p>
+              <p className="text-sm text-gray-500">
+                No active moderation actions currently required.
+              </p>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 rounded-xl border border-gray-100 bg-gray-50">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Reports Today</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                Reports Today
+              </p>
               <p className="text-xl font-bold text-navy">{platformHealth.reportsMonitoredToday}</p>
             </div>
             <div className="p-4 rounded-xl border border-gray-100 bg-gray-50">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Comps Monitored</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                Comps Monitored
+              </p>
               <p className="text-xl font-bold text-navy">{platformHealth.competitionsMonitored}</p>
             </div>
             <div className="p-4 rounded-xl border border-gray-100 bg-gray-50">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Users Monitored</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                Users Monitored
+              </p>
               <p className="text-xl font-bold text-navy">{platformHealth.usersMonitored}</p>
             </div>
             <div className="p-4 rounded-xl border border-gray-100 bg-gray-50">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Last Resolved</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                Last Resolved
+              </p>
               <p className="text-sm font-bold text-navy mt-1 truncate">
-                {platformHealth.lastResolvedIncident ? formatTimeAgo(platformHealth.lastResolvedIncident) : "No recent"}
+                {platformHealth.lastResolvedIncident
+                  ? formatTimeAgo(platformHealth.lastResolvedIncident)
+                  : "No recent"}
               </p>
             </div>
           </div>
@@ -120,27 +147,39 @@ export function ReportsTable({ reports, onInvestigate, platformHealth, summary, 
           </div>
           <div>
             <h3 className="text-lg font-bold text-navy">Platform Health Center</h3>
-            <p className="text-sm text-gray-500">No reports match your current filters. Here is the operational status.</p>
+            <p className="text-sm text-gray-500">
+              No reports match your current filters. Here is the operational status.
+            </p>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-4 rounded-xl border border-gray-100 bg-gray-50">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Reports Today</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+              Reports Today
+            </p>
             <p className="text-xl font-bold text-navy">{summary.totalReportsToday}</p>
           </div>
           <div className="p-4 rounded-xl border border-gray-100 bg-gray-50">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Critical Cases</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+              Critical Cases
+            </p>
             <p className="text-xl font-bold text-navy">{summary.totalCritical}</p>
           </div>
           <div className="p-4 rounded-xl border border-gray-100 bg-gray-50">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Avg Resolution</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+              Avg Resolution
+            </p>
             <p className="text-xl font-bold text-navy">{summary.averageResolutionHours}h</p>
           </div>
           <div className="p-4 rounded-xl border border-gray-100 bg-gray-50">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Last Action</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+              Last Action
+            </p>
             <p className="text-sm font-bold text-navy mt-1 truncate">
-              {platformHealth.lastResolvedIncident ? formatTimeAgo(platformHealth.lastResolvedIncident) : "No recent"}
+              {platformHealth.lastResolvedIncident
+                ? formatTimeAgo(platformHealth.lastResolvedIncident)
+                : "No recent"}
             </p>
           </div>
         </div>
@@ -155,14 +194,30 @@ export function ReportsTable({ reports, onInvestigate, platformHealth, summary, 
         <table className="w-full text-left table-fixed">
           <thead className="bg-white sticky top-0 z-10 border-b border-gray-100 shadow-sm shadow-gray-50/50">
             <tr>
-              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[10%]">Priority</th>
-              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[15%]">Type</th>
-              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[18%]">Target</th>
-              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[20%]">Reason</th>
-              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[12%]">Reported By</th>
-              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[10%]">Created</th>
-              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[10%]">Status</th>
-              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[5%] text-right">Actions</th>
+              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[10%]">
+                Priority
+              </th>
+              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[15%]">
+                Type
+              </th>
+              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[18%]">
+                Target
+              </th>
+              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[20%]">
+                Reason
+              </th>
+              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[12%]">
+                Reported By
+              </th>
+              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[10%]">
+                Created
+              </th>
+              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[10%]">
+                Status
+              </th>
+              <th className="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-[5%] text-right">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50/80">
@@ -172,10 +227,7 @@ export function ReportsTable({ reports, onInvestigate, platformHealth, summary, 
               const TargetIcon = getTargetIcon(report);
 
               return (
-                <tr
-                  key={report.id}
-                  className="hover:bg-gray-50/80 transition-colors group"
-                >
+                <tr key={report.id} className="hover:bg-gray-50/80 transition-colors group">
                   <td className="px-4 py-3.5 align-top">
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${priorityClasses}`}
@@ -191,7 +243,10 @@ export function ReportsTable({ reports, onInvestigate, platformHealth, summary, 
                   <td className="px-4 py-3.5 align-top">
                     <div className="flex items-center gap-1.5">
                       <TargetIcon className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                      <span className="text-xs text-gray-600 truncate" title={getTargetLabel(report)}>
+                      <span
+                        className="text-xs text-gray-600 truncate"
+                        title={getTargetLabel(report)}
+                      >
                         {getTargetLabel(report)}
                       </span>
                     </div>
@@ -202,7 +257,10 @@ export function ReportsTable({ reports, onInvestigate, platformHealth, summary, 
                     </p>
                   </td>
                   <td className="px-4 py-3.5 align-top">
-                    <span className="text-xs text-gray-500 truncate block" title={report.reportedBy.name || "Anonymous"}>
+                    <span
+                      className="text-xs text-gray-500 truncate block"
+                      title={report.reportedBy.name || "Anonymous"}
+                    >
                       {report.reportedBy.name || "Anonymous"}
                     </span>
                   </td>

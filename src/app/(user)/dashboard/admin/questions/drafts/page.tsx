@@ -45,7 +45,8 @@ async function DraftsContent({
       <div>
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Draft Questions</h1>
         <p className="text-sm text-gray-500 mt-1">
-          {result.total} draft question{result.total !== 1 ? "s" : ""} awaiting completion or submission
+          {result.total} draft question{result.total !== 1 ? "s" : ""} awaiting completion or
+          submission
         </p>
       </div>
 
@@ -62,13 +63,27 @@ async function DraftsContent({
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
-                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Question</th>
-                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Category</th>
-                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Subject</th>
-                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Difficulty</th>
-                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Created By</th>
-                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Date</th>
-                  <th className="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
+                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Question
+                  </th>
+                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                    Category
+                  </th>
+                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                    Subject
+                  </th>
+                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                    Difficulty
+                  </th>
+                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                    Created By
+                  </th>
+                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                    Date
+                  </th>
+                  <th className="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -87,7 +102,9 @@ async function DraftsContent({
                       <span className="text-xs text-gray-600">{q.subject || "—"}</span>
                     </td>
                     <td className="px-5 py-3.5 hidden lg:table-cell">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${difficultyColors[q.difficulty] || "bg-gray-100 text-gray-800"}`}>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${difficultyColors[q.difficulty] || "bg-gray-100 text-gray-800"}`}
+                      >
                         {q.difficulty}
                       </span>
                     </td>
@@ -95,7 +112,13 @@ async function DraftsContent({
                       <span className="text-xs text-gray-500">{q.createdBy?.name || "—"}</span>
                     </td>
                     <td className="px-5 py-3.5 hidden lg:table-cell">
-                      <span className="text-xs text-gray-400">{new Date(q.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "2-digit" })}</span>
+                      <span className="text-xs text-gray-400">
+                        {new Date(q.createdAt).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "short",
+                          year: "2-digit",
+                        })}
+                      </span>
                     </td>
                     <td className="px-5 py-3.5 text-right">
                       <Link
@@ -113,15 +136,23 @@ async function DraftsContent({
 
             {result.totalPages > 1 && (
               <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
-                <span className="text-xs text-gray-500">Page {result.page} of {result.totalPages} · {result.total} total</span>
+                <span className="text-xs text-gray-500">
+                  Page {result.page} of {result.totalPages} · {result.total} total
+                </span>
                 <div className="flex gap-2">
                   {result.page > 1 && (
-                    <Link href={`/dashboard/admin/questions/drafts?page=${result.page - 1}`} className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <Link
+                      href={`/dashboard/admin/questions/drafts?page=${result.page - 1}`}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
+                    >
                       <ChevronLeft className="w-3 h-3" /> Prev
                     </Link>
                   )}
                   {result.page < result.totalPages && (
-                    <Link href={`/dashboard/admin/questions/drafts?page=${result.page + 1}`} className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <Link
+                      href={`/dashboard/admin/questions/drafts?page=${result.page + 1}`}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
+                    >
                       Next <ChevronRight className="w-3 h-3" />
                     </Link>
                   )}

@@ -10,11 +10,7 @@ export const metadata: Metadata = {
   description: "Complete question lifecycle management system",
 };
 
-export default async function QuestionsLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function QuestionsLayout({ children }: { children: React.ReactNode }) {
   await requireAdmin("/dashboard");
 
   // Fetch review count for the badge
@@ -31,7 +27,9 @@ export default async function QuestionsLayout({
               <Database className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Question Bank Operations</h1>
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+                Question Bank Operations
+              </h1>
               <p className="text-sm text-gray-500 mt-1">
                 Command center for content curation, review queues, and publishing pipelines.
               </p>

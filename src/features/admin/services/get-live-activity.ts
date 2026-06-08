@@ -6,7 +6,7 @@ export const getLiveActivity = unstable_cache(
     const logs = await prisma.auditLog.findMany({
       orderBy: { createdAt: "desc" },
       take: 15,
-      include: { actor: true }
+      include: { actor: true },
     });
 
     return logs.map((log: any) => {
@@ -21,7 +21,11 @@ export const getLiveActivity = unstable_cache(
         icon = "Users";
         color = "text-blue-500";
         bg = "bg-blue-50";
-        if (actionUpper.includes("REGISTER") || actionUpper.includes("JOIN") || actionUpper.includes("CREATE")) {
+        if (
+          actionUpper.includes("REGISTER") ||
+          actionUpper.includes("JOIN") ||
+          actionUpper.includes("CREATE")
+        ) {
           message = "New user joined";
         } else if (actionUpper.includes("SUSPEND") || actionUpper.includes("BAN")) {
           icon = "Shield";
@@ -66,7 +70,7 @@ export const getLiveActivity = unstable_cache(
         message,
         createdAt: log.createdAt,
         color,
-        bg
+        bg,
       };
     });
   },

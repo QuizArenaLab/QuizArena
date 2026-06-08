@@ -48,43 +48,65 @@ function calculateSimilarity(a: string, b: string): number {
   return (2 * intersection) / (bigramsA.size + bigramsB.size);
 }
 
+export interface DuplicateCandidate {
+  id: string;
+  questionCode?: string;
+  similarity: number;
+  matchType: "EXACT" | "NEAR" | "OPTION";
+  category?: string;
+  subject?: string;
+  topic?: string;
+  status: string;
+  createdAt: Date;
+}
+
 export interface DuplicateCheckResult {
-  isDuplicate: boolean;
-  isNearDuplicate: boolean;
-  duplicateId?: string;
-  duplicateCode?: string;
-  similarity?: number;
+  status: "NONE" | "SIMILAR" | "EXACT";
+  highestScore: number;
+  candidates: DuplicateCandidate[];
+  referenceId?: string;
+  explanationWarning?: boolean;
 }
 
 /**
  * Check for duplicate or near-duplicate questions in the database.
- * Uses a two-phase approach:
- * 1. First checks for exact normalized match
- * 2. Then performs similarity check on questions in the same category/subject
  *
- * @param questionText - The question text to check
- * @param category - Category for scoped search
+ * @param data - The question payload containing question, options, explanation, category, subject
  * @param excludeId - Question ID to exclude (for updates)
- * @param similarityThreshold - Minimum similarity for near-duplicate (default: 0.85)
+ * @param similarityThreshold - Minimum similarity for near-duplicate (default: 0.80)
  */
 export async function checkForDuplicates(
-  questionText: string,
-  category?: string,
+  data: {
+    question: string;
+    category?: string;
+    subject?: string;
+    explanation?: string;
+    options?: { optionText: string; isCorrect: boolean }[];
+  },
   excludeId?: string,
-  similarityThreshold = 0.85
+  similarityThreshold = 0.8
 ): Promise<DuplicateCheckResult> {
-  const normalized = normalizeText(questionText);
+  const result: DuplicateCheckResult = {
+    status: "NONE",
+    highestScore: 0,
+    candidates: [],
+    explanationWarning: false,
+  };
+
+  if (!data.question || data.question.trim().length < 5) return result;
+
+  const normalized = normalizeText(data.question);
 
   // Build where clause
   const where: Record<string, unknown> = {};
   if (excludeId) {
     where.id = { not: excludeId };
   }
-  if (category) {
-    where.category = category;
-  }
+  if (data.category) where.category = data.category;
+  if (data.subject) where.subject = data.subject;
+
   // Only check active, non-archived questions
-  where.status = { notIn: ["ARCHIVED"] };
+  where.status = { notIn: ["ARCHIVED", "REJECTED"] };
 
   // Fetch candidates (limited scope for performance)
   const candidates = await prisma.question.findMany({
@@ -93,6 +115,15 @@ export async function checkForDuplicates(
       id: true,
       question: true,
       questionCode: true,
+      category: true,
+      subject: true,
+      topic: true,
+      status: true,
+      createdAt: true,
+      options: {
+        select: { optionText: true, isCorrect: true },
+        orderBy: { order: "asc" },
+      },
     },
     take: 500, // Cap for performance
     orderBy: { createdAt: "desc" },
@@ -101,33 +132,86 @@ export async function checkForDuplicates(
   // Check each candidate
   for (const candidate of candidates) {
     const candidateNormalized = normalizeText(candidate.question);
+    let matchType: DuplicateCandidate["matchType"] | null = null;
+    let currentSimilarity = 0;
 
-    // Exact match
+    // Level 1: Exact match
     if (candidateNormalized === normalized) {
-      return {
-        isDuplicate: true,
-        isNearDuplicate: false,
-        duplicateId: candidate.id,
-        duplicateCode: candidate.questionCode ?? undefined,
-        similarity: 1.0,
-      };
+      matchType = "EXACT";
+      currentSimilarity = 1.0;
+    } else {
+      // Level 2: Near-duplicate check
+      currentSimilarity = calculateSimilarity(normalized, candidateNormalized);
+      if (currentSimilarity >= similarityThreshold) {
+        matchType = "NEAR";
+      } else if (
+        data.options &&
+        candidate.options &&
+        data.options.length === candidate.options.length
+      ) {
+        // Level 3: Option Duplicate check
+        let optionsMatch = true;
+        for (let i = 0; i < data.options.length; i++) {
+          if (
+            normalizeText(data.options[i].optionText) !==
+              normalizeText(candidate.options[i].optionText) ||
+            data.options[i].isCorrect !== candidate.options[i].isCorrect
+          ) {
+            optionsMatch = false;
+            break;
+          }
+        }
+        if (optionsMatch) {
+          matchType = "OPTION";
+          currentSimilarity = 0.95; // Arbitrary high score for identical options
+        }
+      }
     }
 
-    // Near-duplicate check
-    const similarity = calculateSimilarity(normalized, candidateNormalized);
-    if (similarity >= similarityThreshold) {
-      return {
-        isDuplicate: false,
-        isNearDuplicate: true,
-        duplicateId: candidate.id,
-        duplicateCode: candidate.questionCode ?? undefined,
-        similarity,
-      };
+    if (matchType) {
+      result.candidates.push({
+        id: candidate.id,
+        questionCode: candidate.questionCode ?? undefined,
+        similarity: currentSimilarity,
+        matchType,
+        category: candidate.category ?? undefined,
+        subject: candidate.subject ?? undefined,
+        topic: candidate.topic ?? undefined,
+        status: candidate.status,
+        createdAt: candidate.createdAt,
+      });
+
+      if (currentSimilarity > result.highestScore) {
+        result.highestScore = currentSimilarity;
+        result.referenceId = candidate.id;
+      }
     }
   }
 
-  return {
-    isDuplicate: false,
-    isNearDuplicate: false,
-  };
+  // Level 5: Explanation Duplicate Check
+  if (data.explanation && data.explanation.trim().length > 10) {
+    const explanationCount = await prisma.question.count({
+      where: {
+        id: excludeId ? { not: excludeId } : undefined,
+        explanation: { equals: data.explanation.trim() },
+        status: { notIn: ["ARCHIVED", "REJECTED"] },
+      },
+    });
+    // If the exact explanation is used in more than 3 other questions, flag it
+    if (explanationCount > 3) {
+      result.explanationWarning = true;
+    }
+  }
+
+  // Set the overall status
+  if (result.candidates.some((c) => c.matchType === "EXACT")) {
+    result.status = "EXACT";
+  } else if (result.candidates.length > 0) {
+    result.status = "SIMILAR";
+  }
+
+  // Sort candidates by similarity DESC
+  result.candidates.sort((a, b) => b.similarity - a.similarity);
+
+  return result;
 }

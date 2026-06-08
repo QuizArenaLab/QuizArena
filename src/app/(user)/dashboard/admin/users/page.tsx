@@ -49,7 +49,9 @@ export default async function AdminUsersPage({
       </div>
 
       <div className="flex-1 min-h-[500px]">
-        <Suspense fallback={<div className="p-8 text-center text-gray-500">Loading directory...</div>}>
+        <Suspense
+          fallback={<div className="p-8 text-center text-gray-500">Loading directory...</div>}
+        >
           <UserManagementDashboard initialData={directoryData} />
         </Suspense>
       </div>

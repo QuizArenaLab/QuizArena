@@ -28,7 +28,11 @@ export function SecuritySettings({ user, activeSessionsCount = 1 }: SecuritySett
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [pendingToast, setPendingToast] = useState<{ id: string; title: string; desc?: string } | null>(null);
+  const [pendingToast, setPendingToast] = useState<{
+    id: string;
+    title: string;
+    desc?: string;
+  } | null>(null);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -38,7 +42,7 @@ export function SecuritySettings({ user, activeSessionsCount = 1 }: SecuritySett
         id: pendingToast.id,
         description: pendingToast.desc,
       });
-      setPendingToast(null);
+      setTimeout(() => setPendingToast(null), 0);
     }
   }, [isPending, pendingToast]);
 

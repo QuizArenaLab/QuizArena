@@ -33,11 +33,14 @@ async function requireSmeSession() {
 
 export async function uploadAndPreviewImport(formData: FormData): Promise<{
   success: boolean;
-  jobId?: string;
   previewRows?: ValidatedRow[];
   totalRows?: number;
   validRows?: number;
-  invalidRows?: number;
+  warningRows?: number;
+  blockedRows?: number;
+  fileName?: string;
+  fileType?: string;
+  fileSize?: number;
   error?: string;
 }> {
   try {
@@ -56,42 +59,24 @@ export async function uploadAndPreviewImport(formData: FormData): Promise<{
     const validatedRows = await validateRows(parsedRows);
 
     const totalRows = validatedRows.length;
-    const validRows = validatedRows.filter((r) => r.isValid).length;
-    const invalidRows = totalRows - validRows;
-
-    const errorReport = validatedRows
-      .filter((r) => !r.isValid)
-      .map((r) => ({
-        rowNumber: r.rowNumber,
-        errors: r.errors,
-        data: r.data,
-      }));
-
-    // Create the import job
-    const job = await prisma.questionImportJob.create({
-      data: {
-        uploadedById: session.user.id,
-        fileName: file.name,
-        fileType:
-          file.type ||
-          (file.name.endsWith(".csv")
-            ? "text/csv"
-            : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
-        totalRows,
-        validRows,
-        invalidRows,
-        status: "PENDING",
-        errorReport: errorReport.length > 0 ? (errorReport as any) : undefined,
-      },
-    });
+    const validRows = validatedRows.filter((r) => r.status === "VALID").length;
+    const warningRows = validatedRows.filter((r) => r.status === "WARNING").length;
+    const blockedRows = validatedRows.filter((r) => r.status === "BLOCKED").length;
 
     return {
       success: true,
-      jobId: job.id,
       previewRows: validatedRows,
       totalRows,
       validRows,
-      invalidRows,
+      warningRows,
+      blockedRows,
+      fileName: file.name,
+      fileType:
+        file.type ||
+        (file.name.endsWith(".csv")
+          ? "text/csv"
+          : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+      fileSize: file.size,
     };
   } catch (error) {
     console.error("Import error:", error);
@@ -103,110 +88,197 @@ export async function uploadAndPreviewImport(formData: FormData): Promise<{
 }
 
 export async function executeBulkImport(
-  jobId: string,
-  validRows: ValidatedRow[]
+  validRows: ValidatedRow[],
+  fileMetadata: { fileName: string; fileType: string; fileSize: number }
 ): Promise<{
   success: boolean;
-  importedCount?: number;
+  jobId?: string;
   error?: string;
 }> {
   try {
     const { session } = await requireSmeSession();
 
-    const job = await prisma.questionImportJob.findUnique({ where: { id: jobId } });
-    if (!job) {
-      return { success: false, error: "Import job not found" };
-    }
-    if (job.status !== "PENDING") {
-      return { success: false, error: "Import job has already been processed" };
-    }
-    if (job.uploadedById !== session.user.id) {
-      return { success: false, error: "You can only execute your own imports" };
-    }
-
-    // Filter out valid rows to insert
-    const rowsToInsert = validRows.filter((r) => r.isValid && r.parsedData);
-
-    if (rowsToInsert.length === 0) {
-      await prisma.questionImportJob.update({
-        where: { id: jobId },
-        data: { status: "FAILED", completedAt: new Date() },
-      });
+    if (validRows.length === 0) {
       return { success: false, error: "No valid rows to import" };
     }
 
-    await prisma.questionImportJob.update({
-      where: { id: jobId },
-      data: { status: "PROCESSING" },
+    const job = await prisma.questionImportJob.create({
+      data: {
+        uploadedById: session.user.id,
+        fileName: fileMetadata.fileName,
+        fileType: fileMetadata.fileType,
+        fileSize: fileMetadata.fileSize,
+        totalRows: validRows.length,
+        status: "QUEUED",
+      },
     });
 
-    let successCount = 0;
+    // Fire and forget background process
+    processImportJobBackground(job.id, validRows, session.user.id).catch(console.error);
 
-    const result = await prisma.$transaction(
-      async (tx) => {
-        for (const row of rowsToInsert) {
-          const data = row.parsedData!;
+    return { success: true, jobId: job.id };
+  } catch (error) {
+    console.error("Execute import error:", error);
+    return { success: false, error: "Failed to initiate import" };
+  }
+}
 
-          const questionCode = await generateQuestionCode(data.category);
-
-          const tags = data.tags
-            ? data.tags
-                .split(",")
-                .map((t: string) => t.trim())
-                .filter(Boolean)
-            : [];
-
-          const optionsToCreate = [
-            { optionText: data.optionA, isCorrect: data.correctOption === "A", order: 1 },
-            { optionText: data.optionB, isCorrect: data.correctOption === "B", order: 2 },
-            { optionText: data.optionC, isCorrect: data.correctOption === "C", order: 3 },
-            { optionText: data.optionD, isCorrect: data.correctOption === "D", order: 4 },
-          ];
-          
-          if (data.optionE) {
-            optionsToCreate.push({ optionText: data.optionE, isCorrect: data.correctOption === "E", order: 5 });
-          }
-          if (data.optionF) {
-            optionsToCreate.push({ optionText: data.optionF, isCorrect: data.correctOption === "F", order: 6 });
-          }
-
-          await tx.question.create({
-            data: {
-              questionCode,
-              question: data.question,
-              explanation: data.explanation || null,
-              subject: data.subject,
-              topic: data.topic || null,
-              category: data.category,
-              language: data.language || "en",
-              marks: data.marks || 1,
-              negativeMarks: data.negativeMarks || 0,
-              difficulty: data.difficulty as any,
-              tags: tags,
-              status: "DRAFT",
-              version: 1,
-              isActive: true,
-              createdById: session.user.id,
-              options: {
-                create: optionsToCreate,
-              },
-            },
-          });
-          successCount++;
-        }
-        return successCount;
-      },
-      { timeout: 30000 }
-    );
-
-    const finalStatus = result === job.totalRows ? "COMPLETED" : "PARTIAL_SUCCESS";
-
+async function processImportJobBackground(jobId: string, rows: ValidatedRow[], actorId: string) {
+  try {
     await prisma.questionImportJob.update({
       where: { id: jobId },
+      data: { status: "RUNNING", startedAt: new Date() },
+    });
+
+    const CHUNK_SIZE = 100;
+    const totalRows = rows.length;
+    let processedRows = 0;
+    let successCount = 0;
+    let duplicatePrevents = 0;
+    let totalQuality = 0;
+    let warningsCount = 0;
+
+    for (let i = 0; i < totalRows; i += CHUNK_SIZE) {
+      const chunk = rows.slice(i, i + CHUNK_SIZE);
+
+      await prisma.$transaction(
+        async (tx) => {
+          for (const row of chunk) {
+            const data = row.parsedData!;
+            const questionCode = await generateQuestionCode(data.category);
+
+            const tags = data.tags
+              ? data.tags
+                  .split(",")
+                  .map((t: string) => t.trim())
+                  .filter(Boolean)
+              : [];
+
+            const optionsToCreate = [
+              { optionText: data.optionA, isCorrect: data.correctOption === "A", order: 1 },
+              { optionText: data.optionB, isCorrect: data.correctOption === "B", order: 2 },
+              { optionText: data.optionC, isCorrect: data.correctOption === "C", order: 3 },
+              { optionText: data.optionD, isCorrect: data.correctOption === "D", order: 4 },
+            ];
+
+            if (data.optionE)
+              optionsToCreate.push({
+                optionText: data.optionE,
+                isCorrect: data.correctOption === "E",
+                order: 5,
+              });
+            if (data.optionF)
+              optionsToCreate.push({
+                optionText: data.optionF,
+                isCorrect: data.correctOption === "F",
+                order: 6,
+              });
+
+            const qualityScore = row.qualityScore || 0;
+            totalQuality += qualityScore;
+
+            const hasErrors = row.issues?.some((i) => i.severity === "ERROR");
+            const mappedStatus = qualityScore >= 75 && !hasErrors ? "APPROVED" : "REVIEW";
+            const isActive = mappedStatus === "APPROVED";
+
+            if (
+              row.duplicateCheck?.status === "SIMILAR" ||
+              row.duplicateCheck?.status === "EXACT"
+            ) {
+              duplicatePrevents++;
+            }
+
+            const q = await tx.question.create({
+              data: {
+                questionCode,
+                question: data.question,
+                explanation: data.explanation || null,
+                subject: data.subject,
+                topic: data.topic || null,
+                category: data.category,
+                language: data.language || "en",
+                marks: data.marks || 1,
+                negativeMarks: data.negativeMarks || 0,
+                difficulty: data.difficulty as any,
+                tags: tags,
+                status: mappedStatus,
+                version: 1,
+                isActive: isActive,
+                createdById: actorId,
+                options: {
+                  create: optionsToCreate,
+                },
+              },
+            });
+
+            // Persist Issues
+            if (row.issues && row.issues.length > 0) {
+              const issueData = row.issues.map((i) => ({
+                importJobId: jobId,
+                rowNumber: row.rowNumber,
+                severity: i.severity,
+                message: i.message,
+                suggestedFix: i.suggestedFix,
+              }));
+              await tx.importIssue.createMany({ data: issueData });
+              warningsCount += issueData.filter((i) => i.severity === "WARNING").length;
+            }
+
+            successCount++;
+          }
+        },
+        { timeout: 30000 }
+      );
+
+      processedRows += chunk.length;
+      const progressPercentage = Math.round((processedRows / totalRows) * 100);
+
+      await prisma.questionImportJob.update({
+        where: { id: jobId },
+        data: {
+          progressPercentage,
+          processedRows,
+        },
+      });
+    }
+
+    const averageQuality = totalRows > 0 ? Math.round(totalQuality / totalRows) : 0;
+    const healthScore = Math.max(0, 100 - duplicatePrevents * 5 - warningsCount * 2);
+
+    await prisma.importReport.create({
       data: {
-        status: finalStatus,
+        jobId,
+        duplicatesPrevented: duplicatePrevents,
+        totalImported: successCount,
+        averageQuality,
+        failedRows: totalRows - successCount,
+      },
+    });
+
+    const job = await prisma.questionImportJob.update({
+      where: { id: jobId },
+      data: {
+        status: "COMPLETED",
         completedAt: new Date(),
         validRows: successCount,
+        warningRows: warningsCount,
+        duplicateRows: duplicatePrevents,
+        healthScore,
+        averageQuality,
+        progressPercentage: 100,
+        processedRows: totalRows,
+      },
+    });
+
+    await prisma.importAudit.create({
+      data: {
+        jobId,
+        performedById: actorId,
+        action: "IMPORT_COMPLETED",
+        fileName: job.fileName,
+        rowsImported: successCount,
+        warningsCount,
+        errorsCount: totalRows - successCount,
       },
     });
 
@@ -214,22 +286,32 @@ export async function executeBulkImport(
       action: "BULK_IMPORT_EXECUTED",
       entityType: "QUESTION",
       entityId: jobId,
-      actorId: session.user.id,
+      actorId: actorId,
       severity: "MEDIUM",
-      metadata: { importedCount: successCount, totalRows: job.totalRows },
+      metadata: { importedCount: successCount, totalRows },
     });
-
-    revalidatePath("/dashboard/admin/question-bank");
-    revalidatePath("/dashboard/admin/question-bank/bulk-import");
-
-    return { success: true, importedCount: successCount };
   } catch (error) {
-    console.error("Execute import error:", error);
+    console.error("Background processing failed:", error);
     await prisma.questionImportJob.update({
       where: { id: jobId },
-      data: { status: "FAILED", completedAt: new Date() },
+      data: {
+        status: "FAILED",
+        completedAt: new Date(),
+        failureReason: error instanceof Error ? error.message : "Unknown error",
+      },
     });
-    return { success: false, error: "Failed to execute import" };
+
+    await prisma.importAudit.create({
+      data: {
+        jobId,
+        performedById: actorId,
+        action: "IMPORT_FAILED",
+        fileName: "unknown",
+        rowsImported: 0,
+        warningsCount: 0,
+        errorsCount: 0,
+      },
+    });
   }
 }
 
@@ -254,27 +336,50 @@ export async function getImportHistory() {
 export async function deleteImportHistory(jobId: string) {
   try {
     await requireSmeSession();
-    
+
     // Validate job exists
     const job = await prisma.questionImportJob.findUnique({
-      where: { id: jobId }
+      where: { id: jobId },
     });
-    
+
     if (!job) {
       return { success: false, error: "Import job not found" };
     }
 
     // Delete the record
     await prisma.questionImportJob.delete({
-      where: { id: jobId }
+      where: { id: jobId },
     });
 
     revalidatePath("/dashboard/admin/question-bank");
     revalidatePath("/dashboard/admin/questions/import");
-    
+
     return { success: true };
   } catch (error) {
     console.error("Delete import history error:", error);
-    return { success: false, error: "Failed to delete import history record" };
+    return { success: false, error: "Failed to delete import history" };
+  }
+}
+
+export async function getImportJobStatus(jobId: string) {
+  try {
+    const job = await prisma.questionImportJob.findUnique({
+      where: { id: jobId },
+      select: {
+        id: true,
+        status: true,
+        progressPercentage: true,
+        processedRows: true,
+        totalRows: true,
+        validRows: true,
+        warningRows: true,
+        duplicateRows: true,
+        failureReason: true,
+      },
+    });
+    if (!job) return { success: false, error: "Job not found" };
+    return { success: true, job };
+  } catch (error) {
+    return { success: false, error: "Failed to fetch job status" };
   }
 }

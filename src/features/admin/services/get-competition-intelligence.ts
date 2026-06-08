@@ -7,17 +7,19 @@ export const getCompetitionIntelligence = unstable_cache(
     today.setHours(0, 0, 0, 0);
 
     const [
-      totalCompetitions, 
-      activeToday, 
-      participantsToday, 
-      upcomingEvents, 
-      passSales, 
-      totalUsers
+      totalCompetitions,
+      activeToday,
+      participantsToday,
+      upcomingEvents,
+      passSales,
+      totalUsers,
     ] = await Promise.all([
       prisma.challenge.count(),
       prisma.challenge.count({ where: { status: "LIVE" } }),
       prisma.attempt.count({ where: { startedAt: { gte: today } } }),
-      prisma.challenge.count({ where: { OR: [{ status: "SCHEDULED" }, { startsAt: { gte: new Date() } }] } }),
+      prisma.challenge.count({
+        where: { OR: [{ status: "SCHEDULED" }, { startsAt: { gte: new Date() } }] },
+      }),
       prisma.transaction.count({ where: { status: "COMPLETED" } }),
       prisma.user.count(),
     ]);

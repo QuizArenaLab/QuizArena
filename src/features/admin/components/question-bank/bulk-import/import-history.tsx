@@ -3,7 +3,16 @@
 import { useEffect, useState } from "react";
 import { getImportHistory, deleteImportHistory } from "@/features/admin/services/bulk-import";
 import { format } from "date-fns";
-import { FileDown, RefreshCw, AlertCircle, Trash2, Eye, FileSpreadsheet, AlertTriangle, Loader2 } from "lucide-react";
+import {
+  FileDown,
+  RefreshCw,
+  AlertCircle,
+  Trash2,
+  Eye,
+  FileSpreadsheet,
+  AlertTriangle,
+  Loader2,
+} from "lucide-react";
 
 interface ImportJob {
   id: string;
@@ -12,11 +21,13 @@ interface ImportJob {
   fileType: string;
   totalRows: number;
   validRows: number;
-  invalidRows: number;
+  warningRows: number;
+  duplicateRows: number;
+  healthScore: number | null;
+  averageQuality: number | null;
   status: string;
   startedAt: Date;
   completedAt: Date | null;
-  errorReport: any;
 }
 
 export function ImportHistory() {
@@ -60,17 +71,9 @@ export function ImportHistory() {
   }, []);
 
   const downloadErrorReport = (job: ImportJob) => {
-    if (!job.errorReport) return;
-
-    const dataStr =
-      "data:text/json;charset=utf-8," +
-      encodeURIComponent(JSON.stringify(job.errorReport, null, 2));
-    const downloadAnchorNode = document.createElement("a");
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `error-report-${job.id}.json`);
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+    // For now, downloading historical errors is not supported in the new schema without a dedicated endpoint to fetch ImportIssues.
+    // We can just alert.
+    alert("Historical error reports are coming soon.");
   };
 
   const handleDelete = async () => {
@@ -78,7 +81,7 @@ export function ImportHistory() {
     setIsDeleting(true);
     const res = await deleteImportHistory(jobToDelete);
     if (res.success) {
-      setJobs(jobs.filter(j => j.id !== jobToDelete));
+      setJobs(jobs.filter((j) => j.id !== jobToDelete));
       setDeleteModalOpen(false);
       setJobToDelete(null);
     } else {
@@ -91,12 +94,14 @@ export function ImportHistory() {
     switch (status) {
       case "COMPLETED":
         return "text-emerald-700 bg-emerald-50 border-emerald-200";
-      case "PARTIAL_SUCCESS":
-        return "text-amber-700 bg-amber-50 border-amber-200";
       case "FAILED":
         return "text-red-700 bg-red-50 border-red-200";
-      case "PROCESSING":
+      case "RUNNING":
         return "text-blue-700 bg-blue-50 border-blue-200";
+      case "QUEUED":
+        return "text-amber-700 bg-amber-50 border-amber-200";
+      case "CANCELLED":
+        return "text-gray-700 bg-gray-100 border-gray-300";
       default:
         return "text-gray-600 bg-gray-50 border-gray-200";
     }
@@ -135,8 +140,10 @@ export function ImportHistory() {
             <FileSpreadsheet className="w-6 h-6 text-gray-400" />
           </div>
           <h3 className="text-lg font-bold text-gray-900 mb-2">No Import History Yet</h3>
-          <p className="text-sm text-gray-500 mb-6 max-w-sm">Upload a CSV template to start importing questions into the platform.</p>
-          <button 
+          <p className="text-sm text-gray-500 mb-6 max-w-sm">
+            Upload a CSV template to start importing questions into the platform.
+          </p>
+          <button
             onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}
             className="btn btn-primary shadow-sm"
           >
@@ -150,11 +157,17 @@ export function ImportHistory() {
               <thead className="bg-gray-50/80 border-b border-gray-200 text-gray-500 sticky top-0 z-10 backdrop-blur-sm">
                 <tr>
                   <th className="px-5 py-4 font-semibold text-xs uppercase tracking-wider">File</th>
-                  <th className="px-5 py-4 font-semibold text-xs uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-4 font-semibold text-xs uppercase tracking-wider">
+                    Status
+                  </th>
                   <th className="px-5 py-4 font-semibold text-xs uppercase tracking-wider">Rows</th>
+                  <th className="px-5 py-4 font-semibold text-xs uppercase tracking-wider">
+                    Health
+                  </th>
                   <th className="px-5 py-4 font-semibold text-xs uppercase tracking-wider">Date</th>
-                  <th className="px-5 py-4 font-semibold text-xs uppercase tracking-wider">User</th>
-                  <th className="px-5 py-4 font-semibold text-xs uppercase tracking-wider text-right">Actions</th>
+                  <th className="px-5 py-4 font-semibold text-xs uppercase tracking-wider text-right">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -172,21 +185,45 @@ export function ImportHistory() {
                       <div className="flex flex-col gap-1 text-xs font-medium">
                         <div className="flex items-center gap-1.5 text-emerald-600">
                           <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                          {job.validRows} Valid
+                          {job.validRows} Imported
                         </div>
-                        {job.invalidRows > 0 && (
+                        {job.warningRows > 0 && (
+                          <div className="flex items-center gap-1.5 text-amber-600">
+                            <span className="w-2 h-2 rounded-full bg-amber-500" />
+                            {job.warningRows} Warnings
+                          </div>
+                        )}
+                        {job.duplicateRows > 0 && (
+                          <div className="flex items-center gap-1.5 text-blue-600">
+                            <span className="w-2 h-2 rounded-full bg-blue-500" />
+                            {job.duplicateRows} Dupes Prevented
+                          </div>
+                        )}
+                        {job.totalRows - job.validRows > 0 && (
                           <div className="flex items-center gap-1.5 text-red-600">
                             <span className="w-2 h-2 rounded-full bg-red-500" />
-                            {job.invalidRows} Invalid
+                            {job.totalRows - job.validRows} Failed
                           </div>
                         )}
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-gray-500 whitespace-nowrap">
-                      {format(new Date(job.startedAt), "MMM d, yyyy HH:mm")}
+                    <td className="px-5 py-4">
+                      {job.healthScore !== null ? (
+                        <div className="flex flex-col gap-1 text-xs">
+                          <span className="font-semibold text-gray-900">
+                            Health: {job.healthScore}%
+                          </span>
+                          <span className="text-gray-500">Avg Qlty: {job.averageQuality}%</span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
                     </td>
-                    <td className="px-5 py-4 text-gray-500">
-                      {job.uploadedBy?.name || job.uploadedBy?.email || "Unknown"}
+                    <td className="px-5 py-4 text-gray-500 whitespace-nowrap text-xs">
+                      {format(new Date(job.startedAt), "MMM d, yyyy HH:mm")}
+                      <div className="mt-1 text-gray-400">
+                        {job.uploadedBy?.name || job.uploadedBy?.email || "Unknown"}
+                      </div>
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-3">
@@ -196,17 +233,13 @@ export function ImportHistory() {
                         >
                           <Eye className="w-4 h-4" />
                         </button>
-                        {job.errorReport ? (
-                          <button
-                            onClick={() => downloadErrorReport(job)}
-                            className="text-amber-500 hover:text-amber-600 transition-colors"
-                            title="Download Error Report"
-                          >
-                            <FileDown className="w-4 h-4" />
-                          </button>
-                        ) : (
-                          <span className="w-4 h-4" />
-                        )}
+                        <button
+                          onClick={() => downloadErrorReport(job)}
+                          className="text-amber-500 hover:text-amber-600 transition-colors"
+                          title="Download Error Report"
+                        >
+                          <FileDown className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => {
                             setJobToDelete(job.id);
@@ -237,7 +270,8 @@ export function ImportHistory() {
               </div>
               <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Import Record?</h3>
               <p className="text-sm text-gray-500">
-                This action only removes the import history record from this table. <strong>Imported questions remain unchanged</strong> in the database.
+                This action only removes the import history record from this table.{" "}
+                <strong>Imported questions remain unchanged</strong> in the database.
               </p>
             </div>
             <div className="p-4 bg-gray-50 flex items-center justify-end gap-3 border-t border-gray-100">

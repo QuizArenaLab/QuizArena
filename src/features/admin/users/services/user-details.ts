@@ -132,7 +132,7 @@ export async function fetchUserActivityTimeline(userId: string) {
 
   const recentAttempts = await prisma.attempt.findMany({
     where: { userId },
-    orderBy: { startedAt: 'desc' },
+    orderBy: { startedAt: "desc" },
     take: 5,
     select: { id: true, startedAt: true, score: true },
   });
@@ -140,14 +140,14 @@ export async function fetchUserActivityTimeline(userId: string) {
   const timeline = [];
 
   if (user) {
-    timeline.push({ type: 'JOINED', label: 'Joined Platform', timestamp: user.createdAt });
+    timeline.push({ type: "JOINED", label: "Joined Platform", timestamp: user.createdAt });
   }
 
-  recentAttempts.forEach(attempt => {
-    timeline.push({ 
-      type: 'COMPETITION', 
-      label: `Competition Completed (Score: ${attempt.score || 0})`, 
-      timestamp: attempt.startedAt 
+  recentAttempts.forEach((attempt) => {
+    timeline.push({
+      type: "COMPETITION",
+      label: `Competition Completed (Score: ${attempt.score || 0})`,
+      timestamp: attempt.startedAt,
     });
   });
 
@@ -168,10 +168,10 @@ export async function fetchUserAuditLogs(userId: string) {
       action: true,
       createdAt: true,
       actor: { select: { name: true, username: true } },
-    }
+    },
   });
 
-  return targetedAudits.map(audit => ({
+  return targetedAudits.map((audit) => ({
     action: audit.action,
     admin: audit.actor?.name || audit.actor?.username || "System",
     timestamp: audit.createdAt,
@@ -233,15 +233,15 @@ export async function performAdminAction(payload: AdminActionPayload) {
   });
 
   await logModerationAction(
-    adminId, 
-    userId, 
-    auditAction, 
+    adminId,
+    userId,
+    auditAction,
     reason || `Admin performed ${action} action`,
     {
       previousState: targetUser.accountState,
       newState,
       duration,
-      adminNotes
+      adminNotes,
     }
   );
 

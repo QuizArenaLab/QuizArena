@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useForm, useFieldArray, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { createQuestion } from "@/features/admin/services/question-bank";
 import {
   QUESTION_CATEGORIES,
@@ -10,114 +12,103 @@ import {
   TAG_PRESETS,
   DIFFICULTY_CONFIG,
 } from "@/features/admin/services/question-bank/constants";
-import { Plus, Trash2, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
-
-interface OptionInput {
-  optionText: string;
-  isCorrect: boolean;
-  order: number;
-}
+import { Plus, Trash2, AlertCircle, CheckCircle2, Loader2, Save } from "lucide-react";
+import { calculateQuestionQuality } from "@/lib/validations/question-engine";
+import { createQuestionSchema, CreateQuestionInput } from "@/lib/validations/question";
 
 export function QuestionForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [warning, setWarning] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
-  // Form state
-  const [question, setQuestion] = useState("");
-  const [explanation, setExplanation] = useState("");
-  const [category, setCategory] = useState("");
-  const [isCustomCategory, setIsCustomCategory] = useState(false);
-  const [subject, setSubject] = useState("");
-  const [isCustomSubject, setIsCustomSubject] = useState(false);
-  const [topic, setTopic] = useState("");
-  const [difficulty, setDifficulty] = useState<string>("MEDIUM");
-  const [language, setLanguage] = useState("en");
-  const [marks, setMarks] = useState(1);
-  const [negativeMarks, setNegativeMarks] = useState(0);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [customTagInput, setCustomTagInput] = useState("");
-  const [options, setOptions] = useState<OptionInput[]>([
-    { optionText: "", isCorrect: false, order: 0 },
-    { optionText: "", isCorrect: false, order: 1 },
-    { optionText: "", isCorrect: false, order: 2 },
-    { optionText: "", isCorrect: false, order: 3 },
-  ]);
+  const methods = useForm<any>({
+    resolver: zodResolver(createQuestionSchema) as any,
+    mode: "onChange",
+    defaultValues: {
+      question: "",
+      explanation: "",
+      category: "",
+      subject: "",
+      topic: "",
+      difficulty: "MEDIUM",
+      language: "en",
+      marks: 1,
+      negativeMarks: 0,
+      tags: [],
+      options: [
+        { optionText: "", isCorrect: false, order: 0 },
+        { optionText: "", isCorrect: false, order: 1 },
+        { optionText: "", isCorrect: false, order: 2 },
+        { optionText: "", isCorrect: false, order: 3 },
+      ],
+    },
+  });
 
-  const addOption = () => {
-    if (options.length >= 6) return;
-    setOptions([...options, { optionText: "", isCorrect: false, order: options.length }]);
-  };
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    setValue,
+    formState: { errors },
+  } = methods;
 
-  const removeOption = (index: number) => {
-    if (options.length <= 4) return;
-    const newOptions = options.filter((_, i) => i !== index);
-    setOptions(newOptions.map((opt, i) => ({ ...opt, order: i })));
-  };
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "options",
+  });
 
-  const updateOption = (index: number, field: string, value: string | boolean) => {
-    const newOptions = [...options];
-    if (field === "isCorrect") {
-      // Only one correct answer
-      newOptions.forEach((opt, i) => {
-        opt.isCorrect = i === index;
-      });
-    } else {
-      newOptions[index] = { ...newOptions[index], [field]: value };
-    }
-    setOptions(newOptions);
-  };
+  // Watch form data for real-time validation engine
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const formData = watch();
+  const quality = useMemo(() => calculateQuestionQuality(formData as any), [formData]);
 
   const toggleTag = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
-  };
-
-  const handleAddCustomTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      const newTag = customTagInput.trim();
-      if (newTag && !selectedTags.includes(newTag)) {
-        setSelectedTags([...selectedTags, newTag]);
+    const currentTags = formData.tags || [];
+    if (currentTags.includes(tag)) {
+      setValue(
+        "tags",
+        currentTags.filter((t: string) => t !== tag),
+        { shouldValidate: true, shouldDirty: true }
+      );
+    } else {
+      if (currentTags.length < 20) {
+        setValue("tags", [...currentTags, tag], { shouldValidate: true, shouldDirty: true });
       }
-      setCustomTagInput("");
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const setCorrectOption = (index: number) => {
+    const currentOptions = formData.options || [];
+    const newOptions = currentOptions.map((opt: any, i: number) => ({
+      ...opt,
+      isCorrect: i === index,
+    }));
+    setValue("options", newOptions, { shouldValidate: true, shouldDirty: true });
+  };
+
+  const onSubmit = async (data: any) => {
+    if (quality.score < 75 || quality.blockingErrors.length > 0) {
+      setError(
+        "Cannot publish. Please resolve blocking errors and ensure the score is at least 75."
+      );
+      return;
+    }
+
     setError(null);
-    setWarning(null);
-    setSuccess(null);
     setIsSubmitting(true);
 
     try {
       const result = await createQuestion({
-        question,
-        explanation: explanation || undefined,
-        category,
-        subject,
-        topic: topic || undefined,
-        difficulty,
-        language,
-        marks,
-        negativeMarks,
-        tags: selectedTags,
-        options,
+        ...data,
+        qualityScore: quality.score,
+        questionHealth: quality.health,
+        validationStatus: "VALID",
       });
 
       if (result.success) {
-        setSuccess(`Question created successfully! Code: ${result.questionCode}`);
-        if (result.warning) {
-          setWarning(result.warning);
-        }
-        setTimeout(() => {
-          router.push("/dashboard/admin/question-bank");
-          router.refresh();
-        }, 1500);
+        router.push("/dashboard/admin/question-bank");
+        router.refresh();
       } else {
         setError(result.error || "Failed to create question");
       }
@@ -128,377 +119,488 @@ export function QuestionForm() {
     }
   };
 
+  const onSaveDraft = async () => {
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      // Allow draft save bypassing some Zod requirements if needed
+      const result = await createQuestion({
+        ...formData,
+        qualityScore: quality.score,
+        questionHealth: quality.health,
+        validationStatus: quality.blockingErrors.length === 0 ? "VALID" : "PENDING",
+      });
+
+      if (result.success) {
+        router.push("/dashboard/admin/question-bank");
+        router.refresh();
+      } else {
+        setError(result.error || "Failed to save draft");
+      }
+    } catch {
+      setError("An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Status Messages */}
-      {error && (
-        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
-          <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
-          <p className="text-sm text-red-700">{error}</p>
-        </div>
-      )}
-      {warning && (
-        <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-          <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
-          <p className="text-sm text-amber-700">{warning}</p>
-        </div>
-      )}
-      {success && (
-        <div className="flex items-start gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
-          <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />
-          <p className="text-sm text-emerald-700">{success}</p>
-        </div>
-      )}
-
-      {/* Section: Classification */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-5">
-          Classification
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-sm font-medium text-gray-700">
-                Category <span className="text-red-500">*</span>
-              </label>
-              <button 
-                type="button" 
-                onClick={() => {
-                  setIsCustomCategory(!isCustomCategory);
-                  setCategory("");
-                }}
-                className="text-xs text-secondary hover:text-secondary/80 font-medium transition-colors"
-              >
-                {isCustomCategory ? "Select from list" : "+ Custom category"}
-              </button>
+    <FormProvider {...methods}>
+      <div className="flex gap-6 max-w-7xl mx-auto items-start">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 flex-1 min-w-0">
+          {error && (
+            <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+              <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
+              <p className="text-sm text-red-700">{error}</p>
             </div>
-            {isCustomCategory ? (
-              <input
-                type="text"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                required
-                placeholder="Enter custom category"
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
-              />
-            ) : (
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                required
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
-              >
-                <option value="">Select category</option>
-                {QUESTION_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
+          )}
 
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-sm font-medium text-gray-700">
-                Subject <span className="text-red-500">*</span>
-              </label>
-              <button 
-                type="button" 
-                onClick={() => {
-                  setIsCustomSubject(!isCustomSubject);
-                  setSubject("");
-                }}
-                className="text-xs text-secondary hover:text-secondary/80 font-medium transition-colors"
-              >
-                {isCustomSubject ? "Select from list" : "+ Custom subject"}
-              </button>
-            </div>
-            {isCustomSubject ? (
-              <input
-                type="text"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                required
-                placeholder="Enter custom subject"
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
-              />
-            ) : (
-              <select
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                required
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
-              >
-                <option value="">Select subject</option>
-                {COMMON_SUBJECTS.map((subj) => (
-                  <option key={subj} value={subj}>
-                    {subj}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Topic</label>
-            <input
-              type="text"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              placeholder="e.g., Compound Interest"
-              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Difficulty <span className="text-red-500">*</span>
-            </label>
-            <div className="flex gap-2">
-              {Object.entries(DIFFICULTY_CONFIG).map(([key, config]) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setDifficulty(key)}
-                  className={`flex-1 px-3 py-2.5 text-sm font-semibold rounded-xl border-2 transition-all ${
-                    difficulty === key
-                      ? "shadow-sm"
-                      : "border-gray-200 text-gray-500 hover:border-gray-300"
-                  }`}
-                  style={
-                    difficulty === key
-                      ? {
-                          borderColor: config.color,
-                          backgroundColor: config.bgColor,
-                          color: config.color,
-                        }
-                      : undefined
-                  }
+          {/* Section: Classification */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm relative">
+            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-5">
+              Classification
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Category <span className="text-red-500">*</span>
+                </label>
+                <select
+                  {...register("category")}
+                  className={`w-full px-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white ${errors.category ? "border-red-300" : "border-gray-300"}`}
                 >
-                  {config.label}
-                </button>
-              ))}
+                  <option value="">Select category</option>
+                  {QUESTION_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                {errors.category && (
+                  <p className="mt-1.5 text-xs text-red-500">{(errors.category as any).message}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Subject <span className="text-red-500">*</span>
+                </label>
+                <select
+                  {...register("subject")}
+                  className={`w-full px-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white ${errors.subject ? "border-red-300" : "border-gray-300"}`}
+                >
+                  <option value="">Select subject</option>
+                  {COMMON_SUBJECTS.map((subj) => (
+                    <option key={subj} value={subj}>
+                      {subj}
+                    </option>
+                  ))}
+                </select>
+                {errors.subject && (
+                  <p className="mt-1.5 text-xs text-red-500">{(errors.subject as any).message}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Topic</label>
+                <input
+                  type="text"
+                  {...register("topic")}
+                  placeholder="e.g., Compound Interest"
+                  className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Difficulty <span className="text-red-500">*</span>
+                </label>
+                <div className="flex gap-2">
+                  {Object.entries(DIFFICULTY_CONFIG).map(([key, config]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() =>
+                        setValue("difficulty", key as any, {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        })
+                      }
+                      className={`flex-1 px-3 py-2.5 text-sm font-semibold rounded-xl border-2 transition-all ${
+                        formData.difficulty === key
+                          ? "shadow-sm"
+                          : "border-gray-200 text-gray-500 hover:border-gray-300"
+                      }`}
+                      style={
+                        formData.difficulty === key
+                          ? {
+                              borderColor: config.color,
+                              backgroundColor: config.bgColor,
+                              color: config.color,
+                            }
+                          : undefined
+                      }
+                    >
+                      {config.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Language</label>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
-            >
-              {LANGUAGE_OPTIONS.map((lang) => (
-                <option key={lang.value} value={lang.value}>
-                  {lang.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Section: Question Content */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm relative">
+            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-5">
+              Question Content
+            </h3>
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Question Text <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  {...register("question")}
+                  rows={4}
+                  placeholder="Enter the question text…"
+                  className={`w-full px-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent resize-y ${quality.fieldErrors.question || errors.question ? "border-red-300 focus:ring-red-500" : "border-gray-300"}`}
+                />
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-xs text-red-500">
+                    {(quality.fieldErrors.question || (errors.question as any)?.message) &&
+                      (quality.fieldErrors.question || (errors.question as any)?.message)}
+                  </span>
+                  <p className="text-[11px] text-gray-400">
+                    {(formData.question || "").length}/2000
+                  </p>
+                </div>
+              </div>
 
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Marks</label>
-              <input
-                type="number"
-                value={marks}
-                onChange={(e) => setMarks(parseInt(e.target.value) || 1)}
-                min={1}
-                max={10}
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Explanation <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  {...register("explanation")}
+                  rows={3}
+                  placeholder="Provide a detailed explanation for the correct answer…"
+                  className={`w-full px-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent resize-y ${quality.fieldErrors.explanation || errors.explanation ? "border-red-300 focus:ring-red-500" : "border-gray-300"}`}
+                />
+                {(quality.fieldErrors.explanation || errors.explanation) && (
+                  <p className="mt-1.5 text-xs text-red-500">
+                    {quality.fieldErrors.explanation || (errors.explanation as any)?.message}
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Negative Marks
-              </label>
-              <input
-                type="number"
-                value={negativeMarks}
-                onChange={(e) => setNegativeMarks(parseFloat(e.target.value) || 0)}
-                min={0}
-                max={1}
-                step={0.25}
-                className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent"
-              />
+          </div>
+
+          {/* Section: Options */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm relative">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                Answer Options
+              </h3>
+              <span className="text-xs text-gray-400">Select the correct answer</span>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Section: Tags */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Tags</h3>
-        
-        <div className="mb-4">
-          <input
-            type="text"
-            value={customTagInput}
-            onChange={(e) => setCustomTagInput(e.target.value)}
-            onKeyDown={handleAddCustomTag}
-            placeholder="Type a custom tag and press Enter"
-            className="w-full md:w-1/2 px-3 py-2 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
-          />
-        </div>
+            {quality.fieldErrors.options && (
+              <div className="mb-4 text-xs text-red-500 font-medium">
+                {quality.fieldErrors.options}
+              </div>
+            )}
 
-        <div className="flex flex-wrap gap-2">
-          {/* Preset Tags */}
-          {TAG_PRESETS.map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => toggleTag(tag)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-                selectedTags.includes(tag)
-                  ? "bg-accent/20 text-secondary border-secondary/30"
-                  : "bg-white text-gray-500 border-gray-200 hover:border-gray-300"
-              }`}
-            >
-              {tag}
-            </button>
-          ))}
-          {/* Custom Tags that are selected but not in preset */}
-          {selectedTags.filter(tag => !TAG_PRESETS.includes(tag as any)).map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => toggleTag(tag)}
-              className="px-3 py-1.5 text-xs font-medium rounded-lg border transition-all bg-accent/20 text-secondary border-secondary/30"
-            >
-              {tag} <span className="ml-1 opacity-60">×</span>
-            </button>
-          ))}
-        </div>
-      </div>
+            {quality.fieldErrors.correctAnswer && (
+              <div className="mb-4 text-xs text-red-500 font-medium">
+                {quality.fieldErrors.correctAnswer}
+              </div>
+            )}
 
-      {/* Section: Question Content */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-5">
-          Question Content
-        </h3>
-        <div className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Question <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              required
-              rows={4}
-              minLength={10}
-              maxLength={2000}
-              placeholder="Enter the question text…"
-              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent resize-y"
-            />
-            <p className="text-[11px] text-gray-400 mt-1 text-right">{question.length}/2000</p>
-          </div>
+            <div className="space-y-3">
+              {fields.map((opt, index) => {
+                const optErr =
+                  quality.fieldErrors[`options.${index}.optionText`] ||
+                  (errors.options && (errors.options as any)[index]?.optionText?.message);
+                const isCorrect = formData.options?.[index]?.isCorrect;
+                return (
+                  <div key={opt.id} className="space-y-1">
+                    <div
+                      className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
+                        isCorrect
+                          ? "border-emerald-300 bg-emerald-50/50"
+                          : optErr
+                            ? "border-red-200 bg-red-50/20"
+                            : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setCorrectOption(index)}
+                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                          isCorrect
+                            ? "border-emerald-500 bg-emerald-500"
+                            : "border-gray-300 hover:border-gray-400"
+                        }`}
+                      >
+                        {isCorrect && <CheckCircle2 className="w-4 h-4 text-white" />}
+                      </button>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Explanation <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              value={explanation}
-              onChange={(e) => setExplanation(e.target.value)}
-              required
-              rows={3}
-              maxLength={3000}
-              placeholder="Provide a detailed explanation for the correct answer…"
-              className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent resize-y"
-            />
-          </div>
-        </div>
-      </div>
+                      <span className="text-xs font-bold text-gray-400 w-6 text-center shrink-0">
+                        {String.fromCharCode(65 + index)}
+                      </span>
 
-      {/* Section: Options */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
-            Answer Options
-          </h3>
-          <span className="text-xs text-gray-400">Select the correct answer</span>
-        </div>
+                      <input
+                        type="text"
+                        {...register(`options.${index}.optionText`)}
+                        placeholder={`Option ${String.fromCharCode(65 + index)}`}
+                        className={`flex-1 px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white ${optErr ? "border-red-300" : "border-gray-200"}`}
+                      />
 
-        <div className="space-y-3">
-          {options.map((opt, index) => (
-            <div
-              key={index}
-              className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
-                opt.isCorrect
-                  ? "border-emerald-300 bg-emerald-50/50"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-            >
+                      {fields.length > 4 && (
+                        <button
+                          type="button"
+                          onClick={() => remove(index)}
+                          className="p-1.5 text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                    {optErr && <p className="text-xs text-red-500 ml-16">{optErr}</p>}
+                  </div>
+                );
+              })}
+            </div>
+
+            {fields.length < 6 && (
               <button
                 type="button"
-                onClick={() => updateOption(index, "isCorrect", true)}
-                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                  opt.isCorrect
-                    ? "border-emerald-500 bg-emerald-500"
-                    : "border-gray-300 hover:border-gray-400"
+                onClick={() => append({ optionText: "", isCorrect: false, order: fields.length })}
+                className="mt-4 flex items-center gap-2 px-4 py-2 text-sm text-secondary hover:text-secondary/80 font-medium transition-colors rounded-lg bg-gray-50 border border-gray-200 hover:bg-gray-100"
+              >
+                <Plus className="w-4 h-4" />
+                Add Option
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onSaveDraft}
+              disabled={isSubmitting}
+              className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              Save Draft
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting || quality.score < 75 || quality.blockingErrors.length > 0}
+              className="px-6 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              Publish Question
+            </button>
+          </div>
+        </form>
+
+        {/* Right Side Sticky Panel */}
+        <div className="w-80 shrink-0 sticky top-6">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm h-auto flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+              <h3 className="text-sm font-bold text-gray-900 tracking-tight">Question Health</h3>
+            </div>
+
+            <div className="p-5">
+              {/* Overall Score */}
+              <div
+                className={`p-4 rounded-xl border mb-6 flex flex-col items-center justify-center text-center transition-colors ${
+                  quality.health === "EXCELLENT"
+                    ? "text-emerald-600 bg-emerald-50 border-emerald-200"
+                    : quality.health === "GOOD"
+                      ? "text-blue-600 bg-blue-50 border-blue-200"
+                      : quality.health === "NEEDS_IMPROVEMENT"
+                        ? "text-amber-600 bg-amber-50 border-amber-200"
+                        : "text-red-600 bg-red-50 border-red-200"
                 }`}
               >
-                {opt.isCorrect && <CheckCircle2 className="w-4 h-4 text-white" />}
-              </button>
+                <span className="text-3xl font-black mb-1">
+                  {quality.score} <span className="text-lg text-current/60 font-medium">/ 100</span>
+                </span>
+                <span className="text-xs font-bold uppercase tracking-wider">
+                  {quality.health === "EXCELLENT"
+                    ? "Excellent"
+                    : quality.health === "GOOD"
+                      ? "Good"
+                      : quality.health === "NEEDS_IMPROVEMENT"
+                        ? "Needs Improvement"
+                        : "Cannot Publish"}
+                </span>
+                {quality.score >= 75 && quality.blockingErrors.length === 0 ? (
+                  <span className="text-xs mt-2 font-semibold bg-white/50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> Ready For Publish
+                  </span>
+                ) : (
+                  <span className="text-xs mt-2 font-semibold bg-white/50 px-2 py-0.5 rounded-full flex items-center gap-1 opacity-80">
+                    Cannot Publish
+                  </span>
+                )}
+              </div>
 
-              <span className="text-xs font-bold text-gray-400 w-6 text-center shrink-0">
-                {String.fromCharCode(65 + index)}
-              </span>
+              {/* Breakdown Checklist */}
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2
+                      className={`w-4 h-4 ${quality.breakdown.structure === 25 ? "text-emerald-500" : "text-gray-300"}`}
+                    />
+                    <span
+                      className={
+                        quality.breakdown.structure === 25
+                          ? "text-gray-900 font-medium"
+                          : "text-gray-500"
+                      }
+                    >
+                      Structure Complete
+                    </span>
+                  </div>
+                  <span className="font-semibold text-gray-400">
+                    {quality.breakdown.structure}/25
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2
+                      className={`w-4 h-4 ${quality.breakdown.options === 20 ? "text-emerald-500" : "text-gray-300"}`}
+                    />
+                    <span
+                      className={
+                        quality.breakdown.options === 20
+                          ? "text-gray-900 font-medium"
+                          : "text-gray-500"
+                      }
+                    >
+                      Options Valid
+                    </span>
+                  </div>
+                  <span className="font-semibold text-gray-400">
+                    {quality.breakdown.options}/20
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2
+                      className={`w-4 h-4 ${quality.breakdown.correctAnswer === 15 ? "text-emerald-500" : "text-gray-300"}`}
+                    />
+                    <span
+                      className={
+                        quality.breakdown.correctAnswer === 15
+                          ? "text-gray-900 font-medium"
+                          : "text-gray-500"
+                      }
+                    >
+                      Correct Answer
+                    </span>
+                  </div>
+                  <span className="font-semibold text-gray-400">
+                    {quality.breakdown.correctAnswer}/15
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2
+                      className={`w-4 h-4 ${quality.breakdown.explanation === 20 ? "text-emerald-500" : "text-gray-300"}`}
+                    />
+                    <span
+                      className={
+                        quality.breakdown.explanation === 20
+                          ? "text-gray-900 font-medium"
+                          : "text-gray-500"
+                      }
+                    >
+                      Explanation Strong
+                    </span>
+                  </div>
+                  <span className="font-semibold text-gray-400">
+                    {quality.breakdown.explanation}/20
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2
+                      className={`w-4 h-4 ${quality.breakdown.metadata === 20 ? "text-emerald-500" : "text-gray-300"}`}
+                    />
+                    <span
+                      className={
+                        quality.breakdown.metadata === 20
+                          ? "text-gray-900 font-medium"
+                          : "text-gray-500"
+                      }
+                    >
+                      Metadata Complete
+                    </span>
+                  </div>
+                  <span className="font-semibold text-gray-400">
+                    {quality.breakdown.metadata}/20
+                  </span>
+                </div>
+              </div>
 
-              <input
-                type="text"
-                value={opt.optionText}
-                onChange={(e) => updateOption(index, "optionText", e.target.value)}
-                required
-                placeholder={`Option ${String.fromCharCode(65 + index)}`}
-                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
-              />
+              {/* Errors & Warnings */}
+              {(quality.blockingErrors.length > 0 || quality.warnings.length > 0) && (
+                <div className="border-t border-gray-100 pt-4 space-y-4">
+                  {quality.blockingErrors.length > 0 && (
+                    <div>
+                      <div className="flex items-start gap-1.5 text-red-600 mb-2">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <span className="text-xs font-bold uppercase tracking-wider">
+                          Blocking Errors
+                        </span>
+                      </div>
+                      <ul className="space-y-1.5">
+                        {quality.blockingErrors.map((err, idx) => (
+                          <li
+                            key={idx}
+                            className="text-xs text-red-700 bg-red-50/50 px-2.5 py-1.5 rounded border border-red-100 flex items-start gap-2"
+                          >
+                            <span className="text-red-400 mt-0.5">•</span>
+                            {err}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
-              {options.length > 4 && (
-                <button
-                  type="button"
-                  onClick={() => removeOption(index)}
-                  className="p-1.5 text-gray-400 hover:text-red-500 transition-colors shrink-0"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                  {quality.warnings.length > 0 && (
+                    <div>
+                      <div className="flex items-start gap-1.5 text-amber-600 mb-2">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Warnings</span>
+                      </div>
+                      <ul className="space-y-1.5">
+                        {quality.warnings.map((err, idx) => (
+                          <li
+                            key={idx}
+                            className="text-xs text-amber-700 bg-amber-50/50 px-2.5 py-1.5 rounded border border-amber-100 flex items-start gap-2"
+                          >
+                            <span className="text-amber-400 mt-0.5">•</span>
+                            {err}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
-          ))}
+          </div>
         </div>
-
-        {options.length < 6 && (
-          <button
-            type="button"
-            onClick={addOption}
-            className="mt-3 flex items-center gap-2 px-4 py-2 text-sm text-secondary hover:text-secondary/80 font-medium transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Add Option
-          </button>
-        )}
       </div>
-
-      {/* Submit */}
-      <div className="flex items-center justify-end gap-3 pt-2">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="px-6 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-        >
-          {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-          {isSubmitting ? "Creating…" : "Create Question"}
-        </button>
-      </div>
-    </form>
+    </FormProvider>
   );
 }

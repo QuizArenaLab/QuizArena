@@ -37,7 +37,10 @@ export default function ModerationDashboardLoading() {
       {/* KPI Section */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="bg-gray-50 border border-gray-200 rounded-xl p-4 h-[88px] relative overflow-hidden">
+          <div
+            key={i}
+            className="bg-gray-50 border border-gray-200 rounded-xl p-4 h-[88px] relative overflow-hidden"
+          >
             <div className="flex items-start justify-between relative z-10">
               <div className="flex flex-col gap-2">
                 <div className="w-20 h-3 bg-gray-200 rounded-md" />
@@ -51,7 +54,6 @@ export default function ModerationDashboardLoading() {
 
       {/* Main Content Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
         {/* Left Column: Moderation Queue */}
         <div className="lg:col-span-8 space-y-4">
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col h-[calc(100vh-320px)] min-h-[600px]">
@@ -98,7 +100,6 @@ export default function ModerationDashboardLoading() {
 
         {/* Right Column: Intelligence & Prioritization */}
         <div className="lg:col-span-4 space-y-6 flex flex-col h-[calc(100vh-320px)] min-h-[600px] overflow-hidden pr-1">
-          
           {/* High Priority Cases */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col shrink-0">
             <div className="p-4 border-b border-gray-100 flex items-center gap-2">
@@ -150,7 +151,6 @@ export default function ModerationDashboardLoading() {
               ))}
             </div>
           </div>
-
         </div>
       </div>
 
@@ -165,7 +165,6 @@ export default function ModerationDashboardLoading() {
           <div className="w-40 h-3 bg-gray-100 rounded-md" />
         </div>
       </div>
-
     </div>
   );
 }

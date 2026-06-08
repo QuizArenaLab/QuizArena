@@ -29,7 +29,8 @@ async function ArchiveContent({
       <div>
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Archived Questions</h1>
         <p className="text-sm text-gray-500 mt-1">
-          {result.total} archived question{result.total !== 1 ? "s" : ""}. Restore to move back to Drafts.
+          {result.total} archived question{result.total !== 1 ? "s" : ""}. Restore to move back to
+          Drafts.
         </p>
       </div>
 

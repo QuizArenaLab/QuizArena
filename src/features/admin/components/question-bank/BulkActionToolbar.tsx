@@ -52,9 +52,7 @@ export function BulkActionToolbar({ selectedIds, onClear, onComplete }: BulkActi
 
   return (
     <div className="bg-indigo-50 border border-indigo-200 rounded-xl px-5 py-3 flex flex-wrap items-center gap-3">
-      <span className="text-sm font-semibold text-indigo-800">
-        {selectedIds.length} selected
-      </span>
+      <span className="text-sm font-semibold text-indigo-800">{selectedIds.length} selected</span>
 
       <div className="flex items-center gap-2 ml-auto">
         {showRejectInput ? (
@@ -71,11 +69,19 @@ export function BulkActionToolbar({ selectedIds, onClear, onComplete }: BulkActi
               disabled={isPending}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
             >
-              {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
+              {isPending ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <XCircle className="w-3.5 h-3.5" />
+              )}
               Confirm Reject
             </button>
             <button
-              onClick={() => { setShowRejectInput(false); setRejectReason(""); setError(null); }}
+              onClick={() => {
+                setShowRejectInput(false);
+                setRejectReason("");
+                setError(null);
+              }}
               className="text-sm text-gray-500 hover:text-gray-700"
             >
               Cancel
@@ -88,7 +94,11 @@ export function BulkActionToolbar({ selectedIds, onClear, onComplete }: BulkActi
               disabled={isPending}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
             >
-              {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+              {isPending ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <CheckCircle2 className="w-3.5 h-3.5" />
+              )}
               Approve All
             </button>
             <button
@@ -109,9 +119,7 @@ export function BulkActionToolbar({ selectedIds, onClear, onComplete }: BulkActi
         </button>
       </div>
 
-      {error && (
-        <p className="w-full text-xs text-red-600 mt-1">{error}</p>
-      )}
+      {error && <p className="w-full text-xs text-red-600 mt-1">{error}</p>}
     </div>
   );
 }

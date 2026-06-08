@@ -4,7 +4,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { RotateCcw, Trash2, Loader2, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
-import { restoreArchivedQuestion, permanentlyDeleteQuestion } from "@/features/admin/services/question-bank";
+import {
+  restoreArchivedQuestion,
+  permanentlyDeleteQuestion,
+} from "@/features/admin/services/question-bank";
 
 interface ArchivedQuestion {
   id: string;
@@ -57,11 +60,21 @@ export function ArchiveClient({ questions, total, page, totalPages }: ArchiveCli
       <table className="w-full">
         <thead>
           <tr className="border-b border-gray-100 bg-gray-50/50">
-            <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Question</th>
-            <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Category</th>
-            <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Created By</th>
-            <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Date</th>
-            <th className="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+            <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+              Question
+            </th>
+            <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">
+              Category
+            </th>
+            <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+              Created By
+            </th>
+            <th className="px-5 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+              Date
+            </th>
+            <th className="px-5 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-50">
@@ -80,7 +93,13 @@ export function ArchiveClient({ questions, total, page, totalPages }: ArchiveCli
                 <span className="text-xs text-gray-500">{q.createdBy?.name || "—"}</span>
               </td>
               <td className="px-5 py-3.5 hidden lg:table-cell">
-                <span className="text-xs text-gray-400">{new Date(q.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "2-digit" })}</span>
+                <span className="text-xs text-gray-400">
+                  {new Date(q.createdAt).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    year: "2-digit",
+                  })}
+                </span>
               </td>
               <td className="px-5 py-3.5">
                 <div className="flex items-center gap-1.5 justify-end">
@@ -94,7 +113,11 @@ export function ArchiveClient({ questions, total, page, totalPages }: ArchiveCli
                         disabled={isPending}
                         className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
                       >
-                        {actionId === q.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                        {actionId === q.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3 h-3" />
+                        )}
                         Confirm
                       </button>
                       <button
@@ -111,7 +134,11 @@ export function ArchiveClient({ questions, total, page, totalPages }: ArchiveCli
                         disabled={isPending && actionId === q.id}
                         className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 disabled:opacity-50 transition-colors"
                       >
-                        {actionId === q.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <RotateCcw className="w-3 h-3" />}
+                        {actionId === q.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <RotateCcw className="w-3 h-3" />
+                        )}
                         Restore
                       </button>
                       <button
@@ -132,15 +159,23 @@ export function ArchiveClient({ questions, total, page, totalPages }: ArchiveCli
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
-          <span className="text-xs text-gray-500">Page {page} of {totalPages} · {total} total</span>
+          <span className="text-xs text-gray-500">
+            Page {page} of {totalPages} · {total} total
+          </span>
           <div className="flex gap-2">
             {page > 1 && (
-              <Link href={`/dashboard/admin/questions/archive?page=${page - 1}`} className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+              <Link
+                href={`/dashboard/admin/questions/archive?page=${page - 1}`}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
+              >
                 <ChevronLeft className="w-3 h-3" /> Prev
               </Link>
             )}
             {page < totalPages && (
-              <Link href={`/dashboard/admin/questions/archive?page=${page + 1}`} className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50">
+              <Link
+                href={`/dashboard/admin/questions/archive?page=${page + 1}`}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
+              >
                 Next <ChevronRight className="w-3 h-3" />
               </Link>
             )}

@@ -40,7 +40,10 @@ export const createQuestionSchema = z
       .string()
       .min(10, "Question must be at least 10 characters")
       .max(2000, "Question must not exceed 2000 characters"),
-    explanation: z.string().min(1, "Explanation is required").max(3000, "Explanation must not exceed 3000 characters"),
+    explanation: z
+      .string()
+      .min(1, "Explanation is required")
+      .max(3000, "Explanation must not exceed 3000 characters"),
     subject: z
       .string()
       .min(1, "Subject is required")
@@ -62,6 +65,9 @@ export const createQuestionSchema = z
       .max(1, "Cannot exceed 100%"),
     difficulty: z.enum(QUESTION_DIFFICULTIES).default("MEDIUM"),
     tags: z.array(z.string().max(50)).max(20).default([]),
+    qualityScore: z.number().int().min(0).max(100).optional(),
+    questionHealth: z.enum(["EXCELLENT", "GOOD", "NEEDS_IMPROVEMENT", "POOR"]).optional(),
+    validationStatus: z.enum(["PENDING", "VALID", "INVALID"]).optional(),
     options: z
       .array(
         z.object({
@@ -98,6 +104,9 @@ export const draftQuestionSchema = z.object({
   negativeMarks: z.number().min(0).max(1).optional(),
   difficulty: z.enum(QUESTION_DIFFICULTIES).optional(),
   tags: z.array(z.string().max(50)).max(20).optional(),
+  qualityScore: z.number().int().min(0).max(100).optional(),
+  questionHealth: z.enum(["EXCELLENT", "GOOD", "NEEDS_IMPROVEMENT", "POOR"]).optional(),
+  validationStatus: z.enum(["PENDING", "VALID", "INVALID"]).optional(),
   options: z
     .array(
       z.object({
@@ -121,7 +130,11 @@ export const updateQuestionSchema = z
       .min(10, "Question must be at least 10 characters")
       .max(2000, "Question must not exceed 2000 characters")
       .optional(),
-    explanation: z.string().min(1, "Explanation is required").max(3000, "Explanation must not exceed 3000 characters").optional(),
+    explanation: z
+      .string()
+      .min(1, "Explanation is required")
+      .max(3000, "Explanation must not exceed 3000 characters")
+      .optional(),
     subject: z
       .string()
       .min(1, "Subject is required")
@@ -147,6 +160,9 @@ export const updateQuestionSchema = z
       .optional(),
     difficulty: z.enum(QUESTION_DIFFICULTIES).optional(),
     tags: z.array(z.string().max(50)).max(20).optional(),
+    qualityScore: z.number().int().min(0).max(100).optional(),
+    questionHealth: z.enum(["EXCELLENT", "GOOD", "NEEDS_IMPROVEMENT", "POOR"]).optional(),
+    validationStatus: z.enum(["PENDING", "VALID", "INVALID"]).optional(),
     options: z
       .array(
         z.object({
