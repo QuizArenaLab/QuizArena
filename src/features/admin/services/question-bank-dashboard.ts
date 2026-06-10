@@ -85,27 +85,40 @@ export interface ContentHealthMetrics {
   missingTopicMapping: number;
   duplicateCandidates: number;
   pendingReview: number;
+  averageHealthScore: number;
+  lowHealthQuestions: number;
+  excellentQuestions: number;
 }
 
 export async function getContentHealthMetrics(): Promise<ContentHealthMetrics> {
   try {
     await requireAdminSession();
 
-    const [missingExplanations, missingTags, missingTopicMapping, pendingReview] =
-      await Promise.all([
-        prisma.question.count({
-          where: { OR: [{ explanation: null }, { explanation: "" }] },
-        }),
-        prisma.question
-          .count({
-            where: { tags: { isEmpty: true } },
-          })
-          .catch(() => prisma.question.count({ where: { tags: { equals: [] } } })),
-        prisma.question.count({
-          where: { OR: [{ topic: null }, { topic: "" }] },
-        }),
-        prisma.question.count({ where: { status: "REVIEW" } }),
-      ]);
+    const [
+      missingExplanations,
+      missingTags,
+      missingTopicMapping,
+      pendingReview,
+      lowHealthQuestions,
+      excellentQuestions,
+      healthAgg,
+    ] = await Promise.all([
+      prisma.question.count({
+        where: { OR: [{ explanation: null }, { explanation: "" }] },
+      }),
+      prisma.question
+        .count({
+          where: { tags: { isEmpty: true } },
+        })
+        .catch(() => prisma.question.count({ where: { tags: { equals: [] } } })),
+      prisma.question.count({
+        where: { OR: [{ topic: null }, { topic: "" }] },
+      }),
+      prisma.question.count({ where: { status: "REVIEW" } }),
+      prisma.question.count({ where: { healthScore: { lt: 75 } } }),
+      prisma.question.count({ where: { healthScore: { gte: 90 } } }),
+      prisma.question.aggregate({ _avg: { healthScore: true } }),
+    ]);
 
     return {
       missingExplanations,
@@ -113,6 +126,9 @@ export async function getContentHealthMetrics(): Promise<ContentHealthMetrics> {
       missingTopicMapping,
       duplicateCandidates: 0, // Mocked for now; complex real-time computation
       pendingReview,
+      averageHealthScore: Math.round(healthAgg._avg.healthScore || 0),
+      lowHealthQuestions,
+      excellentQuestions,
     };
   } catch {
     return {
@@ -121,6 +137,9 @@ export async function getContentHealthMetrics(): Promise<ContentHealthMetrics> {
       missingTopicMapping: 0,
       duplicateCandidates: 0,
       pendingReview: 0,
+      averageHealthScore: 0,
+      lowHealthQuestions: 0,
+      excellentQuestions: 0,
     };
   }
 }
@@ -262,20 +281,34 @@ export interface QuestionBankHealth {
   missingExplanation: number;
   unusedQuestions: number;
   pendingReview: number;
+  averageHealthScore: number;
+  lowHealthQuestions: number;
+  excellentQuestions: number;
 }
 
 export async function getQuestionHealthBreakdown(): Promise<QuestionBankHealth> {
   try {
     await requireAdminSession();
 
-    const [byExamRaw, byDiffRaw, missingExplanation, unusedQuestions, pendingReview] =
-      await Promise.all([
-        prisma.question.groupBy({ by: ["examCategory"], _count: true }),
-        prisma.question.groupBy({ by: ["difficulty"], _count: true }),
-        prisma.question.count({ where: { OR: [{ explanation: null }, { explanation: "" }] } }),
-        prisma.question.count({ where: { usageCount: 0 } }),
-        prisma.question.count({ where: { status: "REVIEW" } }),
-      ]);
+    const [
+      byExamRaw,
+      byDiffRaw,
+      missingExplanation,
+      unusedQuestions,
+      pendingReview,
+      healthAgg,
+      lowHealth,
+      excellentHealth,
+    ] = await Promise.all([
+      prisma.question.groupBy({ by: ["examCategory"], _count: true }),
+      prisma.question.groupBy({ by: ["difficulty"], _count: true }),
+      prisma.question.count({ where: { OR: [{ explanation: null }, { explanation: "" }] } }),
+      prisma.question.count({ where: { usageCount: 0 } }),
+      prisma.question.count({ where: { status: "REVIEW" } }),
+      prisma.question.aggregate({ _avg: { healthScore: true } }),
+      prisma.question.count({ where: { healthScore: { lt: 75 } } }),
+      prisma.question.count({ where: { healthScore: { gte: 90 } } }),
+    ]);
 
     return {
       byExam: byExamRaw
@@ -285,6 +318,9 @@ export async function getQuestionHealthBreakdown(): Promise<QuestionBankHealth> 
       missingExplanation,
       unusedQuestions,
       pendingReview,
+      averageHealthScore: Math.round(healthAgg._avg.healthScore || 0),
+      lowHealthQuestions: lowHealth,
+      excellentQuestions: excellentHealth,
     };
   } catch {
     return {
@@ -293,6 +329,9 @@ export async function getQuestionHealthBreakdown(): Promise<QuestionBankHealth> 
       missingExplanation: 0,
       unusedQuestions: 0,
       pendingReview: 0,
+      averageHealthScore: 0,
+      lowHealthQuestions: 0,
+      excellentQuestions: 0,
     };
   }
 }

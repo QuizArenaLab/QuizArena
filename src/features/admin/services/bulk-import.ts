@@ -135,7 +135,10 @@ async function processImportJobBackground(jobId: string, rows: ValidatedRow[], a
     let processedRows = 0;
     let successCount = 0;
     let duplicatePrevents = 0;
-    let totalQuality = 0;
+    let totalHealthScore = 0;
+    let highestHealthScore = -1;
+    let lowestHealthScore = 101;
+    let questionsBelowThreshold = 0;
     let warningsCount = 0;
 
     for (let i = 0; i < totalRows; i += CHUNK_SIZE) {
@@ -174,11 +177,16 @@ async function processImportJobBackground(jobId: string, rows: ValidatedRow[], a
                 order: 6,
               });
 
-            const qualityScore = row.qualityScore || 0;
-            totalQuality += qualityScore;
+            const healthScore = row.healthScore || 0;
+            totalHealthScore += healthScore;
+            highestHealthScore = Math.max(highestHealthScore, healthScore);
+            lowestHealthScore = Math.min(lowestHealthScore, healthScore);
+            if (healthScore < 75) {
+              questionsBelowThreshold++;
+            }
 
             const hasErrors = row.issues?.some((i) => i.severity === "ERROR");
-            const mappedStatus = qualityScore >= 75 && !hasErrors ? "APPROVED" : "REVIEW";
+            const mappedStatus = healthScore >= 75 && !hasErrors ? "APPROVED" : "REVIEW";
             const isActive = mappedStatus === "APPROVED";
 
             if (
@@ -204,6 +212,10 @@ async function processImportJobBackground(jobId: string, rows: ValidatedRow[], a
                 status: mappedStatus,
                 version: 1,
                 isActive: isActive,
+                healthScore: row.healthScore,
+                healthGrade: row.healthGrade,
+                healthStatus: row.healthStatus,
+                healthLastCalculatedAt: new Date(),
                 createdById: actorId,
                 options: {
                   create: optionsToCreate,
@@ -242,15 +254,20 @@ async function processImportJobBackground(jobId: string, rows: ValidatedRow[], a
       });
     }
 
-    const averageQuality = totalRows > 0 ? Math.round(totalQuality / totalRows) : 0;
-    const healthScore = Math.max(0, 100 - duplicatePrevents * 5 - warningsCount * 2);
+    const averageHealthScore = totalRows > 0 ? Math.round(totalHealthScore / totalRows) : 0;
+    // Handle edge case if no rows were successful
+    if (highestHealthScore === -1) highestHealthScore = 0;
+    if (lowestHealthScore === 101) lowestHealthScore = 0;
 
     await prisma.importReport.create({
       data: {
         jobId,
         duplicatesPrevented: duplicatePrevents,
         totalImported: successCount,
-        averageQuality,
+        averageHealthScore,
+        highestHealthScore,
+        lowestHealthScore,
+        questionsBelowThreshold,
         failedRows: totalRows - successCount,
       },
     });
@@ -263,8 +280,10 @@ async function processImportJobBackground(jobId: string, rows: ValidatedRow[], a
         validRows: successCount,
         warningRows: warningsCount,
         duplicateRows: duplicatePrevents,
-        healthScore,
-        averageQuality,
+        averageHealthScore,
+        highestHealthScore,
+        lowestHealthScore,
+        questionsBelowThreshold,
         progressPercentage: 100,
         processedRows: totalRows,
       },

@@ -12,7 +12,7 @@ import { PreviewStep } from "./steps/PreviewStep";
 import { LiveValidationSidebar } from "./LiveValidationSidebar";
 import { AlertCircle, CheckCircle2, Loader2, ArrowLeft, ArrowRight, Save } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { calculateQuestionQuality } from "@/lib/validations/question-engine";
+import { calculateQuestionHealth } from "@/lib/validations/question-engine";
 import { createQuestionSchema, CreateQuestionInput } from "@/lib/validations/question";
 
 export function QuestionAuthoringWizard({ initialData }: { initialData?: any }) {
@@ -59,7 +59,7 @@ export function QuestionAuthoringWizard({ initialData }: { initialData?: any }) 
   } = methods;
   // eslint-disable-next-line react-hooks/incompatible-library
   const formData = watch();
-  const quality = useMemo(() => calculateQuestionQuality(formData as any), [formData]);
+  const healthResult = useMemo(() => calculateQuestionHealth(formData as any), [formData]);
 
   useEffect(() => {
     return () => {
@@ -101,14 +101,14 @@ export function QuestionAuthoringWizard({ initialData }: { initialData?: any }) 
   }, [formData, triggerAutosave]);
 
   const onSubmit = async (data: any) => {
-    if (quality.score < 75 || quality.blockingErrors.length > 0) return;
+    if (healthResult.score < 75 || healthResult.blockingErrors.length > 0) return;
 
     try {
       const result = await createQuestion({
         ...data,
-        qualityScore: quality.score,
-        questionHealth: quality.health,
-        validationStatus: "VALID",
+        healthScore: healthResult.score,
+        healthGrade: healthResult.grade,
+        healthStatus: healthResult.status,
       });
 
       if (result.success) {
@@ -214,7 +214,9 @@ export function QuestionAuthoringWizard({ initialData }: { initialData?: any }) 
             ) : (
               <button
                 onClick={handleSubmit(onSubmit)}
-                disabled={isSubmitting || quality.score < 75 || quality.blockingErrors.length > 0}
+                disabled={
+                  isSubmitting || healthResult.score < 75 || healthResult.blockingErrors.length > 0
+                }
                 className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-linear-to-r from-emerald-500 to-emerald-600 rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-md disabled:opacity-50"
               >
                 {isSubmitting ? (

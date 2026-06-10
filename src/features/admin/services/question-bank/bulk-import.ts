@@ -52,7 +52,9 @@ export interface ValidatedRow extends ParsedRow {
     duplicateCode?: string;
     similarity?: number;
   };
-  qualityScore: number;
+  healthScore: number;
+  healthGrade: string;
+  healthStatus: string;
 }
 
 // ─── Parsers ───────────────────────────────────────────────────────────────
@@ -153,7 +155,7 @@ export async function parseFile(file: File): Promise<ParsedRow[]> {
 
 // ─── Validation ─────────────────────────────────────────────────────────────
 
-import { calculateQuestionQuality } from "@/lib/validations/question-engine";
+import { calculateQuestionHealth } from "@/lib/validations/question-engine";
 
 export async function validateRows(rows: ParsedRow[]): Promise<ValidatedRow[]> {
   const validatedRows: ValidatedRow[] = [];
@@ -163,7 +165,9 @@ export async function validateRows(rows: ParsedRow[]): Promise<ValidatedRow[]> {
     const issues: ValidationIssue[] = [];
     let parsedData: ImportRow | undefined;
     let duplicateResult: any;
-    let qualityScore = 0;
+    let healthScore = 0;
+    let healthGrade = "D";
+    let healthStatus = "POOR";
 
     try {
       // Step 14: Auto-Correction Engine
@@ -207,8 +211,8 @@ export async function validateRows(rows: ParsedRow[]): Promise<ValidatedRow[]> {
         options,
       });
 
-      // Step 4: Question Validation using Engine
-      const qualityResult = calculateQuestionQuality(
+      // Step 4: Question Validation using Health Engine
+      const healthResult = calculateQuestionHealth(
         {
           question: parsedData.question,
           explanation: parsedData.explanation,
@@ -221,13 +225,15 @@ export async function validateRows(rows: ParsedRow[]): Promise<ValidatedRow[]> {
         duplicateResult
       );
 
-      qualityScore = qualityResult.score;
+      healthScore = healthResult.score;
+      healthGrade = healthResult.grade;
+      healthStatus = healthResult.status;
 
       // Map Engine Results to Issues
-      qualityResult.blockingErrors.forEach((err) => {
+      healthResult.blockingErrors.forEach((err) => {
         issues.push({ severity: "ERROR", message: err });
       });
-      qualityResult.warnings.forEach((warn) => {
+      healthResult.improvementSuggestions.forEach((warn) => {
         issues.push({ severity: "WARNING", message: warn });
       });
 
@@ -261,7 +267,9 @@ export async function validateRows(rows: ParsedRow[]): Promise<ValidatedRow[]> {
       status,
       issues,
       parsedData,
-      qualityScore,
+      healthScore,
+      healthGrade,
+      healthStatus,
       duplicateCheck: duplicateResult
         ? {
             status: duplicateResult.status,

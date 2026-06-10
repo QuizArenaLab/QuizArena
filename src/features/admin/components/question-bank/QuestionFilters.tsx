@@ -88,6 +88,24 @@ export function QuestionFilters({ currentFilters }: QuestionFiltersProps) {
             ))}
           </select>
 
+          <select
+            name="intelligence"
+            defaultValue={(currentFilters as any).intelligence || ""}
+            className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white min-w-[150px]"
+          >
+            <option value="">Intelligence Flags</option>
+            <option value="HEALTHY">Healthy</option>
+            <option value="FLAGGED">Flagged</option>
+            <option value="UNUSED">Unused</option>
+            <option value="OVERUSED">Overused</option>
+            <option value="TOO_EASY">Too Easy</option>
+            <option value="TOO_HARD">Too Hard</option>
+            <option value="REPORTED">Reported</option>
+            <option value="NEEDS_REVIEW">Needs Review</option>
+            <option value="DIFFICULTY_DRIFT">Difficulty Drift</option>
+            <option value="RETIREMENT_CANDIDATE">Retirement Candidate</option>
+          </select>
+
           <button
             type="submit"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-linear-to-r from-indigo-600 to-violet-600 text-white text-sm font-semibold rounded-lg hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm"

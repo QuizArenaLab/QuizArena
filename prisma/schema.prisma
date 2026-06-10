@@ -10,52 +10,52 @@ datasource db {
 }
 
 model User {
-  id                        String                      @id @default(cuid())
+  id                        String                            @id @default(cuid())
   name                      String?
-  username                  String?                     @unique
-  email                     String?                     @unique
+  username                  String?                           @unique
+  email                     String?                           @unique
   emailVerified             DateTime?
   image                     String?
   password                  String?
-  role                      UserRole                    @default(USER)
-  onboardingCompleted       Boolean                     @default(false)
+  role                      UserRole                          @default(USER)
+  onboardingCompleted       Boolean                           @default(false)
   examCategory              ExamCategory?
   preparationLevel          PreparationLevel?
-  dailyPracticeGoal         Int                         @default(20)
-  recommendationEngine      Boolean                     @default(true)
+  dailyPracticeGoal         Int                               @default(20)
+  recommendationEngine      Boolean                           @default(true)
   notificationPrefs         Json?
-  accountState              AccountState                @default(ACTIVE)
-  flagged                   Boolean                     @default(false)
-  moderatorStatus           ModeratorStatus             @default(ACTIVE)
-  createdAt                 DateTime                    @default(now())
-  updatedAt                 DateTime                    @updatedAt
+  accountState              AccountState                      @default(ACTIVE)
+  flagged                   Boolean                           @default(false)
+  moderatorStatus           ModeratorStatus                   @default(ACTIVE)
+  createdAt                 DateTime                          @default(now())
+  updatedAt                 DateTime                          @updatedAt
   accounts                  Account[]
   sessions                  Session[]
   attempts                  Attempt[]
   createdChallenges         Challenge[]
-  reviewedChallenges        Challenge[]                 @relation("ChallengeReviewer")
-  publishedChallenges       Challenge[]                 @relation("ChallengePublisher")
+  reviewedChallenges        Challenge[]                       @relation("ChallengeReviewer")
+  publishedChallenges       Challenge[]                       @relation("ChallengePublisher")
   createdQuestions          Question[]
-  reviewedQuestions         Question[]                  @relation("QuestionReviewer")
-  approvedQuestions         Question[]                  @relation("QuestionApprovedBy")
-  moderationNotes           ModerationNote[]            @relation("ModerationNoteUser")
-  createdByNotes            ModerationNote[]            @relation("ModerationNoteCreator")
-  moderatorNotes            ModeratorNote[]             @relation("ModeratorNoteModerator")
-  createdByModNotes         ModeratorNote[]             @relation("ModeratorNoteCreator")
-  roleChangesAsTarget       RoleChangeAudit[]           @relation("RoleChangeTarget")
-  roleChangesAsActor        RoleChangeAudit[]           @relation("RoleChangeBy")
-  submittedReports          Report[]                    @relation("ReportSubmitter")
-  targetedReports           Report[]                    @relation("ReportTarget")
-  reviewedReports           Report[]                    @relation("ReportReviewer")
-  reportNotes               ReportNote[]                @relation("ReportNoteAuthor")
-  updatedSettings           PlatformSetting[]           @relation("SettingUpdater")
-  settingAudits             SettingAudit[]              @relation("SettingAuditActor")
-  auditLogs                 AuditLog[]                  @relation("AuditActor")
-  targetedAudits            AuditLog[]                  @relation("AuditTarget")
+  reviewedQuestions         Question[]                        @relation("QuestionReviewer")
+  approvedQuestions         Question[]                        @relation("QuestionApprovedBy")
+  moderationNotes           ModerationNote[]                  @relation("ModerationNoteUser")
+  createdByNotes            ModerationNote[]                  @relation("ModerationNoteCreator")
+  moderatorNotes            ModeratorNote[]                   @relation("ModeratorNoteModerator")
+  createdByModNotes         ModeratorNote[]                   @relation("ModeratorNoteCreator")
+  roleChangesAsTarget       RoleChangeAudit[]                 @relation("RoleChangeTarget")
+  roleChangesAsActor        RoleChangeAudit[]                 @relation("RoleChangeBy")
+  submittedReports          Report[]                          @relation("ReportSubmitter")
+  targetedReports           Report[]                          @relation("ReportTarget")
+  reviewedReports           Report[]                          @relation("ReportReviewer")
+  reportNotes               ReportNote[]                      @relation("ReportNoteAuthor")
+  updatedSettings           PlatformSetting[]                 @relation("SettingUpdater")
+  settingAudits             SettingAudit[]                    @relation("SettingAuditActor")
+  auditLogs                 AuditLog[]                        @relation("AuditActor")
+  targetedAudits            AuditLog[]                        @relation("AuditTarget")
   subscriptions             UserSubscription[]
   transactions              Transaction[]
-  createdFeatures           FeatureFlag[]               @relation("FeatureCreatedBy")
-  updatedFeatures           FeatureFlag[]               @relation("FeatureUpdatedBy")
+  createdFeatures           FeatureFlag[]                     @relation("FeatureCreatedBy")
+  updatedFeatures           FeatureFlag[]                     @relation("FeatureUpdatedBy")
   leaderboardEntries        LeaderboardEntry[]
   performanceProfile        UserPerformanceProfile?
   categoryPerformance       UserCategoryPerformance[]
@@ -69,6 +69,9 @@ model User {
   searchAnalytics           SearchAnalytics[]
   QuestionAuditLog          QuestionAuditLog[]
   performanceSnapshot       UserPerformanceSnapshot?
+  attemptLogs               QuestionAttemptLog[]
+  createdFlags              QuestionFlag[]                    @relation("QuestionFlagCreator")
+  dismissedRecommendations  QuestionRecommendationDismissal[]
 
   @@index([email])
   @@index([username])
@@ -511,46 +514,50 @@ model Challenge {
 }
 
 model Question {
-  id               String              @id @default(cuid())
-  questionCode     String?             @unique
-  question         String              @db.Text
-  explanation      String?             @db.Text
-  subject          String?
-  topic            String?
-  category         String?
-  examCategory     ExamCategory?
-  language         String              @default("en")
-  marks            Int                 @default(1)
-  negativeMarks    Float               @default(0)
-  difficulty       ChallengeDifficulty @default(MEDIUM)
-  status           QuestionStatus      @default(DRAFT)
-  tags             String[]            @default([])
-  version          Int                 @default(1)
-  isActive         Boolean             @default(true)
-  usageCount       Int                 @default(0)
-  createdById      String?
-  createdBy        User?               @relation(fields: [createdById], references: [id])
-  reviewedById     String?
-  reviewedBy       User?               @relation("QuestionReviewer", fields: [reviewedById], references: [id])
-  approvedById     String?
-  approvedBy       User?               @relation("QuestionApprovedBy", fields: [approvedById], references: [id])
-  reviewNotes      String?             @db.Text
-  rejectionReason  String?             @db.Text
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-  reviewedAt       DateTime?
-  
-  // Validation Engine
-  qualityScore     Int                 @default(100)
-  questionHealth   String?             @default("EXCELLENT")
-  validationStatus String?             @default("PENDING")
-  lastValidatedAt  DateTime?
+  id              String              @id @default(cuid())
+  questionCode    String?             @unique
+  question        String              @db.Text
+  explanation     String?             @db.Text
+  subject         String?
+  topic           String?
+  category        String?
+  examCategory    ExamCategory?
+  language        String              @default("en")
+  marks           Int                 @default(1)
+  negativeMarks   Float               @default(0)
+  difficulty      ChallengeDifficulty @default(MEDIUM)
+  status          QuestionStatus      @default(DRAFT)
+  tags            String[]            @default([])
+  version         Int                 @default(1)
+  isActive        Boolean             @default(true)
+  usageCount      Int                 @default(0)
+  createdById     String?
+  createdBy       User?               @relation(fields: [createdById], references: [id])
+  reviewedById    String?
+  reviewedBy      User?               @relation("QuestionReviewer", fields: [reviewedById], references: [id])
+  approvedById    String?
+  approvedBy      User?               @relation("QuestionApprovedBy", fields: [approvedById], references: [id])
+  reviewNotes     String?             @db.Text
+  rejectionReason String?             @db.Text
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  reviewedAt      DateTime?
 
-  options          QuestionOption[]
-  challenges       ChallengeQuestion[]
-  reports          Report[]            @relation("ReportedQuestion")
-  analytics        QuestionAnalytics?
-  QuestionAuditLog QuestionAuditLog[]
+  // Health & Validation Engine
+  healthScore            Int?
+  healthGrade            String?
+  healthStatus           String?
+  healthLastCalculatedAt DateTime?
+
+  options                  QuestionOption[]
+  challenges               ChallengeQuestion[]
+  reports                  Report[]                          @relation("ReportedQuestion")
+  analytics                QuestionAnalytics?
+  QuestionAuditLog         QuestionAuditLog[]
+  usageStats               QuestionUsageStats?
+  attemptLogs              QuestionAttemptLog[]
+  flags                    QuestionFlag[]
+  recommendationDismissals QuestionRecommendationDismissal[]
 
   @@index([questionCode])
   @@index([category])
@@ -649,25 +656,27 @@ model QuestionImportJob {
 
   fileName String
   fileType String
-  fileSize Int      @default(0)
+  fileSize Int    @default(0)
 
   status ImportJobStatus @default(QUEUED)
-  
+
   // Stats
   totalRows     Int @default(0)
   validRows     Int @default(0)
   invalidRows   Int @default(0)
   warningRows   Int @default(0)
   duplicateRows Int @default(0)
-  
+
   // Progress & Execution
-  progressPercentage Int @default(0)
-  processedRows      Int @default(0)
+  progressPercentage Int     @default(0)
+  processedRows      Int     @default(0)
   failureReason      String? @db.Text
-  
+
   // Health & Metrics
-  healthScore   Int?
-  averageQuality Int?
+  averageHealthScore      Int?
+  highestHealthScore      Int?
+  lowestHealthScore       Int?
+  questionsBelowThreshold Int?
 
   startedAt   DateTime  @default(now())
   completedAt DateTime?
@@ -678,7 +687,7 @@ model QuestionImportJob {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  uploadedBy User @relation(fields: [uploadedById], references: [id])
+  uploadedBy User          @relation(fields: [uploadedById], references: [id])
   issues     ImportIssue[]
   report     ImportReport?
 
@@ -692,50 +701,53 @@ enum IssueSeverity {
 }
 
 model ImportIssue {
-  id            String   @id @default(cuid())
-  importJobId   String
-  rowNumber     Int
-  severity      IssueSeverity
-  message       String   @db.Text
-  suggestedFix  String?  @db.Text
+  id           String        @id @default(cuid())
+  importJobId  String
+  rowNumber    Int
+  severity     IssueSeverity
+  message      String        @db.Text
+  suggestedFix String?       @db.Text
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  job           QuestionImportJob @relation(fields: [importJobId], references: [id], onDelete: Cascade)
+  job QuestionImportJob @relation(fields: [importJobId], references: [id], onDelete: Cascade)
 
   @@index([importJobId])
   @@map("import_issues")
 }
 
 model ImportReport {
-  id            String   @id @default(cuid())
-  jobId         String   @unique
-  
-  duplicatesPrevented Int @default(0)
-  totalImported       Int @default(0)
-  averageQuality      Int @default(0)
-  failedRows          Int @default(0)
-  
-  job           QuestionImportJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  
-  createdAt     DateTime @default(now())
+  id    String @id @default(cuid())
+  jobId String @unique
+
+  duplicatesPrevented     Int @default(0)
+  totalImported           Int @default(0)
+  averageHealthScore      Int @default(0)
+  highestHealthScore      Int @default(0)
+  lowestHealthScore       Int @default(0)
+  questionsBelowThreshold Int @default(0)
+  failedRows              Int @default(0)
+
+  job QuestionImportJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 
   @@map("import_reports")
 }
 
 model ImportAudit {
-  id            String   @id @default(cuid())
+  id            String @id @default(cuid())
   jobId         String
   performedById String
-  
-  action        String   
-  fileName      String
-  
+
+  action   String
+  fileName String
+
   rowsImported  Int @default(0)
   warningsCount Int @default(0)
   errorsCount   Int @default(0)
 
-  performedAt   DateTime @default(now())
+  performedAt DateTime @default(now())
 
   @@index([jobId])
   @@index([performedById])
@@ -1470,4 +1482,110 @@ model LeaderboardSnapshot {
   lastUpdatedAt          DateTime @default(now())
 
   @@map("leaderboard_snapshots")
+}
+
+// -----------------------------------------------------------------------------
+// Usage Intelligence Engine
+// -----------------------------------------------------------------------------
+
+model QuestionUsageStats {
+  id         String   @id @default(cuid())
+  questionId String   @unique
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  // Tracking limits
+  timesServed       Int @default(0)
+  timesAttempted    Int @default(0)
+  correctAttempts   Int @default(0)
+  incorrectAttempts Int @default(0)
+  skippedAttempts   Int @default(0)
+
+  // Metrics
+  averageTimeSpent Float                @default(0)
+  actualDifficulty ChallengeDifficulty?
+  successRate      Float                @default(0)
+
+  // Trends (e.g., "UP", "DOWN", "STABLE")
+  successRateTrend String @default("STABLE")
+  attemptsTrend    String @default("STABLE")
+  reportsTrend     String @default("STABLE")
+
+  // Timestamps
+  lastAttemptedAt DateTime?
+  lastServedAt    DateTime?
+
+  // Processing
+  needsProcessing Boolean @default(false)
+
+  updatedAt DateTime @updatedAt
+
+  @@index([needsProcessing])
+  @@index([actualDifficulty])
+  @@index([successRate])
+  @@map("question_usage_stats")
+}
+
+model QuestionAttemptLog {
+  id String @id @default(cuid())
+
+  userId      String
+  questionId  String
+  challengeId String?
+
+  duration Int // Time spent in seconds
+
+  answerSelected String?
+  isCorrect      Boolean?
+  isSkipped      Boolean  @default(false)
+  isTimeout      Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+  @@index([createdAt])
+  @@map("question_attempt_logs")
+}
+
+enum QuestionFlagType {
+  MANUAL_FLAG
+  REVIEW_REQUIRED
+}
+
+model QuestionFlag {
+  id         String           @id @default(cuid())
+  questionId String
+  flagType   QuestionFlagType
+
+  reason String? @db.Text
+
+  createdById String?
+  createdBy   User?   @relation("QuestionFlagCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, flagType])
+  @@index([questionId])
+  @@index([flagType])
+  @@map("question_flags")
+}
+
+model QuestionRecommendationDismissal {
+  id         String @id @default(cuid())
+  questionId String
+
+  recommendationType String // e.g., "DIFFICULTY_DRIFT", "RETIREMENT_CANDIDATE"
+  dismissedById      String
+
+  createdAt DateTime @default(now())
+
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  dismissedBy User     @relation(fields: [dismissedById], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, recommendationType])
+  @@map("question_recommendation_dismissals")
 }

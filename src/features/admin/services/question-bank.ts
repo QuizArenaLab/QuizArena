@@ -148,10 +148,11 @@ export async function createQuestion(data: unknown): Promise<{
         negativeMarks: questionData.negativeMarks,
         difficulty: questionData.difficulty,
         tags,
-        qualityScore: questionData.qualityScore,
-        questionHealth: questionData.questionHealth,
-        validationStatus: questionData.validationStatus || "PENDING",
-        lastValidatedAt: new Date(),
+
+        healthScore: questionData.healthScore,
+        healthGrade: questionData.healthGrade,
+        healthStatus: questionData.healthStatus,
+        healthLastCalculatedAt: new Date(),
         status: "DRAFT",
         version: 1,
         isActive: true,
@@ -282,13 +283,11 @@ export async function updateQuestion(data: unknown): Promise<{ success: boolean;
       updateData.negativeMarks = questionData.negativeMarks;
     if (questionData.difficulty !== undefined) updateData.difficulty = questionData.difficulty;
     if (tags !== undefined) updateData.tags = tags;
-    if (questionData.qualityScore !== undefined)
-      updateData.qualityScore = questionData.qualityScore;
-    if (questionData.questionHealth !== undefined)
-      updateData.questionHealth = questionData.questionHealth;
-    if (questionData.validationStatus !== undefined) {
-      updateData.validationStatus = questionData.validationStatus;
-      updateData.lastValidatedAt = new Date();
+    if (questionData.healthScore !== undefined) updateData.healthScore = questionData.healthScore;
+    if (questionData.healthGrade !== undefined) updateData.healthGrade = questionData.healthGrade;
+    if (questionData.healthStatus !== undefined) {
+      updateData.healthStatus = questionData.healthStatus;
+      updateData.healthLastCalculatedAt = new Date();
     }
 
     // If question was rejected, return to draft on edit
@@ -357,17 +356,17 @@ export async function submitForReview(
 
     const question = await prisma.question.findUnique({
       where: { id: questionId },
-      select: { status: true, createdById: true, qualityScore: true, validationStatus: true },
+      select: { status: true, createdById: true, healthScore: true },
     });
 
     if (!question) {
       return { success: false, error: "Question not found" };
     }
 
-    if ((question.qualityScore ?? 0) < 75 || question.validationStatus !== "VALID") {
+    if ((question.healthScore ?? 0) < 75) {
       return {
         success: false,
-        error: "Question must have a score >= 75 and VALID status to be submitted for review.",
+        error: "Question must have a health score >= 75 to be submitted for review.",
       };
     }
 
@@ -783,10 +782,10 @@ export async function getQuestions(filters: unknown): Promise<QuestionBankListRe
           isActive: true,
           createdAt: true,
           updatedAt: true,
-          qualityScore: true,
-          questionHealth: true,
-          validationStatus: true,
-          lastValidatedAt: true,
+          healthScore: true,
+          healthGrade: true,
+          healthStatus: true,
+          healthLastCalculatedAt: true,
           createdBy: {
             select: { id: true, name: true, email: true },
           },
@@ -847,6 +846,10 @@ export async function getQuestionById(questionId: string) {
         createdAt: true,
         updatedAt: true,
         reviewedAt: true,
+        healthScore: true,
+        healthGrade: true,
+        healthStatus: true,
+        healthLastCalculatedAt: true,
         createdBy: { select: { id: true, name: true, email: true } },
         reviewedBy: { select: { id: true, name: true, email: true } },
         approvedBy: { select: { id: true, name: true, email: true } },

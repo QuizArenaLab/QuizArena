@@ -1,4 +1,4 @@
-import { BookOpen, AlertTriangle, HelpCircle, Eye } from "lucide-react";
+import { BookOpen, AlertTriangle, HelpCircle, Eye, Activity, CheckCircle } from "lucide-react";
 import type { QuestionBankHealth } from "@/features/admin/services/question-bank-dashboard";
 
 interface QuestionHealthGridProps {
@@ -95,47 +95,99 @@ export function QuestionHealthGrid({ health }: QuestionHealthGridProps) {
         )}
       </div>
 
-      {/* Operational Alerts */}
-      <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5 flex items-center gap-4">
-          <div className="bg-amber-100 p-2.5 rounded-xl">
-            <AlertTriangle className="w-5 h-5 text-amber-600" />
+      {/* Health Metrics & Alerts */}
+      <div className="lg:col-span-2 space-y-4">
+        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+          Health Metrics
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 flex items-center gap-4">
+            <div className="bg-indigo-100 p-2.5 rounded-xl">
+              <Activity className="w-5 h-5 text-indigo-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-indigo-700 tabular-nums">
+                {health.averageHealthScore} / 100
+              </p>
+              <p className="text-xs font-medium text-indigo-600 uppercase tracking-wider">
+                Avg Health Score
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-amber-700 tabular-nums">
-              {health.missingExplanation.toLocaleString()}
-            </p>
-            <p className="text-xs font-medium text-amber-600 uppercase tracking-wider">
-              Missing Explanation
-            </p>
+
+          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 flex items-center gap-4">
+            <div className="bg-emerald-100 p-2.5 rounded-xl">
+              <CheckCircle className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-emerald-700 tabular-nums">
+                {health.excellentQuestions.toLocaleString()}
+              </p>
+              <p className="text-xs font-medium text-emerald-600 uppercase tracking-wider">
+                Excellent Questions
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-rose-50 border border-rose-100 rounded-2xl p-5 flex items-center gap-4">
+            <div className="bg-rose-100 p-2.5 rounded-xl">
+              <AlertTriangle className="w-5 h-5 text-rose-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-rose-700 tabular-nums">
+                {health.lowHealthQuestions.toLocaleString()}
+              </p>
+              <p className="text-xs font-medium text-rose-600 uppercase tracking-wider">
+                Low Health Score
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 flex items-center gap-4">
-          <div className="bg-slate-100 p-2.5 rounded-xl">
-            <HelpCircle className="w-5 h-5 text-slate-600" />
+        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2 mt-6 flex items-center gap-2">
+          Operational Alerts
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5 flex items-center gap-4">
+            <div className="bg-amber-100 p-2.5 rounded-xl">
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-amber-700 tabular-nums">
+                {health.missingExplanation.toLocaleString()}
+              </p>
+              <p className="text-xs font-medium text-amber-600 uppercase tracking-wider">
+                Missing Explanation
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-slate-700 tabular-nums">
-              {health.unusedQuestions.toLocaleString()}
-            </p>
-            <p className="text-xs font-medium text-slate-600 uppercase tracking-wider">
-              Unused Questions
-            </p>
-          </div>
-        </div>
 
-        <div className="bg-violet-50 border border-violet-100 rounded-2xl p-5 flex items-center gap-4">
-          <div className="bg-violet-100 p-2.5 rounded-xl">
-            <Eye className="w-5 h-5 text-violet-600" />
+          <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 flex items-center gap-4">
+            <div className="bg-slate-100 p-2.5 rounded-xl">
+              <HelpCircle className="w-5 h-5 text-slate-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-slate-700 tabular-nums">
+                {health.unusedQuestions.toLocaleString()}
+              </p>
+              <p className="text-xs font-medium text-slate-600 uppercase tracking-wider">
+                Unused Questions
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-2xl font-bold text-violet-700 tabular-nums">
-              {health.pendingReview.toLocaleString()}
-            </p>
-            <p className="text-xs font-medium text-violet-600 uppercase tracking-wider">
-              Pending Review
-            </p>
+
+          <div className="bg-violet-50 border border-violet-100 rounded-2xl p-5 flex items-center gap-4">
+            <div className="bg-violet-100 p-2.5 rounded-xl">
+              <Eye className="w-5 h-5 text-violet-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-violet-700 tabular-nums">
+                {health.pendingReview.toLocaleString()}
+              </p>
+              <p className="text-xs font-medium text-violet-600 uppercase tracking-wider">
+                Pending Review
+              </p>
+            </div>
           </div>
         </div>
       </div>

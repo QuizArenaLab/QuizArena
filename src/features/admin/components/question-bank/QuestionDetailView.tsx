@@ -11,6 +11,8 @@ import {
 } from "@/features/admin/services/question-bank";
 import { QuestionStatusBadge } from "./QuestionStatusBadge";
 import { QuestionCodeBadge } from "./QuestionCodeBadge";
+import { UsageIntelligencePanel } from "./UsageIntelligencePanel";
+import type { QuestionIntelligence } from "@/features/admin/services/question-bank/usage-intelligence";
 import { DIFFICULTY_CONFIG } from "@/features/admin/services/question-bank/constants";
 import {
   getAvailableTransitions,
@@ -66,6 +68,7 @@ interface QuestionDetailData {
 interface QuestionDetailViewProps {
   question: QuestionDetailData;
   userRole: string;
+  intelligence?: QuestionIntelligence | null;
 }
 
 function formatDate(date: Date | string): string {
@@ -78,7 +81,7 @@ function formatDate(date: Date | string): string {
   }).format(new Date(date));
 }
 
-export function QuestionDetailView({ question, userRole }: QuestionDetailViewProps) {
+export function QuestionDetailView({ question, userRole, intelligence }: QuestionDetailViewProps) {
   const router = useRouter();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showReasonInput, setShowReasonInput] = useState<string | null>(null);
@@ -312,6 +315,14 @@ export function QuestionDetailView({ question, userRole }: QuestionDetailViewPro
             {question.explanation}
           </p>
         </div>
+      )}
+
+      {/* Usage Intelligence Panel */}
+      {intelligence && (
+        <UsageIntelligencePanel
+          intelligence={intelligence}
+          configuredDifficulty={question.difficulty}
+        />
       )}
 
       {/* Metadata Grid */}

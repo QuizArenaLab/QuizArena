@@ -13,7 +13,7 @@ import {
   DIFFICULTY_CONFIG,
 } from "@/features/admin/services/question-bank/constants";
 import { Plus, Trash2, AlertCircle, CheckCircle2, Loader2, Save } from "lucide-react";
-import { calculateQuestionQuality } from "@/lib/validations/question-engine";
+import { calculateQuestionHealth } from "@/lib/validations/question-engine";
 import { createQuestionSchema, CreateQuestionInput } from "@/lib/validations/question";
 
 export function QuestionForm() {
@@ -61,7 +61,7 @@ export function QuestionForm() {
   // Watch form data for real-time validation engine
   // eslint-disable-next-line react-hooks/incompatible-library
   const formData = watch();
-  const quality = useMemo(() => calculateQuestionQuality(formData as any), [formData]);
+  const healthResult = useMemo(() => calculateQuestionHealth(formData as any), [formData]);
 
   const toggleTag = (tag: string) => {
     const currentTags = formData.tags || [];
@@ -88,7 +88,7 @@ export function QuestionForm() {
   };
 
   const onSubmit = async (data: any) => {
-    if (quality.score < 75 || quality.blockingErrors.length > 0) {
+    if (healthResult.score < 75 || healthResult.blockingErrors.length > 0) {
       setError(
         "Cannot publish. Please resolve blocking errors and ensure the score is at least 75."
       );
@@ -101,9 +101,9 @@ export function QuestionForm() {
     try {
       const result = await createQuestion({
         ...data,
-        qualityScore: quality.score,
-        questionHealth: quality.health,
-        validationStatus: "VALID",
+        healthScore: healthResult.score,
+        healthGrade: healthResult.grade,
+        healthStatus: healthResult.status,
       });
 
       if (result.success) {
@@ -127,9 +127,9 @@ export function QuestionForm() {
       // Allow draft save bypassing some Zod requirements if needed
       const result = await createQuestion({
         ...formData,
-        qualityScore: quality.score,
-        questionHealth: quality.health,
-        validationStatus: quality.blockingErrors.length === 0 ? "VALID" : "PENDING",
+        healthScore: healthResult.score,
+        healthGrade: healthResult.grade,
+        healthStatus: healthResult.status,
       });
 
       if (result.success) {
@@ -264,13 +264,10 @@ export function QuestionForm() {
                   {...register("question")}
                   rows={4}
                   placeholder="Enter the question text…"
-                  className={`w-full px-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent resize-y ${quality.fieldErrors.question || errors.question ? "border-red-300 focus:ring-red-500" : "border-gray-300"}`}
+                  className={`w-full px-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent resize-y ${errors.question ? "border-red-300 focus:ring-red-500" : "border-gray-300"}`}
                 />
                 <div className="flex items-center justify-between mt-1">
-                  <span className="text-xs text-red-500">
-                    {(quality.fieldErrors.question || (errors.question as any)?.message) &&
-                      (quality.fieldErrors.question || (errors.question as any)?.message)}
-                  </span>
+                  <span className="text-xs text-red-500">{(errors.question as any)?.message}</span>
                   <p className="text-[11px] text-gray-400">
                     {(formData.question || "").length}/2000
                   </p>
@@ -285,11 +282,11 @@ export function QuestionForm() {
                   {...register("explanation")}
                   rows={3}
                   placeholder="Provide a detailed explanation for the correct answer…"
-                  className={`w-full px-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent resize-y ${quality.fieldErrors.explanation || errors.explanation ? "border-red-300 focus:ring-red-500" : "border-gray-300"}`}
+                  className={`w-full px-3 py-2.5 text-sm border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent resize-y ${errors.explanation ? "border-red-300 focus:ring-red-500" : "border-gray-300"}`}
                 />
-                {(quality.fieldErrors.explanation || errors.explanation) && (
+                {errors.explanation && (
                   <p className="mt-1.5 text-xs text-red-500">
-                    {quality.fieldErrors.explanation || (errors.explanation as any)?.message}
+                    {(errors.explanation as any)?.message}
                   </p>
                 )}
               </div>
@@ -305,23 +302,10 @@ export function QuestionForm() {
               <span className="text-xs text-gray-400">Select the correct answer</span>
             </div>
 
-            {quality.fieldErrors.options && (
-              <div className="mb-4 text-xs text-red-500 font-medium">
-                {quality.fieldErrors.options}
-              </div>
-            )}
-
-            {quality.fieldErrors.correctAnswer && (
-              <div className="mb-4 text-xs text-red-500 font-medium">
-                {quality.fieldErrors.correctAnswer}
-              </div>
-            )}
-
             <div className="space-y-3">
               {fields.map((opt, index) => {
                 const optErr =
-                  quality.fieldErrors[`options.${index}.optionText`] ||
-                  (errors.options && (errors.options as any)[index]?.optionText?.message);
+                  errors.options && (errors.options as any)[index]?.optionText?.message;
                 const isCorrect = formData.options?.[index]?.isCorrect;
                 return (
                   <div key={opt.id} className="space-y-1">
@@ -396,7 +380,9 @@ export function QuestionForm() {
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || quality.score < 75 || quality.blockingErrors.length > 0}
+              disabled={
+                isSubmitting || healthResult.score < 75 || healthResult.blockingErrors.length > 0
+              }
               className="px-6 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isSubmitting ? (
@@ -420,28 +406,30 @@ export function QuestionForm() {
               {/* Overall Score */}
               <div
                 className={`p-4 rounded-xl border mb-6 flex flex-col items-center justify-center text-center transition-colors ${
-                  quality.health === "EXCELLENT"
+                  healthResult.status === "EXCELLENT"
                     ? "text-emerald-600 bg-emerald-50 border-emerald-200"
-                    : quality.health === "GOOD"
+                    : healthResult.status === "GOOD"
                       ? "text-blue-600 bg-blue-50 border-blue-200"
-                      : quality.health === "NEEDS_IMPROVEMENT"
+                      : healthResult.status === "NEEDS_IMPROVEMENT"
                         ? "text-amber-600 bg-amber-50 border-amber-200"
                         : "text-red-600 bg-red-50 border-red-200"
                 }`}
               >
                 <span className="text-3xl font-black mb-1">
-                  {quality.score} <span className="text-lg text-current/60 font-medium">/ 100</span>
+                  {healthResult.score}{" "}
+                  <span className="text-lg text-current/60 font-medium">/ 100</span>
                 </span>
                 <span className="text-xs font-bold uppercase tracking-wider">
-                  {quality.health === "EXCELLENT"
+                  {healthResult.grade} &bull;{" "}
+                  {healthResult.status === "EXCELLENT"
                     ? "Excellent"
-                    : quality.health === "GOOD"
+                    : healthResult.status === "GOOD"
                       ? "Good"
-                      : quality.health === "NEEDS_IMPROVEMENT"
+                      : healthResult.status === "NEEDS_IMPROVEMENT"
                         ? "Needs Improvement"
-                        : "Cannot Publish"}
+                        : "Poor"}
                 </span>
-                {quality.score >= 75 && quality.blockingErrors.length === 0 ? (
+                {healthResult.score >= 75 && healthResult.blockingErrors.length === 0 ? (
                   <span className="text-xs mt-2 font-semibold bg-white/50 px-2 py-0.5 rounded-full flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" /> Ready For Publish
                   </span>
@@ -457,104 +445,124 @@ export function QuestionForm() {
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <CheckCircle2
-                      className={`w-4 h-4 ${quality.breakdown.structure === 25 ? "text-emerald-500" : "text-gray-300"}`}
+                      className={`w-4 h-4 ${healthResult.breakdown.structure === 25 ? "text-emerald-500" : "text-gray-300"}`}
                     />
                     <span
                       className={
-                        quality.breakdown.structure === 25
+                        healthResult.breakdown.structure === 25
                           ? "text-gray-900 font-medium"
                           : "text-gray-500"
                       }
                     >
-                      Structure Complete
+                      Structure Quality
                     </span>
                   </div>
                   <span className="font-semibold text-gray-400">
-                    {quality.breakdown.structure}/25
+                    {healthResult.breakdown.structure}/25
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <CheckCircle2
-                      className={`w-4 h-4 ${quality.breakdown.options === 20 ? "text-emerald-500" : "text-gray-300"}`}
+                      className={`w-4 h-4 ${healthResult.breakdown.metadata === 20 ? "text-emerald-500" : "text-gray-300"}`}
                     />
                     <span
                       className={
-                        quality.breakdown.options === 20
+                        healthResult.breakdown.metadata === 20
                           ? "text-gray-900 font-medium"
                           : "text-gray-500"
                       }
                     >
-                      Options Valid
+                      Metadata Quality
                     </span>
                   </div>
                   <span className="font-semibold text-gray-400">
-                    {quality.breakdown.options}/20
+                    {healthResult.breakdown.metadata}/20
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <CheckCircle2
-                      className={`w-4 h-4 ${quality.breakdown.correctAnswer === 15 ? "text-emerald-500" : "text-gray-300"}`}
+                      className={`w-4 h-4 ${healthResult.breakdown.explanation === 20 ? "text-emerald-500" : "text-gray-300"}`}
                     />
                     <span
                       className={
-                        quality.breakdown.correctAnswer === 15
+                        healthResult.breakdown.explanation === 20
                           ? "text-gray-900 font-medium"
                           : "text-gray-500"
                       }
                     >
-                      Correct Answer
+                      Explanation Quality
                     </span>
                   </div>
                   <span className="font-semibold text-gray-400">
-                    {quality.breakdown.correctAnswer}/15
+                    {healthResult.breakdown.explanation}/20
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <CheckCircle2
-                      className={`w-4 h-4 ${quality.breakdown.explanation === 20 ? "text-emerald-500" : "text-gray-300"}`}
+                      className={`w-4 h-4 ${healthResult.breakdown.answerIntegrity === 15 ? "text-emerald-500" : "text-gray-300"}`}
                     />
                     <span
                       className={
-                        quality.breakdown.explanation === 20
+                        healthResult.breakdown.answerIntegrity === 15
                           ? "text-gray-900 font-medium"
                           : "text-gray-500"
                       }
                     >
-                      Explanation Strong
+                      Answer Integrity
                     </span>
                   </div>
                   <span className="font-semibold text-gray-400">
-                    {quality.breakdown.explanation}/20
+                    {healthResult.breakdown.answerIntegrity}/15
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <CheckCircle2
-                      className={`w-4 h-4 ${quality.breakdown.metadata === 20 ? "text-emerald-500" : "text-gray-300"}`}
+                      className={`w-4 h-4 ${healthResult.breakdown.duplicates === 10 ? "text-emerald-500" : "text-gray-300"}`}
                     />
                     <span
                       className={
-                        quality.breakdown.metadata === 20
+                        healthResult.breakdown.duplicates === 10
                           ? "text-gray-900 font-medium"
                           : "text-gray-500"
                       }
                     >
-                      Metadata Complete
+                      Duplicate Check
                     </span>
                   </div>
                   <span className="font-semibold text-gray-400">
-                    {quality.breakdown.metadata}/20
+                    {healthResult.breakdown.duplicates}/10
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2
+                      className={`w-4 h-4 ${healthResult.breakdown.completeness === 10 ? "text-emerald-500" : "text-gray-300"}`}
+                    />
+                    <span
+                      className={
+                        healthResult.breakdown.completeness === 10
+                          ? "text-gray-900 font-medium"
+                          : "text-gray-500"
+                      }
+                    >
+                      Content Completeness
+                    </span>
+                  </div>
+                  <span className="font-semibold text-gray-400">
+                    {healthResult.breakdown.completeness}/10
                   </span>
                 </div>
               </div>
 
-              {/* Errors & Warnings */}
-              {(quality.blockingErrors.length > 0 || quality.warnings.length > 0) && (
+              {/* Errors & Suggestions */}
+              {(healthResult.blockingErrors.length > 0 ||
+                healthResult.improvementSuggestions.length > 0) && (
                 <div className="border-t border-gray-100 pt-4 space-y-4">
-                  {quality.blockingErrors.length > 0 && (
+                  {healthResult.blockingErrors.length > 0 && (
                     <div>
                       <div className="flex items-start gap-1.5 text-red-600 mb-2">
                         <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -563,7 +571,7 @@ export function QuestionForm() {
                         </span>
                       </div>
                       <ul className="space-y-1.5">
-                        {quality.blockingErrors.map((err, idx) => (
+                        {healthResult.blockingErrors.map((err, idx) => (
                           <li
                             key={idx}
                             className="text-xs text-red-700 bg-red-50/50 px-2.5 py-1.5 rounded border border-red-100 flex items-start gap-2"
@@ -576,14 +584,16 @@ export function QuestionForm() {
                     </div>
                   )}
 
-                  {quality.warnings.length > 0 && (
+                  {healthResult.improvementSuggestions.length > 0 && (
                     <div>
                       <div className="flex items-start gap-1.5 text-amber-600 mb-2">
                         <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                        <span className="text-xs font-bold uppercase tracking-wider">Warnings</span>
+                        <span className="text-xs font-bold uppercase tracking-wider">
+                          Improvement Suggestions
+                        </span>
                       </div>
                       <ul className="space-y-1.5">
-                        {quality.warnings.map((err, idx) => (
+                        {healthResult.improvementSuggestions.map((err, idx) => (
                           <li
                             key={idx}
                             className="text-xs text-amber-700 bg-amber-50/50 px-2.5 py-1.5 rounded border border-amber-100 flex items-start gap-2"

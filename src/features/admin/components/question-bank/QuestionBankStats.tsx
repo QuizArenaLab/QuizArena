@@ -8,11 +8,24 @@ import {
   TrendingUp,
   BookOpen,
   AlertTriangle,
+  Activity,
+  ThumbsDown,
+  Clock,
+  HelpCircle,
+  ShieldAlert,
 } from "lucide-react";
 import type { QuestionBankStats } from "@/features/admin/services/question-bank";
 
 interface QuestionBankStatsProps {
-  stats: QuestionBankStats;
+  stats: QuestionBankStats & {
+    difficultyDrift?: number;
+    retirementCandidates?: number;
+    insufficientData?: number;
+    highReport?: number;
+    healthy?: number;
+    overused?: number;
+    unused?: number;
+  };
 }
 
 const STAT_CARDS = [
@@ -79,6 +92,48 @@ const STAT_CARDS = [
     gradient: "from-amber-500 to-yellow-600",
     bgGlow: "bg-amber-50",
   },
+  {
+    key: "healthy" as const,
+    label: "Healthy Questions",
+    icon: Activity,
+    gradient: "from-teal-500 to-emerald-600",
+    bgGlow: "bg-teal-50",
+  },
+  {
+    key: "difficultyDrift" as const,
+    label: "Difficulty Drift",
+    icon: TrendingUp,
+    gradient: "from-orange-500 to-red-600",
+    bgGlow: "bg-orange-50",
+  },
+  {
+    key: "retirementCandidates" as const,
+    label: "Retirement Candidates",
+    icon: Archive,
+    gradient: "from-stone-500 to-stone-700",
+    bgGlow: "bg-stone-50",
+  },
+  {
+    key: "insufficientData" as const,
+    label: "Insufficient Data",
+    icon: HelpCircle,
+    gradient: "from-slate-300 to-slate-500",
+    bgGlow: "bg-slate-50",
+  },
+  {
+    key: "highReport" as const,
+    label: "High Reports",
+    icon: ShieldAlert,
+    gradient: "from-red-500 to-rose-700",
+    bgGlow: "bg-red-50",
+  },
+  {
+    key: "overused" as const,
+    label: "Overused",
+    icon: Clock,
+    gradient: "from-indigo-500 to-blue-600",
+    bgGlow: "bg-indigo-50",
+  },
 ];
 
 export function QuestionBankStatsCards({ stats }: QuestionBankStatsProps) {
@@ -86,7 +141,7 @@ export function QuestionBankStatsCards({ stats }: QuestionBankStatsProps) {
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
       {STAT_CARDS.map((card) => {
         const Icon = card.icon;
-        const value = stats[card.key];
+        const value = (stats as any)[card.key] ?? 0;
         const isHighlight = card.key === "review" && value > 0;
 
         return (

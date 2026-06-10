@@ -1,30 +1,30 @@
 import { z } from "zod";
 import { DraftQuestionInput } from "./question";
 
-export type QuestionHealthLevel = "EXCELLENT" | "GOOD" | "NEEDS_IMPROVEMENT" | "POOR";
+export type QuestionHealthStatus = "EXCELLENT" | "GOOD" | "NEEDS_IMPROVEMENT" | "POOR";
+export type QuestionHealthGrade = "A+" | "A" | "B" | "C" | "D";
 
-export interface QuestionValidationResult {
+export interface QuestionHealthResult {
   score: number;
-  health: QuestionHealthLevel;
+  grade: QuestionHealthGrade;
+  status: QuestionHealthStatus;
   blockingErrors: string[];
-  warnings: string[];
+  improvementSuggestions: string[];
   fieldErrors: Record<string, string>;
   breakdown: {
     structure: number;
-    options: number;
-    correctAnswer: number;
-    explanation: number;
     metadata: number;
+    explanation: number;
+    answerIntegrity: number;
     duplicates: number;
+    completeness: number;
   };
 }
 
 // Helper to check for spam
 const isSpam = (text: string) => {
   if (!text) return true;
-  // Check if it's just one word
   if (text.trim().split(/\s+/).length < 2) return true;
-  // Check for repeated character spam (e.g., "aaaaa", "??????")
   if (/^(.)\1{4,}$/.test(text.trim())) return true;
   return false;
 };
@@ -32,7 +32,7 @@ const isSpam = (text: string) => {
 export const questionTextValidator = z
   .string()
   .min(10, "Question must be at least 10 characters.")
-  .max(1000, "Question must not exceed 1000 characters.")
+  .max(2000, "Question must not exceed 2000 characters.")
   .refine((val) => !isSpam(val), {
     message: "Question must contain meaningful content (no single words or repeated spam).",
   });
@@ -40,182 +40,214 @@ export const questionTextValidator = z
 export const optionValidator = z
   .string()
   .min(1, "Option text cannot be empty.")
-  .max(300, "Option must not exceed 300 characters.");
+  .max(500, "Option must not exceed 500 characters.");
 
-export const explanationValidator = z
-  .string()
-  .min(50, "Explanation must be at least 50 characters.");
-
-export function calculateQuestionQuality(
+export function calculateQuestionHealth(
   data: Partial<DraftQuestionInput>,
-  duplicateResult?: { status: "NONE" | "SIMILAR" | "EXACT"; explanationWarning?: boolean }
-): QuestionValidationResult {
-  let structureScore = 0;
-  let optionsScore = 0;
-  let correctAnswerScore = 0;
-  let explanationScore = 0;
-  let metadataScore = 0;
-  let duplicateScore = 0;
+  duplicateResult?: { status: "NONE" | "SIMILAR" | "EXACT"; candidates?: any[] }
+): QuestionHealthResult {
+  let structureScore = 25;
+  let metadataScore = 20;
+  let explanationScore = 20;
+  let answerIntegrityScore = 15;
+  let duplicateScore = 10;
+  let completenessScore = 10;
 
   const blockingErrors: string[] = [];
-  const warnings: string[] = [];
+  const improvementSuggestions: string[] = [];
   const fieldErrors: Record<string, string> = {};
 
-  // 1. Structure Complete (20 points)
-  if (data.question) {
+  // 1. Structure Quality (Max: 25)
+  // Checks: Question exists, Options exist, Correct answer exists, lengths valid.
+  if (!data.question || data.question.trim() === "") {
+    structureScore -= 10;
+    blockingErrors.push("Question text is required.");
+    fieldErrors.question = "Question text is required.";
+  } else {
     const res = questionTextValidator.safeParse(data.question);
-    if (res.success) {
-      structureScore = 20;
-    } else {
+    if (!res.success) {
+      structureScore -= 10;
       blockingErrors.push("Question text is invalid or spam.");
       fieldErrors.question = res.error.issues[0].message;
     }
-  } else {
-    blockingErrors.push("Question text is required.");
-    fieldErrors.question = "Question text is required.";
   }
 
-  // 2. Options Complete (20 points)
-  if (data.options && data.options.length >= 4) {
-    let validOptionsCount = 0;
-    const texts = data.options.map((opt) => opt.optionText?.trim() || "");
+  if (!data.options || data.options.length < 4) {
+    structureScore -= 10;
+    blockingErrors.push("At least 4 options are required.");
+    fieldErrors.options = "At least 4 options are required.";
+  } else {
+    let validOptions = true;
+    data.options.forEach((opt, idx) => {
+      if (!opt.optionText || opt.optionText.trim() === "") {
+        validOptions = false;
+        fieldErrors[`options.${idx}.optionText`] = "Option cannot be blank.";
+      } else if (opt.optionText.length > 500) {
+        validOptions = false;
+        fieldErrors[`options.${idx}.optionText`] = "Option text too long.";
+      }
+    });
+    if (!validOptions) {
+      structureScore -= 5;
+      improvementSuggestions.push("Fix option lengths or blank options (+5)");
+    }
+  }
 
+  const hasCorrectAnswer = data.options && data.options.some((opt) => opt.isCorrect);
+  if (!hasCorrectAnswer) {
+    structureScore -= 5;
+  }
+
+  structureScore = Math.max(0, structureScore);
+
+  // 2. Metadata Quality (Max: 20)
+  // Checks: category (Exam), subject, topic, difficulty, language
+  if (!data.category) {
+    metadataScore -= 4;
+    fieldErrors.category = "Exam/Category is required.";
+  }
+  if (!data.subject) {
+    metadataScore -= 4;
+    fieldErrors.subject = "Subject is required.";
+  }
+  if (!data.topic) {
+    metadataScore -= 4;
+    improvementSuggestions.push("Add Topic Mapping (+4)");
+  }
+  if (!data.difficulty) {
+    metadataScore -= 4;
+    fieldErrors.difficulty = "Difficulty is required.";
+  }
+  if (!data.language) {
+    metadataScore -= 4;
+    fieldErrors.language = "Language is required.";
+  }
+  metadataScore = Math.max(0, metadataScore);
+
+  // 3. Explanation Quality (Max: 20)
+  if (!data.explanation || data.explanation.trim() === "") {
+    explanationScore = 0;
+  } else {
+    const len = data.explanation.trim().length;
+    if (len < 50) {
+      explanationScore = 5;
+      improvementSuggestions.push("Improve Explanation (+15)");
+    } else if (len >= 50 && len < 100) {
+      explanationScore = 15;
+      improvementSuggestions.push("Improve Explanation length (+5)");
+    } else {
+      explanationScore = 20;
+    }
+  }
+
+  // 4. Answer Integrity (Max: 15)
+  if (!data.options || data.options.length === 0) {
+    answerIntegrityScore = 0;
+  } else {
+    const correctCount = data.options.filter((opt) => opt.isCorrect).length;
+    if (correctCount === 0) {
+      answerIntegrityScore = 0;
+      blockingErrors.push("No correct answer selected.");
+      fieldErrors.correctAnswer = "You must select a correct answer.";
+    } else if (correctCount > 1) {
+      answerIntegrityScore = 0;
+      blockingErrors.push("Only one option can be correct.");
+      fieldErrors.correctAnswer = "Only one option can be correct.";
+    }
+
+    const texts = data.options.map((opt) => opt.optionText?.trim().toLowerCase() || "");
     const uniqueTexts = new Set(texts.filter((t) => t.length > 0));
-
-    // Check duplicates
     if (uniqueTexts.size < texts.filter((t) => t.length > 0).length) {
+      answerIntegrityScore = 0;
       blockingErrors.push("Duplicate options detected.");
       fieldErrors.options = "Duplicate options detected.";
     }
 
-    data.options.forEach((opt, index) => {
-      const optRes = optionValidator.safeParse(opt.optionText);
-      if (optRes.success) {
-        validOptionsCount++;
-      } else {
-        fieldErrors[`options.${index}.optionText`] = optRes.error.issues[0].message;
-      }
-    });
-
-    if (validOptionsCount >= 4 && uniqueTexts.size >= 4) {
-      optionsScore = 20;
-    } else {
-      blockingErrors.push("At least 4 valid and unique options are required.");
-    }
-  } else {
-    blockingErrors.push("Options are missing or insufficient.");
-    fieldErrors.options = "At least 4 options are required.";
-  }
-
-  // 3. Correct Answer (15 points)
-  if (data.options && data.options.length > 0) {
-    const correctCount = data.options.filter((opt) => opt.isCorrect).length;
-    if (correctCount === 1) {
-      correctAnswerScore = 15;
-    } else if (correctCount === 0) {
-      blockingErrors.push("No correct answer selected.");
-      fieldErrors.correctAnswer = "You must select a correct answer.";
-    } else {
-      blockingErrors.push("Only one option can be correct.");
-      fieldErrors.correctAnswer = "Only one option can be correct.";
+    if (texts.some((t) => t === "")) {
+      answerIntegrityScore = 0;
+      blockingErrors.push("Blank options are not allowed.");
     }
   }
 
-  // 4. Explanation Quality (15 points)
-  if (data.explanation) {
-    const expRes = explanationValidator.safeParse(data.explanation);
-    if (expRes.success) {
-      explanationScore = 15;
-      if (data.explanation.length >= 100) {
-        // Excellent explanation
-      } else {
-        warnings.push("Explanation is good but could be more detailed (>100 characters).");
-      }
-    } else {
-      blockingErrors.push("Explanation is too short.");
-      fieldErrors.explanation = expRes.error.issues[0].message;
-    }
-  } else {
-    blockingErrors.push("Explanation is required.");
-    fieldErrors.explanation = "Explanation is required.";
-  }
-
-  // 5. Metadata Complete (10 points)
-  let metadataItems = 0;
-  if (data.category) metadataItems++;
-  else fieldErrors.category = "Category is required.";
-
-  if (data.subject) metadataItems++;
-  else fieldErrors.subject = "Subject is required.";
-
-  if (data.topic) metadataItems++;
-  else fieldErrors.topic = "Topic is required.";
-
-  if (data.difficulty) metadataItems++;
-  else fieldErrors.difficulty = "Difficulty is required.";
-
-  if (metadataItems === 4) {
-    metadataScore = 10;
-  } else {
-    metadataScore = Math.floor(metadataItems * 2.5);
-    blockingErrors.push("Metadata is incomplete (Exam, Subject, Topic, Difficulty).");
-  }
-
-  // 6. Duplicate Detection (20 points)
+  // 5. Duplicate Status (Max: 10)
   if (duplicateResult) {
     if (duplicateResult.status === "NONE") {
-      duplicateScore = 20;
+      duplicateScore = 10;
     } else if (duplicateResult.status === "SIMILAR") {
-      duplicateScore = 0; // -10 effectively since they miss 20 points? Actually the requirement says -10 points.
-      // If we start from 80 base + 20 max for duplicates:
-      // None = +20. Similar = -10 (which means duplicateScore = -10).
-      duplicateScore = -10;
-      warnings.push("Possible duplicate question detected.");
+      duplicateScore = 5;
+      improvementSuggestions.push("Possible Duplicate Found (-5)");
     } else if (duplicateResult.status === "EXACT") {
       duplicateScore = 0;
       blockingErrors.push("Exact duplicate question detected. Cannot publish.");
-    }
-
-    if (duplicateResult.explanationWarning) {
-      warnings.push("This explanation is used heavily across other questions.");
+      improvementSuggestions.push("Exact Duplicate Found (-10)");
     }
   }
 
-  const totalScore = Math.max(
-    0,
-    Math.min(
-      100,
-      structureScore +
-        optionsScore +
-        correctAnswerScore +
-        explanationScore +
-        metadataScore +
-        duplicateScore
-    )
-  );
+  // 6. Content Completeness (Max: 10)
+  if (!data.tags || data.tags.length === 0) {
+    completenessScore -= 2;
+    improvementSuggestions.push("Add Tags (+2)");
+  }
+  if (!data.explanation || data.explanation.trim() === "") {
+    completenessScore -= 2;
+    improvementSuggestions.push("Add Explanation (+2)");
+  }
+  if (!data.topic) {
+    completenessScore -= 2;
+    // Already suggested in metadata, but impacts completeness as well
+  }
+  if (!data.language) {
+    completenessScore -= 2;
+  }
+  if (!data.difficulty) {
+    completenessScore -= 2;
+  }
+  completenessScore = Math.max(0, completenessScore);
 
-  let health: QuestionHealthLevel = "POOR";
-  if (totalScore >= 90) health = "EXCELLENT";
-  else if (totalScore >= 75) health = "GOOD";
-  else if (totalScore >= 60) health = "NEEDS_IMPROVEMENT";
+  // Total Score
+  const totalScore =
+    structureScore +
+    metadataScore +
+    explanationScore +
+    answerIntegrityScore +
+    duplicateScore +
+    completenessScore;
 
-  if (totalScore < 75 && blockingErrors.length === 0) {
-    warnings.push("Question quality could be higher. Improve explanation or structure.");
+  // Grade & Status
+  let grade: QuestionHealthGrade = "D";
+  let status: QuestionHealthStatus = "POOR";
+
+  if (totalScore >= 90) {
+    grade = "A+";
+    status = "EXCELLENT";
+  } else if (totalScore >= 80) {
+    grade = "A";
+    status = "GOOD";
+  } else if (totalScore >= 70) {
+    grade = "B";
+    status = "GOOD";
+  } else if (totalScore >= 60) {
+    grade = "C";
+    status = "NEEDS_IMPROVEMENT";
+  } else {
+    grade = "D";
+    status = "POOR";
   }
 
   return {
     score: totalScore,
-    health,
+    grade,
+    status,
     blockingErrors,
-    warnings,
+    improvementSuggestions: Array.from(new Set(improvementSuggestions)), // deduplicate
     fieldErrors,
     breakdown: {
       structure: structureScore,
-      options: optionsScore,
-      correctAnswer: correctAnswerScore,
-      explanation: explanationScore,
       metadata: metadataScore,
+      explanation: explanationScore,
+      answerIntegrity: answerIntegrityScore,
       duplicates: duplicateScore,
+      completeness: completenessScore,
     },
   };
 }

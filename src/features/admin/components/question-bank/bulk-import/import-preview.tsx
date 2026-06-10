@@ -27,12 +27,12 @@ export function ImportPreview({ fileMetadata, rows, onComplete, onCancel }: Impo
   const warningRowsCount = rows.filter((r) => r.status === "WARNING").length;
   const blockedRowsCount = rows.filter((r) => r.status === "BLOCKED").length;
 
-  const totalQualityScore = rows
+  const totalHealthScore = rows
     .filter((r) => r.status !== "BLOCKED")
-    .reduce((sum, r) => sum + (r.qualityScore || 0), 0);
-  const averageQuality =
+    .reduce((sum, r) => sum + (r.healthScore || 0), 0);
+  const averageHealth =
     validRowsCount + warningRowsCount > 0
-      ? Math.round(totalQualityScore / (validRowsCount + warningRowsCount))
+      ? Math.round(totalHealthScore / (validRowsCount + warningRowsCount))
       : 0;
 
   const [filter, setFilter] = useState<"ALL" | "VALID" | "WARNING" | "BLOCKED" | "DUPLICATES">(
@@ -199,9 +199,9 @@ export function ImportPreview({ fileMetadata, rows, onComplete, onCancel }: Impo
           </div>
         </div>
         <div className="p-4 border border-border/50 rounded-xl bg-card/50">
-          <div className="text-2xl font-semibold text-foreground">{averageQuality}%</div>
+          <div className="text-2xl font-semibold text-foreground">{averageHealth}%</div>
           <div className="text-xs text-muted-foreground uppercase tracking-wider font-medium mt-1">
-            Avg Quality
+            Avg Health
           </div>
         </div>
       </div>
