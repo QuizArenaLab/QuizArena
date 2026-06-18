@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import { UsageIntelligencePanel } from "./UsageIntelligencePanel";
+import { GovernancePanel } from "./GovernancePanel";
 import type { QuestionIntelligence } from "@/features/admin/services/question-bank/usage-intelligence";
-import { Archive, Ban, History, Flag, X } from "lucide-react";
+import { Archive, Ban, History, Flag, X, Shield, Activity } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -18,6 +19,8 @@ export function QuestionInspectionDrawer({
   intelligence,
   onDismissRecommendation,
 }: Props) {
+  const [activeTab, setActiveTab] = React.useState<"USAGE" | "GOVERNANCE">("USAGE");
+
   // Prevent body scroll when drawer is open
   useEffect(() => {
     if (open) {
@@ -82,20 +85,48 @@ export function QuestionInspectionDrawer({
             </p>
           </div>
 
-          {intelligence ? (
-            <UsageIntelligencePanel
-              intelligence={intelligence}
-              configuredDifficulty={question.difficulty || "UNKNOWN"}
-              onDismissRecommendation={onDismissRecommendation}
-            />
-          ) : (
-            <div className="flex justify-center items-center p-12 border border-gray-200 border-dashed rounded-xl bg-white">
-              <div className="animate-pulse flex items-center text-sm font-medium text-gray-500">
-                <div className="h-4 w-4 bg-gray-400 rounded-full mr-3 animate-bounce"></div>
-                Loading intelligence data...
-              </div>
-            </div>
-          )}
+          <div className="flex border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab("USAGE")}
+              className={`flex-1 py-3 text-sm font-bold flex justify-center items-center gap-2 border-b-2 transition-colors ${
+                activeTab === "USAGE"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              <Activity className="w-4 h-4" /> Usage Intelligence
+            </button>
+            <button
+              onClick={() => setActiveTab("GOVERNANCE")}
+              className={`flex-1 py-3 text-sm font-bold flex justify-center items-center gap-2 border-b-2 transition-colors ${
+                activeTab === "GOVERNANCE"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              <Shield className="w-4 h-4" /> Governance Lifecycle
+            </button>
+          </div>
+
+          <div className="pt-2">
+            {activeTab === "USAGE" &&
+              (intelligence ? (
+                <UsageIntelligencePanel
+                  intelligence={intelligence}
+                  configuredDifficulty={question.difficulty || "UNKNOWN"}
+                  onDismissRecommendation={onDismissRecommendation}
+                />
+              ) : (
+                <div className="flex justify-center items-center p-12 border border-gray-200 border-dashed rounded-xl bg-white">
+                  <div className="animate-pulse flex items-center text-sm font-medium text-gray-500">
+                    <div className="h-4 w-4 bg-gray-400 rounded-full mr-3 animate-bounce"></div>
+                    Loading intelligence data...
+                  </div>
+                </div>
+              ))}
+
+            {activeTab === "GOVERNANCE" && <GovernancePanel question={question} />}
+          </div>
         </div>
       </div>
     </div>

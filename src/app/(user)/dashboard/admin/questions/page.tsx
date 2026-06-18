@@ -27,6 +27,7 @@ import {
   getContentHealthMetrics,
   getReviewQueueSnapshot,
   getRecentPublishingActivity,
+  getGovernanceOverview,
 } from "@/features/admin/services/question-bank-dashboard";
 import { KPICard } from "@/features/admin/components/question-bank/KPICard";
 import Link from "next/link";
@@ -52,12 +53,15 @@ function formatTimeAgo(date: Date): string {
 }
 
 async function OverviewContent() {
-  const [overview, contentHealth, reviewSnapshot, recentPublishing] = await Promise.all([
-    getQuestionBankOverview(),
-    getContentHealthMetrics(),
-    getReviewQueueSnapshot(),
-    getRecentPublishingActivity(10), // Fetched more for timeline scroll
-  ]);
+  const [overview, contentHealth, reviewSnapshot, recentPublishing, governance] = await Promise.all(
+    [
+      getQuestionBankOverview(),
+      getContentHealthMetrics(),
+      getReviewQueueSnapshot(),
+      getRecentPublishingActivity(10), // Fetched more for timeline scroll
+      getGovernanceOverview(),
+    ]
+  );
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -105,7 +109,50 @@ async function OverviewContent() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Governance Lifecycle Metrics */}
+      <div className="space-y-4 pt-4 border-t border-slate-200/60">
+        <h3 className="text-sm font-bold text-slate-900 mb-2">Governance Lifecycle Overview</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <KPICard
+            label="Healthy"
+            value={governance.healthy}
+            icon={CheckCircle2}
+            variant="primary"
+          />
+          <KPICard
+            label="Monitoring"
+            value={governance.monitoring}
+            icon={Activity}
+            variant="secondary"
+          />
+          <KPICard
+            label="Flagged"
+            value={governance.flagged}
+            icon={AlertTriangle}
+            variant="secondary"
+          />
+          <KPICard
+            label="Refresh Required"
+            value={governance.refreshRequired}
+            icon={Clock}
+            variant="secondary"
+          />
+          <KPICard
+            label="Retirement Candidates"
+            value={governance.retirementCandidates}
+            icon={Archive}
+            variant="secondary"
+          />
+          <KPICard
+            label="Insufficient Data"
+            value={governance.insufficientData}
+            icon={Database}
+            variant="secondary"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t border-slate-200/60">
         {/* Content Health Center */}
         <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6 flex flex-col">
           <div className="flex items-center justify-between mb-6">

@@ -68,6 +68,7 @@ model User {
   savedFilters              SavedFilter[]
   searchAnalytics           SearchAnalytics[]
   QuestionAuditLog          QuestionAuditLog[]
+  QuestionGovernanceAudit   QuestionGovernanceAudit[]
   performanceSnapshot       UserPerformanceSnapshot?
   attemptLogs               QuestionAttemptLog[]
   createdFlags              QuestionFlag[]                    @relation("QuestionFlagCreator")
@@ -460,6 +461,47 @@ enum QuestionStatus {
   FLAGGED
 }
 
+enum LifecycleState {
+  HEALTHY
+  INSUFFICIENT_DATA
+  MONITORING
+  FLAGGED
+  REFRESH_REQUIRED
+  RETIREMENT_CANDIDATE
+}
+
+enum FreshnessStatus {
+  FRESH
+  AGING
+  OUTDATED
+  EXPIRED
+}
+
+enum RetirementRisk {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SignalSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum QuestionCategory {
+  STATIC
+  DYNAMIC
+}
+
+enum TriggerSource {
+  SYSTEM
+  ADMIN
+  SUPER_ADMIN
+}
+
 model Challenge {
   id                String              @id @default(cuid())
   title             String
@@ -549,11 +591,21 @@ model Question {
   healthStatus           String?
   healthLastCalculatedAt DateTime?
 
+  // Governance & Lifecycle Engine
+  lifecycleState           LifecycleState   @default(INSUFFICIENT_DATA)
+  governanceScore          Float?
+  governanceVersion        Int              @default(1)
+  lastGovernanceEvaluation DateTime?
+  freshnessStatus          FreshnessStatus?
+  retirementRisk           RetirementRisk?
+  questionCategory         QuestionCategory @default(STATIC)
+
   options                  QuestionOption[]
   challenges               ChallengeQuestion[]
   reports                  Report[]                          @relation("ReportedQuestion")
   analytics                QuestionAnalytics?
   QuestionAuditLog         QuestionAuditLog[]
+  QuestionGovernanceAudit  QuestionGovernanceAudit[]
   usageStats               QuestionUsageStats?
   attemptLogs              QuestionAttemptLog[]
   flags                    QuestionFlag[]
@@ -631,6 +683,28 @@ model QuestionAuditLog {
   @@index([createdAt])
   @@index([questionId, action, createdAt(sort: Desc)])
   @@map("question_audit_logs")
+}
+
+model QuestionGovernanceAudit {
+  id            String         @id @default(cuid())
+  questionId    String
+  action        String
+  reason        String?        @db.Text
+  adminId       String?
+  triggerSource TriggerSource
+
+  previousState LifecycleState?
+  newState      LifecycleState
+
+  timestamp     DateTime       @default(now())
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  admin    User?    @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([questionId])
+  @@index([adminId])
+  @@index([timestamp])
+  @@map("question_governance_audits")
 }
 
 model QuestionCodeCounter {

@@ -77,6 +77,50 @@ export async function getQuestionBankOverview(): Promise<QuestionBankOverview> {
   }
 }
 
+// ─── Governance Overview ──────────────────────────────────────────────────────
+
+export interface GovernanceOverview {
+  healthy: number;
+  monitoring: number;
+  flagged: number;
+  refreshRequired: number;
+  retirementCandidates: number;
+  insufficientData: number;
+}
+
+export async function getGovernanceOverview(): Promise<GovernanceOverview> {
+  try {
+    await requireAdminSession();
+    const [healthy, monitoring, flagged, refreshRequired, retirementCandidates, insufficientData] =
+      await Promise.all([
+        prisma.question.count({ where: { lifecycleState: "HEALTHY" } }),
+        prisma.question.count({ where: { lifecycleState: "MONITORING" } }),
+        prisma.question.count({ where: { lifecycleState: "FLAGGED" } }),
+        prisma.question.count({ where: { lifecycleState: "REFRESH_REQUIRED" } }),
+        prisma.question.count({ where: { lifecycleState: "RETIREMENT_CANDIDATE" } }),
+        prisma.question.count({ where: { lifecycleState: "INSUFFICIENT_DATA" } }),
+      ]);
+
+    return {
+      healthy,
+      monitoring,
+      flagged,
+      refreshRequired,
+      retirementCandidates,
+      insufficientData,
+    };
+  } catch {
+    return {
+      healthy: 0,
+      monitoring: 0,
+      flagged: 0,
+      refreshRequired: 0,
+      retirementCandidates: 0,
+      insufficientData: 0,
+    };
+  }
+}
+
 // ─── Content Health Center ────────────────────────────────────────────────────
 
 export interface ContentHealthMetrics {
