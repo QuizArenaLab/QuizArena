@@ -11,7 +11,7 @@ import {
 } from "@/features/admin/services/question-bank";
 import { QuestionStatusBadge } from "./QuestionStatusBadge";
 import { QuestionCodeBadge } from "./QuestionCodeBadge";
-import { UsageIntelligencePanel } from "./UsageIntelligencePanel";
+import { QuestionPerformancePanel } from "./QuestionPerformancePanel";
 import type { QuestionIntelligence } from "@/features/admin/services/question-bank/usage-intelligence";
 import { DIFFICULTY_CONFIG } from "@/features/admin/services/question-bank/constants";
 import {
@@ -317,9 +317,9 @@ export function QuestionDetailView({ question, userRole, intelligence }: Questio
         </div>
       )}
 
-      {/* Usage Intelligence Panel */}
+      {/* Performance Intelligence Panel */}
       {intelligence && (
-        <UsageIntelligencePanel
+        <QuestionPerformancePanel
           intelligence={intelligence}
           configuredDifficulty={question.difficulty}
         />

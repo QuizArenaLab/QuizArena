@@ -22,6 +22,7 @@ import { validateTransition } from "@/features/admin/services/question-bank/gove
 import { checkForDuplicates } from "@/features/admin/services/question-bank/duplicate-detection";
 import { createAuditLog } from "@/features/super-admin/services/audit/index";
 import { revalidatePath } from "next/cache";
+import { getAllQuestionIdsByIntelligenceFilter } from "@/features/admin/services/question-bank/analytics/dashboard-engine";
 
 // ─── Auth Helpers ───────────────────────────────────────────────────────────
 
@@ -730,12 +731,19 @@ export async function getQuestions(filters: unknown): Promise<QuestionBankListRe
       tags,
       createdBy,
       approvedBy,
+      intelligence,
       page,
       limit,
     } = parsed;
     const skip = (page - 1) * limit;
 
     const where: Record<string, unknown> = {};
+
+    if (intelligence) {
+      const ids = await getAllQuestionIdsByIntelligenceFilter(intelligence);
+      // If intelligence filter returns no IDs, ensure the query returns empty
+      where.id = ids.length > 0 ? { in: ids } : { in: ["__no_match__"] };
+    }
 
     if (search) {
       where.OR = [

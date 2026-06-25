@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getQuestionById, getQuestionAuditHistory } from "@/features/admin/services/question-bank";
 import { QuestionDetailView } from "@/features/admin/components/question-bank/QuestionDetailView";
 import { QuestionAuditTimeline } from "@/features/admin/components/question-bank/QuestionAuditTimeline";
+import { getQuestionIntelligence } from "@/features/admin/services/question-bank/usage-intelligence";
 import { auth } from "@/auth/auth";
 import { ROUTES } from "@/constants/routes";
 import { ArrowLeft } from "lucide-react";
@@ -12,16 +13,17 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Question Details | Question Bank",
-  description: "Governance details and audit trail for a question",
+  description: "Governance details, performance intelligence, and audit trail for a question",
 };
 
 async function QuestionDetailContent({ questionId }: { questionId: string }) {
   const session = await auth();
   const userRole = (session?.user?.role as string) || "USER";
 
-  const [question, audits] = await Promise.all([
+  const [question, audits, intelligence] = await Promise.all([
     getQuestionById(questionId),
     getQuestionAuditHistory(questionId),
+    getQuestionIntelligence(questionId).catch(() => null),
   ]);
 
   if (!question) {
@@ -40,14 +42,14 @@ async function QuestionDetailContent({ questionId }: { questionId: string }) {
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Question Details</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Governance and usage metrics</p>
+            <p className="text-sm text-gray-500 mt-0.5">Governance, performance intelligence, and usage metrics</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <QuestionDetailView question={question} userRole={userRole} />
+          <QuestionDetailView question={question} userRole={userRole} intelligence={intelligence} />
         </div>
         <div className="space-y-6">
           <QuestionAuditTimeline audits={audits} />

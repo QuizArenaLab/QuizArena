@@ -95,15 +95,15 @@ export function QuestionFilters({ currentFilters }: QuestionFiltersProps) {
           >
             <option value="">Intelligence Flags</option>
             <option value="HEALTHY">Healthy</option>
-            <option value="FLAGGED">Flagged</option>
-            <option value="UNUSED">Unused</option>
+            <option value="LOW_CONFIDENCE">Low Confidence</option>
+            <option value="DIFFICULTY_DRIFT">Difficulty Drift</option>
+            <option value="HIGH_REPORTS">High Reports</option>
+            <option value="DECLINING">Declining Performance</option>
             <option value="OVERUSED">Overused</option>
+            <option value="UNUSED">Unused</option>
             <option value="TOO_EASY">Too Easy</option>
             <option value="TOO_HARD">Too Hard</option>
-            <option value="REPORTED">Reported</option>
-            <option value="NEEDS_REVIEW">Needs Review</option>
-            <option value="DIFFICULTY_DRIFT">Difficulty Drift</option>
-            <option value="RETIREMENT_CANDIDATE">Retirement Candidate</option>
+            <option value="INSUFFICIENT_DATA">Insufficient Data</option>
           </select>
 
           <button

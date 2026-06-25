@@ -222,6 +222,7 @@ export const questionFiltersSchema = z.object({
   tags: z.array(z.string()).optional(),
   createdBy: z.string().optional(),
   approvedBy: z.string().optional(),
+  intelligence: z.string().optional(),
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(100).default(20),
 });

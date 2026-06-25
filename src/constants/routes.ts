@@ -55,6 +55,7 @@ export const ROUTES = {
     REPORTS: "/dashboard/admin/moderation",
     INTELLIGENCE: "/dashboard/admin/intelligence",
     QUESTION_BANK: "/dashboard/admin/question-bank",
+    QUESTION_BANK_INTELLIGENCE: "/dashboard/admin/question-bank/intelligence",
     QUESTION_BANK_CREATE: "/dashboard/admin/question-bank/create",
     QUESTION_BANK_REVIEW: "/dashboard/admin/question-bank/review",
     QUESTION_BANK_DETAIL: (id: string) => `/dashboard/admin/question-bank/${id}`,
@@ -66,6 +67,7 @@ export const ROUTES = {
     QUESTIONS_PUBLISHED: "/dashboard/admin/questions/published",
     QUESTIONS_ARCHIVE: "/dashboard/admin/questions/archive",
     QUESTIONS_IMPORT_JOBS: "/dashboard/admin/questions/import-jobs",
+    QUESTIONS_OPERATIONS: "/dashboard/admin/questions/operations",
   },
 
   // ─── SUPER ADMIN ROUTES ─────────────────────────────────────────

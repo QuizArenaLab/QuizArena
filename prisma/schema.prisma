@@ -73,6 +73,9 @@ model User {
   attemptLogs               QuestionAttemptLog[]
   createdFlags              QuestionFlag[]                    @relation("QuestionFlagCreator")
   dismissedRecommendations  QuestionRecommendationDismissal[]
+  dismissedIssues           OperationalIssue[]                @relation("IssueDismissedBy")
+  assignedIssues            OperationalIssue[]                @relation("IssueAssignedTo")
+  operationalIssueAudits    OperationalIssueAudit[]           @relation("OperationalAuditActor")
 
   @@index([email])
   @@index([username])
@@ -502,6 +505,19 @@ enum TriggerSource {
   SUPER_ADMIN
 }
 
+enum DataQuality {
+  HIGH
+  MEDIUM
+  LOW
+  INSUFFICIENT
+}
+
+enum AnalyticsJobStatus {
+  STARTED
+  COMPLETED
+  FAILED
+}
+
 model Challenge {
   id                String              @id @default(cuid())
   title             String
@@ -610,6 +626,7 @@ model Question {
   attemptLogs              QuestionAttemptLog[]
   flags                    QuestionFlag[]
   recommendationDismissals QuestionRecommendationDismissal[]
+  operationalIssues        OperationalIssue[]
 
   @@index([questionCode])
   @@index([category])
@@ -1579,6 +1596,15 @@ model QuestionUsageStats {
   actualDifficulty ChallengeDifficulty?
   successRate      Float                @default(0)
 
+  // Time analytics
+  medianTimeSpent Float @default(0)
+  fastestTime     Int?
+  slowestTime     Int?
+  p90Time         Int?
+
+  // Report tracking
+  reportCount Int @default(0)
+
   // Trends (e.g., "UP", "DOWN", "STABLE")
   successRateTrend String @default("STABLE")
   attemptsTrend    String @default("STABLE")
@@ -1588,6 +1614,11 @@ model QuestionUsageStats {
   lastAttemptedAt DateTime?
   lastServedAt    DateTime?
 
+  // Versioning & quality
+  analyticsVersion Int         @default(1)
+  dataQuality      DataQuality @default(INSUFFICIENT)
+  lastCalculatedAt DateTime?
+
   // Processing
   needsProcessing Boolean @default(false)
 
@@ -1596,6 +1627,8 @@ model QuestionUsageStats {
   @@index([needsProcessing])
   @@index([actualDifficulty])
   @@index([successRate])
+  @@index([dataQuality])
+  @@index([timesAttempted])
   @@map("question_usage_stats")
 }
 
@@ -1662,4 +1695,118 @@ model QuestionRecommendationDismissal {
 
   @@unique([questionId, recommendationType])
   @@map("question_recommendation_dismissals")
+}
+
+// -----------------------------------------------------------------------------
+// Analytics Job Health Monitoring
+// -----------------------------------------------------------------------------
+
+model AnalyticsJob {
+  id            String             @id @default(cuid())
+  jobType       String
+  status        AnalyticsJobStatus
+  startedAt     DateTime           @default(now())
+  completedAt   DateTime?
+  durationMs    Int?
+  rowsProcessed Int                @default(0)
+  errorMessage  String?            @db.Text
+  metadata      Json?
+
+  @@index([jobType])
+  @@index([status])
+  @@index([startedAt])
+  @@map("analytics_jobs")
+}
+
+// -----------------------------------------------------------------------------
+// Question Operations Center
+// -----------------------------------------------------------------------------
+
+enum OperationalIssueSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum OperationalIssueStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  DISMISSED
+  AUTO_RESOLVED
+}
+
+enum OperationalAuditAction {
+  DETECTED
+  RESOLVED
+  DISMISSED
+  REOPENED
+  AUTO_RESOLVED
+  SEVERITY_INCREASED
+  ASSIGNED
+}
+
+model OperationalRule {
+  id          String                   @id @default(cuid())
+  ruleKey     String                   @unique
+  enabled     Boolean                  @default(true)
+  severity    OperationalIssueSeverity
+  threshold   Float
+  description String?
+
+  @@map("operational_rules")
+}
+
+model OperationalIssue {
+  id               String                   @id @default(cuid())
+  issueFingerprint String                   @unique
+  questionId       String
+  issueType        String
+  severity         OperationalIssueSeverity
+  previousSeverity OperationalIssueSeverity?
+  status           OperationalIssueStatus   @default(OPEN)
+  priority         OperationalIssueSeverity @default(LOW)
+  
+  detectedAt      DateTime  @default(now())
+  lastEvaluatedAt DateTime  @default(now())
+  resolvedAt      DateTime?
+  
+  dismissedById   String?
+  dismissedAt     DateTime?
+  
+  assignedToId    String?
+  dueDate         DateTime?
+  
+  resolutionNotes String?   @db.Text
+
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  dismissedBy User?    @relation("IssueDismissedBy", fields: [dismissedById], references: [id], onDelete: SetNull)
+  assignedTo  User?    @relation("IssueAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  audits      OperationalIssueAudit[]
+
+  @@index([questionId])
+  @@index([issueType])
+  @@index([status])
+  @@index([severity])
+  @@index([priority])
+  @@index([assignedToId])
+  @@map("operational_issues")
+}
+
+model OperationalIssueAudit {
+  id        String                 @id @default(cuid())
+  issueId   String
+  action    OperationalAuditAction
+  actorId   String?
+  reason    String?                @db.Text
+  createdAt DateTime               @default(now())
+
+  issue OperationalIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  actor User?            @relation("OperationalAuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([issueId])
+  @@index([actorId])
+  @@index([action])
+  @@map("operational_issue_audits")
 }
