@@ -1932,6 +1932,40 @@ enum CompetitionType {
   TOURNAMENT
 }
 
+enum CompetitionLifecycle {
+  DRAFT
+  READY
+  SCHEDULED
+  LIVE
+  PAUSED
+  COMPLETED
+  EXPIRED
+  ARCHIVED
+  CANCELLED
+}
+
+enum CompetitionHealthStatus {
+  HEALTHY
+  WARNING
+  CRITICAL
+}
+
+enum LifecycleActorType {
+  SYSTEM
+  ADMIN
+  SUPER_ADMIN
+  WORKER
+  API
+}
+
+enum BulkJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
 enum CompetitionStatus {
   DRAFT
   READY
@@ -1941,6 +1975,9 @@ enum CompetitionStatus {
   COMPLETED
   EXPIRED
   ARCHIVED
+  ACTIVE
+  INACTIVE
+  DELETED
 }
 
 enum CompetitionVisibility {
@@ -1987,11 +2024,14 @@ model Competition {
 
   // Classification
   competitionType CompetitionType
-  status          CompetitionStatus     @default(DRAFT)
-  visibility      CompetitionVisibility @default(PUBLIC)
+  status          CompetitionStatus       @default(INACTIVE)
+  lifecycleState  CompetitionLifecycle    @default(DRAFT)
+  readinessScore  Int                     @default(0)
+  healthStatus    CompetitionHealthStatus @default(HEALTHY)
+  visibility      CompetitionVisibility   @default(PUBLIC)
   exam            ExamCategory?
-  difficulty      ChallengeDifficulty   @default(MEDIUM)
-  language        String                @default("en")
+  difficulty      ChallengeDifficulty     @default(MEDIUM)
+  language        String                  @default("en")
 
   // Core metrics (denormalized for fast queries)
   durationMinutes Int
@@ -2000,15 +2040,27 @@ model Competition {
 
   // Versioning
   version                 Int     @default(1)
+  lifecycleVersion        Int     @default(1)
   isLatestVersion         Boolean @default(true)
   clonedFromCompetitionId String?
 
   // Scheduling
   startsAt           DateTime?
   endsAt             DateTime?
+  scheduledStart     DateTime?
+  scheduledEnd       DateTime?
   publishedAt        DateTime?
   scheduledPublishAt DateTime?
   scheduledExpiryAt  DateTime?
+
+  // Lifecycle Timestamps
+  activatedAt         DateTime?
+  completedAt         DateTime?
+  expiredAt           DateTime?
+  archivedAt          DateTime?
+  cancelledAt         DateTime?
+  lastLifecycleUpdate DateTime?
+  lastLifecycleActor  String?
 
   // Audit trail
   createdById String?
@@ -2038,6 +2090,7 @@ model Competition {
   locks          BuilderLock[]
   sessions       CompetitionSession[]
   attempts       CompetitionAttempt[]
+  lifecycleAudits CompetitionLifecycleAudit[]
 
   @@index([slug])
   @@index([competitionType])
@@ -2209,6 +2262,44 @@ model CompetitionAudit {
   @@index([createdAt])
   @@index([competitionId, createdAt(sort: Desc)])
   @@map("competition_audits")
+}
+
+model CompetitionLifecycleAudit {
+  id              String               @id @default(cuid())
+  competitionId   String
+  previousState   CompetitionLifecycle?
+  newState        CompetitionLifecycle
+  reason          String?              @db.Text
+  performedBy     String?
+  performedByType LifecycleActorType
+  metadata        Json?
+  createdAt       DateTime             @default(now())
+
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+
+  @@index([competitionId])
+  @@index([createdAt])
+  @@index([newState])
+  @@map("competition_lifecycle_audits")
+}
+
+model BulkOperationJob {
+  id             String        @id @default(cuid())
+  operationType  String
+  status         BulkJobStatus @default(PENDING)
+  totalItems     Int
+  processedItems Int           @default(0)
+  failedItems    Int           @default(0)
+  results        Json?
+  startedBy      String?
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  completedAt    DateTime?
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("bulk_operation_jobs")
 }
 
 model BuilderRevision {
