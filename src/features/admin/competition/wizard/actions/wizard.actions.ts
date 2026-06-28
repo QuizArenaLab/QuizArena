@@ -93,8 +93,8 @@ export async function createDraftCompetition(payload: unknown) {
       await tx.competitionEconomics.create({
         data: {
           competitionId: comp.id,
-          entryFee: participation.entryFee,
-          rewardPool: participation.rewardPool,
+          entryFee: 0,
+          rewardPool: 0,
         },
       });
 

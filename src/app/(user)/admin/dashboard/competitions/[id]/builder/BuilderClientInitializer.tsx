@@ -14,10 +14,20 @@ interface Props {
 
 export function BuilderClientInitializer({ hydrationData }: Props) {
   const { hydrate } = useBuilderStore();
-  const [hydrated] = useState(() => {
-    hydrate(hydrationData);
-    return true;
-  });
+  const [isHydrated, setIsHydrated] = useState(false);
+  const hydratedRef = useRef(false);
+
+  useEffect(() => {
+    if (!hydratedRef.current) {
+      hydrate(hydrationData);
+      hydratedRef.current = true;
+      setIsHydrated(true);
+    }
+  }, [hydrate, hydrationData]);
+
+  if (!isHydrated) {
+    return <div className="flex-1 flex items-center justify-center p-8 text-gray-500">Initializing builder...</div>;
+  }
 
   return (
     <AssessmentBuilderLayout

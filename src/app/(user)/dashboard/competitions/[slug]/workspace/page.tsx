@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { initializeSession } from "@/features/competitions/experience/services/session.service";
-import { WorkspaceShell } from "@/features/competitions/experience/modules/workspace/WorkspaceShell";
+import { WorkspaceRoot } from "@/features/competitions/workspace/WorkspaceRoot";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 
@@ -38,6 +38,6 @@ export default async function CompetitionWorkspacePage({ params }: CompetitionWo
     );
   }
 
-  // Pass sanitized payload to the client shell
-  return <WorkspaceShell payload={initResult.data.workspacePayload} />;
+  // Pass sanitized payload to the client root
+  return <WorkspaceRoot payload={initResult.data.workspacePayload} />;
 }

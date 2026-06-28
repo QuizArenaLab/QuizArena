@@ -17,10 +17,11 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-export default async function CompetitionOverviewPage({ params }: { params: { id: string } }) {
+export default async function CompetitionOverviewPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await requireAdmin();
   if (!user || !user.id) return null;
-  const competition = await CompetitionService.getCompetitionById(params.id);
+  const competition = await CompetitionService.getCompetitionById(id);
 
   if (!competition) {
     notFound();

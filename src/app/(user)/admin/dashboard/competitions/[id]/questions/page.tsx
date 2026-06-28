@@ -4,10 +4,11 @@ import { CompetitionStudioLayout } from "@/features/admin/competition/components
 import { CompetitionService } from "@/features/admin/competition/services/competition.service";
 import { notFound } from "next/navigation";
 
-export default async function CompetitionQuestionsPage({ params }: { params: { id: string } }) {
+export default async function CompetitionQuestionsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await requireAdmin();
   if (!user || !user.id) return null;
-  const competition = await CompetitionService.getCompetitionById(params.id);
+  const competition = await CompetitionService.getCompetitionById(id);
 
   if (!competition) notFound();
 

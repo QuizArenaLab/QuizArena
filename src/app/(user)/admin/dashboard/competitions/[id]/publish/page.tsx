@@ -5,13 +5,14 @@ import { notFound } from "next/navigation";
 import { PublishingWorkspace } from "@/features/admin/competition/publishing/components/PublishingWorkspace";
 import { getPublishingWorkspaceData } from "@/features/admin/competition/publishing/publishing/actions/publishing.actions";
 
-export default async function CompetitionPublishPage({ params }: { params: { id: string } }) {
+export default async function CompetitionPublishPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await requireAdmin();
   if (!user || !user.id) return null;
 
   let workspaceData;
   try {
-    workspaceData = await getPublishingWorkspaceData(params.id);
+    workspaceData = await getPublishingWorkspaceData(id);
   } catch (err) {
     console.error("Error loading publishing workspace:", err);
     notFound();

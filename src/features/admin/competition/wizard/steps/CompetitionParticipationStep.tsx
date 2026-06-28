@@ -20,8 +20,6 @@ export function CompetitionParticipationStep({ onValidationChange }: Props) {
       visibility: draftData.participation.visibility || "PUBLIC",
       startsAt: draftData.participation.startsAt || "",
       endsAt: draftData.participation.endsAt || "",
-      entryFee: draftData.participation.entryFee || 0,
-      rewardPool: draftData.participation.rewardPool || 0,
       maxParticipants: draftData.participation.maxParticipants || null,
       allowRetake: draftData.participation.allowRetake || false,
     },
@@ -113,27 +111,9 @@ export function CompetitionParticipationStep({ onValidationChange }: Props) {
           {errors.endsAt && <p className="text-xs text-red-500">{errors.endsAt.message}</p>}
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-            Entry Fee (INR)
-          </label>
-          <input
-            type="number"
-            {...register("entryFee", { valueAsNumber: true })}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-orange-500 outline-none transition-all"
-          />
-          {errors.entryFee && <p className="text-xs text-red-500">{errors.entryFee.message}</p>}
-        </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-gray-700">Reward Pool (INR)</label>
-          <input
-            type="number"
-            {...register("rewardPool", { valueAsNumber: true })}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-orange-500 outline-none transition-all"
-          />
-          {errors.rewardPool && <p className="text-xs text-red-500">{errors.rewardPool.message}</p>}
-        </div>
+
+
 
         <div className="md:col-span-2">
           <div className="flex items-start justify-between p-4 border border-gray-100 rounded-xl bg-white hover:border-orange-200 transition-colors">

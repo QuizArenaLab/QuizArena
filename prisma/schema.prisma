@@ -52,6 +52,11 @@ model User {
   settingAudits             SettingAudit[]                    @relation("SettingAuditActor")
   auditLogs                 AuditLog[]                        @relation("AuditActor")
   targetedAudits            AuditLog[]                        @relation("AuditTarget")
+  rankingSnapshots          RankingSnapshot[]
+  rewardLedgerEntries       RewardLedger[]
+  certificateSnapshots      CertificateSnapshot[]
+  badgeSnapshots            BadgeSnapshot[]
+
   subscriptions             UserSubscription[]
   transactions              Transaction[]
   createdFeatures           FeatureFlag[]                     @relation("FeatureCreatedBy")
@@ -1016,6 +1021,100 @@ model LeaderboardEntry {
   @@index([challengeId])
   @@index([challengeId, score(sort: Desc)])
   @@map("leaderboard_entries")
+}
+
+// ─── Ranking Engine Models ───────────────────────────────────
+
+model LeaderboardProjection {
+  leaderboardKey   String   @id // e.g., "COMPETITION:clxg45..."
+  participantCount Int      @default(0)
+  highestScore     Int      @default(0)
+  averageScore     Float    @default(0)
+  averageAccuracy  Float    @default(0)
+  top3Snapshot     Json?    
+  lastUpdated      DateTime @updatedAt
+  currentVersion   String   @default("1.0")
+  
+  @@map("leaderboard_projections")
+}
+
+model RankingSnapshot {
+  id               String   @id @default(cuid())
+  leaderboardKey   String
+  userId           String
+  
+  rank             Int
+  score            Int
+  accuracy         Float
+  completionTime   Int
+  percentile       Float
+  
+  snapshotTimestamp DateTime @default(now())
+  rankingVersion    String   @default("1.0")
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([leaderboardKey, userId])
+  @@index([leaderboardKey, rank])
+  @@index([userId])
+  @@map("ranking_snapshots")
+}
+
+// ─── Rewards & Recognition Engine ──────────────────────────
+
+model RewardLedger {
+  id            String   @id @default(cuid())
+  rewardEvent   String   // e.g., "CERTIFICATE_ISSUED", "BADGE_AWARDED"
+  rewardType    String
+  issuer        String   @default("SYSTEM")
+  recipientId   String
+  referenceId   String?  // The ID of the Snapshot
+  pipelineStage String
+  status        String   // SUCCESS, FAILED, PENDING
+  failureReason String?
+  retryCount    Int      @default(0)
+  issuedAt      DateTime @default(now())
+
+  user          User     @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  @@index([recipientId])
+  @@map("reward_ledger")
+}
+
+model CertificateSnapshot {
+  id                  String   @id @default(cuid())
+  verificationToken   String   @unique
+  participantName     String
+  competitionName     String
+  competitionVersion  String
+  certificateType     String   // PARTICIPATION, WINNER
+  rank                Int?
+  score               Int?
+  completionDate      DateTime
+  issueDate           DateTime @default(now())
+  certificateVersion  String   @default("1.0")
+  issuer              String   @default("QuizArena")
+  qrPayload           String
+  brandAssetsVersion  String
+  pdfUrl              String?  // Populated async
+
+  userId              String
+  competitionId       String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, competitionId, certificateType])
+  @@map("certificate_snapshots")
+}
+
+model BadgeSnapshot {
+  id            String   @id @default(cuid())
+  badgeType     String
+  userId        String
+  competitionId String?
+  issuedAt      DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, badgeType, competitionId])
+  @@map("badge_snapshots")
 }
 
 // ─── Challenge Invites ───────────────────────────────────────
@@ -2289,6 +2388,20 @@ model CompetitionAttempt {
   // This model is generated upon submission and is immutable.
   // It represents the final state of the attempt to be processed by the Evaluation Engine.
   submittedAt DateTime @default(now())
+
+  score              Int     @default(0)
+  accuracy           Float   @default(0)
+  percentage         Float   @default(0)
+  correctAnswers     Int     @default(0)
+  wrongAnswers       Int     @default(0)
+  unansweredCount    Int     @default(0)
+  timeTakenInSeconds Int     @default(0)
+  
+  evaluationSnapshot Json?
+  resultSnapshot     Json?
+  fraudAssessment    Json?
+  
+  pipelineMetrics    Json?
 
   session     CompetitionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   competition Competition        @relation(fields: [competitionId], references: [id], onDelete: Cascade)

@@ -158,14 +158,8 @@ export function CompetitionReviewStep() {
                 {draftData.participation.visibility || "—"}
               </dd>
             </div>
-            <div className="flex justify-between">
-              <dt className="text-gray-500">Entry Fee</dt>
-              <dd className="font-semibold text-right">₹{draftData.participation.entryFee}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-gray-500">Reward Pool</dt>
-              <dd className="font-semibold text-right">₹{draftData.participation.rewardPool}</dd>
-            </div>
+
+
             <div className="flex justify-between">
               <dt className="text-gray-500">Starts At</dt>
               <dd className="font-semibold text-right">

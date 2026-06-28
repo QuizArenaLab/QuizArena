@@ -56,10 +56,9 @@ export const competitionConfigSchema = z
 export const competitionParticipationSchema = z
   .object({
     visibility: z.nativeEnum(CompetitionVisibility, { error: "Visibility is required" }),
-    startsAt: z.string().datetime({ message: "Invalid Start Date" }).optional().nullable(),
-    endsAt: z.string().datetime({ message: "Invalid End Date" }).optional().nullable(),
-    entryFee: z.number().min(0, "Entry fee cannot be negative"),
-    rewardPool: z.number().min(0, "Reward pool cannot be negative"),
+    startsAt: z.string().refine((val) => val === "" || !isNaN(Date.parse(val)), { message: "Invalid Start Date" }).optional().nullable(),
+    endsAt: z.string().refine((val) => val === "" || !isNaN(Date.parse(val)), { message: "Invalid End Date" }).optional().nullable(),
+
     maxParticipants: z.number().min(1, "Max participants must be at least 1").optional().nullable(),
     allowRetake: z.boolean(),
   })
