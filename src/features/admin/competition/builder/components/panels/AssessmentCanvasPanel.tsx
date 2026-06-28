@@ -128,7 +128,7 @@ export function AssessmentCanvasPanel() {
 
                         {qs.length === 0 && !snapshot.isDraggingOver && (
                           <div className="text-center py-6 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-sm font-medium">
-                            Drag questions here or click "Insert"
+                            Drag questions here or click &quot;Insert&quot;
                           </div>
                         )}
                       </div>

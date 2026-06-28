@@ -12,6 +12,9 @@ import type {
   ChallengeDifficulty,
   ExamCategory,
   CompetitionAudit,
+  CompetitionVersion,
+  CompetitionSchedule,
+  PublishingLock,
 } from "@/generated/prisma";
 
 // ─── JSON Configuration Types ─────────────────────────────────────────────
@@ -55,6 +58,9 @@ export type CompetitionWithRelations = Competition & {
   sections: CompetitionSection[];
   questions: (CompetitionQuestion & { question: Question })[];
   auditTrail?: CompetitionAudit[];
+  versions?: CompetitionVersion[];
+  schedule?: CompetitionSchedule | null;
+  publishingLock?: PublishingLock | null;
 };
 
 export type CompetitionListItem = Pick<

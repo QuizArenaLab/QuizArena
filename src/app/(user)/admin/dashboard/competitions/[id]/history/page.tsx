@@ -42,7 +42,7 @@ export default async function CompetitionHistoryPage({ params }: { params: { id:
                   </div>
                   {log.reason && (
                     <div className="text-sm mt-2 italic border-l-2 pl-2 border-primary/50">
-                      "{log.reason}"
+                      &quot;{log.reason}&quot;
                     </div>
                   )}
                   {log.previousState && log.newState && (

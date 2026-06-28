@@ -34,19 +34,29 @@ export function IssueDetailsDrawer({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    let active = true;
     if (open && issueId) {
-      setLoading(true);
-      // In a real app, use SWR/React Query or a Server Action here.
-      // Mocking fetch for simplicity in this component structure.
-      fetch(`/api/admin/operations/issues/${issueId}`)
-        .then((res) => res.json())
-        .then((data) => setIssue(data))
-        .catch(console.error)
-        .finally(() => setLoading(false));
+      const fetchData = async () => {
+        setLoading(true);
+        try {
+          const res = await fetch(`/api/admin/operations/issues/${issueId}`);
+          const data = await res.json();
+          if (active) setIssue(data);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          if (active) setLoading(false);
+        }
+      };
+      fetchData();
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIssue(null);
       setResolveNotes("");
     }
+    return () => {
+      active = false;
+    };
   }, [issueId, open]);
 
   const handleAction = async (action: "RESOLVE" | "DISMISS") => {

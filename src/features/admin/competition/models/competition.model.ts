@@ -17,6 +17,7 @@ export const COMPETITION_TYPE_LABELS: Record<CompetitionType, string> = {
 export const COMPETITION_STATUS_LABELS: Record<CompetitionStatus, string> = {
   DRAFT: "Draft",
   READY: "Ready",
+  PUBLISHING: "Publishing",
   SCHEDULED: "Scheduled",
   LIVE: "Live",
   COMPLETED: "Completed",
@@ -32,8 +33,9 @@ export const COMPETITION_VISIBILITY_LABELS: Record<CompetitionVisibility, string
 
 export const COMPETITION_STATUS_TRANSITIONS: Record<CompetitionStatus, CompetitionStatus[]> = {
   DRAFT: ["READY"],
-  READY: ["SCHEDULED", "LIVE", "DRAFT"],
-  SCHEDULED: ["LIVE", "READY"],
+  READY: ["PUBLISHING", "SCHEDULED", "DRAFT"],
+  PUBLISHING: ["LIVE", "READY"],
+  SCHEDULED: ["PUBLISHING", "READY"],
   LIVE: ["COMPLETED"],
   COMPLETED: ["ARCHIVED"],
   EXPIRED: ["ARCHIVED"],

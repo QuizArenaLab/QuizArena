@@ -33,7 +33,7 @@ export function AssessmentBuilderLayout({
       <BuilderCommandBar />
 
       <div className="flex-1 overflow-hidden bg-white">
-        {/* @ts-ignore - react-resizable-panels typings issue */}
+        {/* @ts-expect-error - react-resizable-panels typings issue */}
         <PanelGroup direction="horizontal">
           {isLeftPanelOpen && (
             <>

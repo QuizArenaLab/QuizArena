@@ -81,6 +81,11 @@ model User {
   CompetitionAudit          CompetitionAudit[]
   builderRevisions          BuilderRevision[]
   builderLocks              BuilderLock[]
+  publishedVersions         CompetitionVersion[]              @relation("CompetitionVersionPublisher")
+  createdSchedules          CompetitionSchedule[]             @relation("ScheduleCreatedBy")
+  publishingLocks           PublishingLock[]                  @relation("PublishingLockUser")
+  competitionSessions       CompetitionSession[]
+  competitionAttempts       CompetitionAttempt[]
 
   @@index([email])
   @@index([username])
@@ -1831,6 +1836,7 @@ enum CompetitionType {
 enum CompetitionStatus {
   DRAFT
   READY
+  PUBLISHING
   SCHEDULED
   LIVE
   COMPLETED
@@ -1867,6 +1873,11 @@ enum CompetitionAuditAction {
   CLONED
   VERSION_CREATED
   PURGED
+  ROLLBACK
+  SCHEDULE_PUBLISH
+  SCHEDULE_EXPIRE
+  PUBLISH_STARTED
+  PUBLISH_FAILED
 }
 
 model Competition {
@@ -1894,9 +1905,11 @@ model Competition {
   clonedFromCompetitionId String?
 
   // Scheduling
-  startsAt    DateTime?
-  endsAt      DateTime?
-  publishedAt DateTime?
+  startsAt           DateTime?
+  endsAt             DateTime?
+  publishedAt        DateTime?
+  scheduledPublishAt DateTime?
+  scheduledExpiryAt  DateTime?
 
   // Audit trail
   createdById String?
@@ -1916,11 +1929,16 @@ model Competition {
   eligibility CompetitionEligibility?
 
   // Content
-  sections   CompetitionSection[]
-  questions  CompetitionQuestion[]
-  auditTrail CompetitionAudit[]
-  revisions  BuilderRevision[]
-  locks      BuilderLock[]
+  sections       CompetitionSection[]
+  questions      CompetitionQuestion[]
+  auditTrail     CompetitionAudit[]
+  versions       CompetitionVersion[]
+  schedule       CompetitionSchedule?
+  publishingLock PublishingLock?
+  revisions      BuilderRevision[]
+  locks          BuilderLock[]
+  sessions       CompetitionSession[]
+  attempts       CompetitionAttempt[]
 
   @@index([slug])
   @@index([competitionType])
@@ -2095,13 +2113,13 @@ model CompetitionAudit {
 }
 
 model BuilderRevision {
-  id            String   @id @default(cuid())
-  competitionId String
+  id             String   @id @default(cuid())
+  competitionId  String
   revisionNumber Int
-  actorId       String?
-  summary       String?  @db.Text
-  snapshot      Json
-  createdAt     DateTime @default(now())
+  actorId        String?
+  summary        String?  @db.Text
+  snapshot       Json
+  createdAt      DateTime @default(now())
 
   competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
   actor       User?       @relation(fields: [actorId], references: [id], onDelete: SetNull)
@@ -2124,4 +2142,173 @@ model BuilderLock {
   @@index([competitionId])
   @@index([expiresAt])
   @@map("builder_locks")
+}
+
+model CompetitionVersion {
+  id            String @id @default(cuid())
+  competitionId String
+  versionNumber Int
+
+  // Structured snapshot (NOT one huge JSON)
+  competitionSnapshot Json // Core competition fields
+  sectionsSnapshot    Json // Sections array
+  questionsSnapshot   Json // Question mappings array
+  rulesSnapshot       Json // Rules + config
+  configSnapshot      Json // Economics + eligibility
+
+  changelog     String?   @db.Text
+  publishedAt   DateTime?
+  publishedById String?
+  isActive      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  publishedBy User?       @relation("CompetitionVersionPublisher", fields: [publishedById], references: [id], onDelete: SetNull)
+
+  @@unique([competitionId, versionNumber])
+  @@index([competitionId])
+  @@index([isActive])
+  @@map("competition_versions")
+}
+
+model CompetitionSchedule {
+  id            String @id @default(cuid())
+  competitionId String @unique
+
+  publishAt DateTime?
+  expiresAt DateTime?
+  timezone  String         @default("Asia/Kolkata")
+  status    ScheduleStatus @default(PENDING)
+
+  executedAt   DateTime?
+  executionLog String?   @db.Text
+
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  createdBy   User?       @relation("ScheduleCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([competitionId])
+  @@index([publishAt])
+  @@index([status])
+  @@map("competition_schedules")
+}
+
+enum ScheduleStatus {
+  PENDING
+  EXECUTING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model PublishingLock {
+  id            String   @id @default(cuid())
+  competitionId String   @unique
+  userId        String
+  acquiredAt    DateTime @default(now())
+  expiresAt     DateTime
+
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  user        User        @relation("PublishingLockUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([competitionId])
+  @@index([expiresAt])
+  @@map("publishing_locks")
+}
+
+// ─── Competition Experience Engine ───────────────────────────────
+
+enum SessionState {
+  INITIALIZING
+  READY
+  IN_PROGRESS
+  PAUSED
+  SUBMITTING
+  SUBMITTED
+  EXPIRED
+  ABANDONED
+}
+
+model CompetitionSession {
+  id            String       @id @default(cuid())
+  competitionId String
+  userId        String
+  status        SessionState @default(INITIALIZING)
+
+  // Timing (Server-Authoritative)
+  startedAt DateTime  @default(now())
+  expiresAt DateTime?
+
+  // Randomization (Deterministic)
+  shuffleSeed   String
+  questionOrder Json?
+  optionOrder   Json?
+
+  // Anti-cheat (Lightweight)
+  tabSwitchCount Int @default(0)
+  blurCount      Int @default(0)
+
+  // Relations
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  answers   CompetitionSessionAnswer[]
+  auditLogs CompetitionSessionAuditLog[]
+  attempt   CompetitionAttempt?
+
+  @@unique([userId, competitionId])
+  @@index([competitionId, status])
+  @@index([userId, status])
+  @@map("competition_sessions")
+}
+
+model CompetitionSessionAnswer {
+  id                String    @id @default(cuid())
+  sessionId         String
+  questionId        String
+  selectedOptionId  String?
+  isVisited         Boolean   @default(true)
+  isMarkedForReview Boolean   @default(false)
+  answeredAt        DateTime? @default(now())
+
+  session CompetitionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, questionId])
+  @@map("competition_session_answers")
+}
+
+model CompetitionAttempt {
+  id            String @id @default(cuid())
+  sessionId     String @unique
+  competitionId String
+  userId        String
+
+  // This model is generated upon submission and is immutable.
+  // It represents the final state of the attempt to be processed by the Evaluation Engine.
+  submittedAt DateTime @default(now())
+
+  session     CompetitionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  competition Competition        @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, competitionId])
+  @@index([competitionId])
+  @@index([userId])
+  @@map("competition_attempts")
+}
+
+model CompetitionSessionAuditLog {
+  id        String   @id @default(cuid())
+  sessionId String
+  type      String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  session CompetitionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("competition_session_audit_logs")
 }

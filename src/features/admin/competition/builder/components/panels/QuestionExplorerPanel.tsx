@@ -43,6 +43,7 @@ export function QuestionExplorerPanel() {
   const handleAddQuestion = (q: any) => {
     // Basic append to default section for now
     const builderQuestion: BuilderQuestion = {
+      // eslint-disable-next-line react-hooks/purity
       id: `temp_${Date.now()}`,
       questionId: q.id,
       sectionId: "default",

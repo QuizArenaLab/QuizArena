@@ -130,7 +130,7 @@ export default async function CompetitionsPage({
             </div>
             <h3 className="text-2xl font-bold text-navy mb-2">No Competitions Yet</h3>
             <p className="text-gray-500 max-w-md mb-8">
-              You haven't created any competitions. Start by setting up a new arena for your
+              You haven&apos;t created any competitions. Start by setting up a new arena for your
               candidates to compete in.
             </p>
             <Link

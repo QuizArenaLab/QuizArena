@@ -16,6 +16,7 @@ export function CompetitionWizardLayout({ children }: { children: React.ReactNod
 
   // Handle hydration mismatch from Zustand persist
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

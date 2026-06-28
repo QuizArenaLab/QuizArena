@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useBuilderStore } from "@/features/admin/competition/builder/context/useBuilderStore";
 import { BuilderHydrationData } from "@/features/admin/competition/builder/types/builder.types";
 import { AssessmentBuilderLayout } from "@/features/admin/competition/builder/components/AssessmentBuilderLayout";
@@ -14,12 +14,10 @@ interface Props {
 
 export function BuilderClientInitializer({ hydrationData }: Props) {
   const { hydrate } = useBuilderStore();
-  const hydrated = useRef(false);
-
-  if (!hydrated.current) {
+  const [hydrated] = useState(() => {
     hydrate(hydrationData);
-    hydrated.current = true;
-  }
+    return true;
+  });
 
   return (
     <AssessmentBuilderLayout

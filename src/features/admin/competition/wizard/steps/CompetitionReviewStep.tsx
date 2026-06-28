@@ -53,7 +53,9 @@ export function CompetitionReviewStep() {
           </div>
           <ul className="list-disc list-inside text-sm text-red-600 space-y-1">
             {validationResult.error.issues.map((err: any, i: number) => (
-              <li key={i}>{err.path.join(".")} - {err.message}</li>
+              <li key={i}>
+                {err.path.join(".")} - {err.message}
+              </li>
             ))}
           </ul>
         </div>
@@ -204,7 +206,9 @@ export function CompetitionReviewStep() {
                 <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0" />
                 <div>
                   <p className="text-sm font-semibold text-navy">No Schedule</p>
-                  <p className="text-xs text-gray-500">You haven&apos;t set a start date. You will need to start it manually.</p>
+                  <p className="text-xs text-gray-500">
+                    You haven&apos;t set a start date. You will need to start it manually.
+                  </p>
                 </div>
               </div>
             )}
