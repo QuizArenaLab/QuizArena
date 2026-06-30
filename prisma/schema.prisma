@@ -10,52 +10,52 @@ datasource db {
 }
 
 model User {
-  id                        String                            @id @default(cuid())
-  name                      String?
-  username                  String?                           @unique
-  email                     String?                           @unique
-  emailVerified             DateTime?
-  image                     String?
-  password                  String?
-  role                      UserRole                          @default(USER)
-  onboardingCompleted       Boolean                           @default(false)
-  examCategory              ExamCategory?
-  preparationLevel          PreparationLevel?
-  dailyPracticeGoal         Int                               @default(20)
-  recommendationEngine      Boolean                           @default(true)
-  notificationPrefs         Json?
-  accountState              AccountState                      @default(ACTIVE)
-  flagged                   Boolean                           @default(false)
-  moderatorStatus           ModeratorStatus                   @default(ACTIVE)
-  createdAt                 DateTime                          @default(now())
-  updatedAt                 DateTime                          @updatedAt
-  accounts                  Account[]
-  sessions                  Session[]
-  attempts                  Attempt[]
-  createdChallenges         Challenge[]
-  reviewedChallenges        Challenge[]                       @relation("ChallengeReviewer")
-  publishedChallenges       Challenge[]                       @relation("ChallengePublisher")
-  createdQuestions          Question[]
-  reviewedQuestions         Question[]                        @relation("QuestionReviewer")
-  approvedQuestions         Question[]                        @relation("QuestionApprovedBy")
-  moderationNotes           ModerationNote[]                  @relation("ModerationNoteUser")
-  createdByNotes            ModerationNote[]                  @relation("ModerationNoteCreator")
-  moderatorNotes            ModeratorNote[]                   @relation("ModeratorNoteModerator")
-  createdByModNotes         ModeratorNote[]                   @relation("ModeratorNoteCreator")
-  roleChangesAsTarget       RoleChangeAudit[]                 @relation("RoleChangeTarget")
-  roleChangesAsActor        RoleChangeAudit[]                 @relation("RoleChangeBy")
-  submittedReports          Report[]                          @relation("ReportSubmitter")
-  targetedReports           Report[]                          @relation("ReportTarget")
-  reviewedReports           Report[]                          @relation("ReportReviewer")
-  reportNotes               ReportNote[]                      @relation("ReportNoteAuthor")
-  updatedSettings           PlatformSetting[]                 @relation("SettingUpdater")
-  settingAudits             SettingAudit[]                    @relation("SettingAuditActor")
-  auditLogs                 AuditLog[]                        @relation("AuditActor")
-  targetedAudits            AuditLog[]                        @relation("AuditTarget")
-  rankingSnapshots          RankingSnapshot[]
-  rewardLedgerEntries       RewardLedger[]
-  certificateSnapshots      CertificateSnapshot[]
-  badgeSnapshots            BadgeSnapshot[]
+  id                   String                @id @default(cuid())
+  name                 String?
+  username             String?               @unique
+  email                String?               @unique
+  emailVerified        DateTime?
+  image                String?
+  password             String?
+  role                 UserRole              @default(USER)
+  onboardingCompleted  Boolean               @default(false)
+  examCategory         ExamCategory?
+  preparationLevel     PreparationLevel?
+  dailyPracticeGoal    Int                   @default(20)
+  recommendationEngine Boolean               @default(true)
+  notificationPrefs    Json?
+  accountState         AccountState          @default(ACTIVE)
+  flagged              Boolean               @default(false)
+  moderatorStatus      ModeratorStatus       @default(ACTIVE)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  accounts             Account[]
+  sessions             Session[]
+  attempts             Attempt[]
+  createdChallenges    Challenge[]
+  reviewedChallenges   Challenge[]           @relation("ChallengeReviewer")
+  publishedChallenges  Challenge[]           @relation("ChallengePublisher")
+  createdQuestions     Question[]
+  reviewedQuestions    Question[]            @relation("QuestionReviewer")
+  approvedQuestions    Question[]            @relation("QuestionApprovedBy")
+  moderationNotes      ModerationNote[]      @relation("ModerationNoteUser")
+  createdByNotes       ModerationNote[]      @relation("ModerationNoteCreator")
+  moderatorNotes       ModeratorNote[]       @relation("ModeratorNoteModerator")
+  createdByModNotes    ModeratorNote[]       @relation("ModeratorNoteCreator")
+  roleChangesAsTarget  RoleChangeAudit[]     @relation("RoleChangeTarget")
+  roleChangesAsActor   RoleChangeAudit[]     @relation("RoleChangeBy")
+  submittedReports     Report[]              @relation("ReportSubmitter")
+  targetedReports      Report[]              @relation("ReportTarget")
+  reviewedReports      Report[]              @relation("ReportReviewer")
+  reportNotes          ReportNote[]          @relation("ReportNoteAuthor")
+  updatedSettings      PlatformSetting[]     @relation("SettingUpdater")
+  settingAudits        SettingAudit[]        @relation("SettingAuditActor")
+  auditLogs            AuditLog[]            @relation("AuditActor")
+  targetedAudits       AuditLog[]            @relation("AuditTarget")
+  rankingSnapshots     RankingSnapshot[]
+  rewardLedgerEntries  RewardLedger[]
+  certificateSnapshots CertificateSnapshot[]
+  badgeSnapshots       BadgeSnapshot[]
 
   subscriptions             UserSubscription[]
   transactions              Transaction[]
@@ -1031,29 +1031,29 @@ model LeaderboardProjection {
   highestScore     Int      @default(0)
   averageScore     Float    @default(0)
   averageAccuracy  Float    @default(0)
-  top3Snapshot     Json?    
+  top3Snapshot     Json?
   lastUpdated      DateTime @updatedAt
   currentVersion   String   @default("1.0")
-  
+
   @@map("leaderboard_projections")
 }
 
 model RankingSnapshot {
-  id               String   @id @default(cuid())
-  leaderboardKey   String
-  userId           String
-  
-  rank             Int
-  score            Int
-  accuracy         Float
-  completionTime   Int
-  percentile       Float
-  
+  id             String @id @default(cuid())
+  leaderboardKey String
+  userId         String
+
+  rank           Int
+  score          Int
+  accuracy       Float
+  completionTime Int
+  percentile     Float
+
   snapshotTimestamp DateTime @default(now())
   rankingVersion    String   @default("1.0")
 
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([leaderboardKey, userId])
   @@index([leaderboardKey, rank])
   @@index([userId])
@@ -1064,43 +1064,44 @@ model RankingSnapshot {
 
 model RewardLedger {
   id            String   @id @default(cuid())
-  rewardEvent   String   // e.g., "CERTIFICATE_ISSUED", "BADGE_AWARDED"
+  rewardEvent   String // e.g., "CERTIFICATE_ISSUED", "BADGE_AWARDED"
   rewardType    String
   issuer        String   @default("SYSTEM")
   recipientId   String
-  referenceId   String?  // The ID of the Snapshot
+  referenceId   String? // The ID of the Snapshot
   pipelineStage String
-  status        String   // SUCCESS, FAILED, PENDING
+  status        String // SUCCESS, FAILED, PENDING
   failureReason String?
   retryCount    Int      @default(0)
   issuedAt      DateTime @default(now())
 
-  user          User     @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
   @@index([recipientId])
   @@map("reward_ledger")
 }
 
 model CertificateSnapshot {
-  id                  String   @id @default(cuid())
-  verificationToken   String   @unique
-  participantName     String
-  competitionName     String
-  competitionVersion  String
-  certificateType     String   // PARTICIPATION, WINNER
-  rank                Int?
-  score               Int?
-  completionDate      DateTime
-  issueDate           DateTime @default(now())
-  certificateVersion  String   @default("1.0")
-  issuer              String   @default("QuizArena")
-  qrPayload           String
-  brandAssetsVersion  String
-  pdfUrl              String?  // Populated async
+  id                 String   @id @default(cuid())
+  verificationToken  String   @unique
+  participantName    String
+  competitionName    String
+  competitionVersion String
+  certificateType    String // PARTICIPATION, WINNER
+  rank               Int?
+  score              Int?
+  completionDate     DateTime
+  issueDate          DateTime @default(now())
+  certificateVersion String   @default("1.0")
+  issuer             String   @default("QuizArena")
+  qrPayload          String
+  brandAssetsVersion String
+  pdfUrl             String? // Populated async
 
-  userId              String
-  competitionId       String
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  userId        String
+  competitionId String
+  user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, competitionId, certificateType])
   @@map("certificate_snapshots")
 }
@@ -1112,7 +1113,8 @@ model BadgeSnapshot {
   competitionId String?
   issuedAt      DateTime @default(now())
 
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, badgeType, competitionId])
   @@map("badge_snapshots")
 }
@@ -2080,16 +2082,16 @@ model Competition {
   eligibility CompetitionEligibility?
 
   // Content
-  sections       CompetitionSection[]
-  questions      CompetitionQuestion[]
-  auditTrail     CompetitionAudit[]
-  versions       CompetitionVersion[]
-  schedule       CompetitionSchedule?
-  publishingLock PublishingLock?
-  revisions      BuilderRevision[]
-  locks          BuilderLock[]
-  sessions       CompetitionSession[]
-  attempts       CompetitionAttempt[]
+  sections        CompetitionSection[]
+  questions       CompetitionQuestion[]
+  auditTrail      CompetitionAudit[]
+  versions        CompetitionVersion[]
+  schedule        CompetitionSchedule?
+  publishingLock  PublishingLock?
+  revisions       BuilderRevision[]
+  locks           BuilderLock[]
+  sessions        CompetitionSession[]
+  attempts        CompetitionAttempt[]
   lifecycleAudits CompetitionLifecycleAudit[]
 
   @@index([slug])
@@ -2265,15 +2267,15 @@ model CompetitionAudit {
 }
 
 model CompetitionLifecycleAudit {
-  id              String               @id @default(cuid())
+  id              String                @id @default(cuid())
   competitionId   String
   previousState   CompetitionLifecycle?
   newState        CompetitionLifecycle
-  reason          String?              @db.Text
+  reason          String?               @db.Text
   performedBy     String?
   performedByType LifecycleActorType
   metadata        Json?
-  createdAt       DateTime             @default(now())
+  createdAt       DateTime              @default(now())
 
   competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
 
@@ -2293,9 +2295,9 @@ model BulkOperationJob {
   results        Json?
   startedBy      String?
 
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  completedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
 
   @@index([status])
   @@index([createdAt])
@@ -2480,19 +2482,19 @@ model CompetitionAttempt {
   // It represents the final state of the attempt to be processed by the Evaluation Engine.
   submittedAt DateTime @default(now())
 
-  score              Int     @default(0)
-  accuracy           Float   @default(0)
-  percentage         Float   @default(0)
-  correctAnswers     Int     @default(0)
-  wrongAnswers       Int     @default(0)
-  unansweredCount    Int     @default(0)
-  timeTakenInSeconds Int     @default(0)
-  
+  score              Int   @default(0)
+  accuracy           Float @default(0)
+  percentage         Float @default(0)
+  correctAnswers     Int   @default(0)
+  wrongAnswers       Int   @default(0)
+  unansweredCount    Int   @default(0)
+  timeTakenInSeconds Int   @default(0)
+
   evaluationSnapshot Json?
   resultSnapshot     Json?
   fraudAssessment    Json?
-  
-  pipelineMetrics    Json?
+
+  pipelineMetrics Json?
 
   session     CompetitionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   competition Competition        @relation(fields: [competitionId], references: [id], onDelete: Cascade)

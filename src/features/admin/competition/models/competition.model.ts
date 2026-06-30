@@ -23,6 +23,9 @@ export const COMPETITION_STATUS_LABELS: Record<CompetitionStatus, string> = {
   COMPLETED: "Completed",
   EXPIRED: "Expired",
   ARCHIVED: "Archived",
+  ACTIVE: "Active",
+  INACTIVE: "Inactive",
+  DELETED: "Deleted",
 };
 
 export const COMPETITION_VISIBILITY_LABELS: Record<CompetitionVisibility, string> = {
@@ -40,6 +43,9 @@ export const COMPETITION_STATUS_TRANSITIONS: Record<CompetitionStatus, Competiti
   COMPLETED: ["ARCHIVED"],
   EXPIRED: ["ARCHIVED"],
   ARCHIVED: [],
+  ACTIVE: ["INACTIVE", "DELETED"],
+  INACTIVE: ["ACTIVE", "DELETED"],
+  DELETED: [],
 };
 
 export const DEFAULT_COMPETITION_RULES: CompetitionRules = {

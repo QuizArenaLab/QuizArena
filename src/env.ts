@@ -20,6 +20,9 @@ const envSchema = z.object({
 
   // Environment
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  
+  // Feature Flags
+  FEATURE_COMPETITION_STUDIO: z.string().optional().default("true"),
 });
 
 // Cache the parsed environment variables
