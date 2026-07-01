@@ -4,7 +4,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { Monitor, Smartphone, LogOut } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { ADMIN_MIN_WIDTH } from "@/constants/workspace";
-import { logWorkspaceAccessBlock } from "@/features/workspace/actions";
+
+// The legacy workspace actions have been removed in Sprint 0 Architecture Migration.
+// We mock this logging function temporarily until Operations Center analytics replaces it.
+const logWorkspaceAccessBlock = async (data: any) => {
+  console.warn("Workspace access blocked:", data);
+};
 import { AdminWorkspaceSkeleton } from "./AdminWorkspaceSkeleton";
 import { signOut } from "next-auth/react";
 

@@ -1,5 +1,4 @@
 import { EXAM_CATEGORY_LABELS } from "@/lib/onboarding";
-import { getLatestChallenge } from "@/features/challenges/services/challenge";
 import {
   getPerformanceOverview,
   getCompetitivePosition,
@@ -84,7 +83,7 @@ function getRankBadge(rank: number | null) {
 export async function UserDashboardView({ user }: UserDashboardViewProps) {
   const category = user.examCategory as keyof typeof EXAM_CATEGORY_LABELS | undefined;
 
-  const challenge = await getLatestChallenge();
+  const challenge = null;
   const performance = user.id ? await getPerformanceOverview(user.id) : null;
   const competitivePosition = user.id ? await getCompetitivePosition(user.id) : null;
   const recentAttempts = user.id ? await getRecentAttempts(user.id, 5) : [];
@@ -112,57 +111,13 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex-1 space-y-4">
             <div className="flex items-center gap-3">
-              {challenge ? (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/25">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 arena-live-dot" />
-                  <span className="text-xs font-bold text-emerald-300 uppercase tracking-widest">
-                    Today&apos;s Mission
-                  </span>
-                </div>
-              ) : (
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
                   <CircleDot className="w-3.5 h-3.5 text-white/40" />
                   <span className="text-xs font-bold text-white/50 uppercase tracking-widest">
                     Practice Arena Open
                   </span>
                 </div>
-              )}
             </div>
-            {challenge ? (
-              <>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
-                  Complete Today&apos;s Challenge
-                </h1>
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-white/70">
-                    <Target className="w-3.5 h-3.5 text-primary" />
-                    {category ? EXAM_CATEGORY_LABELS[category] : "General"}
-                  </span>
-                  <span
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-bold ${getDifficultyStyle(challenge.difficulty)}`}
-                  >
-                    <Zap className="w-3.5 h-3.5" />
-                    {challenge.difficulty}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-white/70">
-                    <Swords className="w-3.5 h-3.5 text-blue-400" />
-                    {challenge.totalQuestions} Questions
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-white/70">
-                    <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                    {challenge.durationInMinutes} Min
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-semibold text-white/70">
-                    <Users className="w-3.5 h-3.5 text-pink-400" />
-                    1,248 Participants
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20 text-xs font-semibold text-orange-300">
-                    <Flame className="w-3.5 h-3.5" />
-                    Maintain Streak
-                  </span>
-                </div>
-              </>
-            ) : (
               <>
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white/80 leading-tight">
                   No Scheduled Challenge
@@ -186,18 +141,8 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
                   </span>
                 </div>
               </>
-            )}
           </div>
           <div className="shrink-0 mt-4 lg:mt-0">
-            {challenge ? (
-              <Link
-                href="/arena"
-                className="arena-cta-pulse w-full lg:w-auto flex items-center justify-center gap-2.5 bg-primary hover:bg-primary/90 text-white px-10 py-4 rounded-xl font-black text-lg tracking-wide transition-all hover:scale-105 active:scale-95 uppercase"
-              >
-                <Swords className="w-5 h-5" />
-                Enter Arena
-              </Link>
-            ) : (
               <Link
                 href="/arena"
                 className="w-full lg:w-auto flex items-center justify-center gap-2.5 bg-white/10 hover:bg-white/15 text-white/80 px-8 py-3.5 rounded-xl font-bold text-base border border-white/10 transition-all hover:scale-105 active:scale-95"
@@ -205,7 +150,6 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
                 <Target className="w-5 h-5" />
                 Practice Arena
               </Link>
-            )}
           </div>
         </div>
       </section>

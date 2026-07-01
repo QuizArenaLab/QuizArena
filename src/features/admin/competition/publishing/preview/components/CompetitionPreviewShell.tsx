@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { PreviewBanner } from "./PreviewBanner";
 import { CompetitionWithRelations } from "../../../types";
-import { ExamShell } from "@/features/exam/components/ExamShell";
-import { ChallengePreviewModal } from "@/features/challenges/components/ChallengePreviewModal";
 
 interface CompetitionPreviewShellProps {
   competition: CompetitionWithRelations;
@@ -40,21 +38,10 @@ export function CompetitionPreviewShell({ competition }: CompetitionPreviewShell
       <div className="flex-1 overflow-auto relative">
         {activeView === "landing" && (
           <div className="relative w-full h-full min-h-[600px] bg-slate-50 flex items-center justify-center p-8">
-            <ChallengePreviewModal
-              isOpen={true}
-              onClose={() => {}}
-              challenge={{
-                id: competition.id,
-                title: competition.title,
-                slug: competition.slug,
-                totalQuestions: competition.totalQuestions,
-                durationInMinutes: competition.durationMinutes,
-                difficulty: competition.difficulty,
-                category: competition.exam,
-                participantsCount: 0,
-                isFeatured: false,
-              }}
-            />
+            <div className="p-8 bg-white border border-gray-200 rounded-xl">
+              <h2 className="text-2xl font-bold">{competition.title}</h2>
+              <p>Preview Landing Page Mock</p>
+            </div>
           </div>
         )}
 
