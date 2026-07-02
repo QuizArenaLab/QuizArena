@@ -12,7 +12,10 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "architecture:inventory": "tsx tools/architecture/scripts/generate-inventory.ts"
+    "architecture:inventory": "tsx tools/architecture/scripts/generate-inventory.ts",
+    "architecture:migrate": "tsx tools/architecture/scripts/migrate-legacy.ts",
+    "architecture:migrate:dry": "tsx tools/architecture/scripts/migrate-legacy.ts --dry-run",
+    "architecture:verify": "tsx tools/architecture/scripts/verify-migration.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
