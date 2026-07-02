@@ -19,7 +19,11 @@
     "architecture:verify": "tsx tools/architecture/scripts/verify-migration.ts",
     "architecture:shared": "tsx tools/architecture/scripts/build-shared-platform.ts",
     "architecture:platform": "echo \"Reserved for Platform extraction\" && exit 0",
-    "architecture:design-system": "echo \"Reserved for Design System extraction\" && exit 0"
+    "architecture:design-system": "echo \"Reserved for Design System extraction\" && exit 0",
+    "architecture:domains": "tsx tools/architecture/scripts/validate-domains.ts",
+    "architecture:contracts": "echo \"Reserved\"",
+    "architecture:boundaries": "echo \"Reserved\"",
+    "architecture:health": "echo \"Reserved\""
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
