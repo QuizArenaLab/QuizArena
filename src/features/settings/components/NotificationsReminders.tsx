@@ -4,7 +4,7 @@ import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
 import type { User as PrismaUser } from "@/generated/prisma";
-import { notify } from "@/shared/components/feedback/notify";
+import { notify } from '@/shared/feedback/notify';
 import { updateNotificationPrefsAction } from "@/features/user/services/account";
 
 interface NotificationsRemindersProps {

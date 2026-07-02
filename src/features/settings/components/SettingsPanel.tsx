@@ -22,7 +22,7 @@ import {
   AlertTriangle,
   CheckCircle2,
 } from "lucide-react";
-import { notify } from "@/shared/components/feedback/notify";
+import { notify } from '@/shared/feedback/notify';
 import { SettingCard } from "./SettingCard";
 import { ConfirmationModal } from "./ConfirmationModal";
 import {

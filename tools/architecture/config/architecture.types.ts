@@ -93,3 +93,38 @@ export interface FileRecord {
   dependencies?: DependencyMetadata;
   classification?: FileClassification;
 }
+
+export interface ArchitectureSummary {
+  pages: number;
+  layouts: number;
+  components: number;
+  services: number;
+  repositories: number;
+  stores: number;
+  hooks: number;
+  validators: number;
+  types: number;
+  contexts: number;
+  utilities: number;
+  actions: number;
+  controllers: number;
+  events: number;
+  commands: number;
+  prismaModels: number;
+  totalFiles: number;
+  totalDirectories: number;
+  largestFeature: string;
+  mostDuplicatedLayer: string;
+  sharedCandidateCount: number;
+  legacyCount: number;
+  deleteCandidateCount: number;
+  migrationCandidateCount: number;
+  totalDomains: number;
+  largestDomain: string;
+  duplicateCount: number;
+  averageImportsPerFile: number;
+  averageExportsPerFile: number;
+  dependencyDepth: number;
+  circularDependencyCount: number;
+  unknownOwnershipCount: number;
+}

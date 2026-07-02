@@ -15,7 +15,7 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { notify } from "@/shared/components/feedback/notify";
+import { notify } from '@/shared/feedback/notify';
 import {
   EXAM_CATEGORIES,
   PREPARATION_LEVELS,

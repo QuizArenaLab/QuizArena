@@ -4,7 +4,7 @@ import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Trash2, Download, LogOut, X } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
-import { notify } from "@/shared/components/feedback/notify";
+import { notify } from '@/shared/feedback/notify';
 import { deleteAccountAction, logOutAction } from "@/features/user/services/account";
 
 export function DangerZone() {

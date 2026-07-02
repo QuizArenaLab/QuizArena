@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { X, Check } from "lucide-react";
-import { notify } from "@/shared/components/feedback/notify";
+import { notify } from '@/shared/feedback/notify';
 import { updateProfileAction, updateAvatarAction } from "@/features/user/services/account";
-import { AvatarIdentity } from "@/shared/components/AvatarIdentity";
+import { AvatarIdentity } from '@/shared/ui/AvatarIdentity';
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 

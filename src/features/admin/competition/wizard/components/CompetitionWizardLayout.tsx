@@ -7,7 +7,7 @@ import { UnsavedChangesDialog } from "./UnsavedChangesDialog";
 import { useWizardStore } from "../context/useWizardStore";
 import { WizardStep } from "../types/wizard.types";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button"; // Note: verify if we have a button component, else use standard classes. I'll use standard classes to be safe.
+import { Button } from '@/shared/ui/button'; // Note: verify if we have a button component, else use standard classes. I'll use standard classes to be safe.
 
 export function CompetitionWizardLayout({ children }: { children: React.ReactNode }) {
   const { currentStep, resetWizard } = useWizardStore();

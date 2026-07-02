@@ -6,7 +6,7 @@ import type { User as PrismaUser } from "@/generated/prisma";
 import { format } from "date-fns";
 import { useState } from "react";
 import { ProfileWorkspaceModal } from "./ProfileWorkspaceModal";
-import { AvatarIdentity } from "@/shared/components/AvatarIdentity";
+import { AvatarIdentity } from '@/shared/ui/AvatarIdentity';
 
 interface AccountHeroProps {
   user: PrismaUser;

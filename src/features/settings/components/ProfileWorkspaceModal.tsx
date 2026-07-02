@@ -4,9 +4,9 @@ import { useState, useTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { User, Mail, AtSign, Save, X } from "lucide-react";
 import type { User as PrismaUser } from "@/generated/prisma";
-import { notify } from "@/shared/components/feedback/notify";
+import { notify } from '@/shared/feedback/notify';
 import { updateProfileAction } from "@/features/user/services/account";
-import { AvatarIdentity } from "@/shared/components/AvatarIdentity";
+import { AvatarIdentity } from '@/shared/ui/AvatarIdentity';
 
 interface ProfileWorkspaceModalProps {
   isOpen: boolean;

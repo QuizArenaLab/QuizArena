@@ -19,7 +19,7 @@ import {
   performAdminAction,
   AdminActionPayload,
 } from "@/features/admin/users/services/user-details";
-import { AvatarIdentity } from "@/shared/components/AvatarIdentity";
+import { AvatarIdentity } from '@/shared/ui/AvatarIdentity';
 import { useRouter } from "next/navigation";
 
 interface InspectDrawerProps {

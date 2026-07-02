@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { GripVertical } from "lucide-react";
 import { reorderChallengeQuestions } from "@/features/admin/services/challenge-builder";
-import { notify } from "@/shared/components/feedback/notify";
+import { notify } from '@/shared/feedback/notify';
 
 export default function DraggableQuestionList({ challenge }: { challenge: any }) {
   const [items, setItems] = useState(challenge.questions);

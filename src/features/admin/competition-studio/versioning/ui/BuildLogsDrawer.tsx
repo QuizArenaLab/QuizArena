@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/shared/ui/badge';
 import { Loader2, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 
 interface BuildLogsDrawerProps {

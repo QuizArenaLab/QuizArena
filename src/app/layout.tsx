@@ -7,8 +7,8 @@ import { getServerSession } from "@/lib/session-utils";
 
 import { Footer } from "@/shared/layout/Footer";
 
-import { MaintenanceFallback } from "@/shared/components/maintenance-fallback";
-import { NotificationCenter } from "@/shared/components/feedback/NotificationCenter";
+import { MaintenanceFallback } from '@/shared/error-state/maintenance-fallback';
+import { NotificationCenter } from '@/shared/feedback/NotificationCenter';
 import { getPlatformState } from "@/features/super-admin/services/infrastructure/platform-controls";
 
 const hanken = Hanken_Grotesk({ subsets: ["latin"], variable: "--font-hanken" });

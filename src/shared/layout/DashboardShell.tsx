@@ -32,7 +32,7 @@ import {
 import { signOut } from "next-auth/react";
 import Image from "next/image";
 import { ROLES } from "@/features/rbac/services/roles";
-import { AvatarIdentity } from "@/shared/components/AvatarIdentity";
+import { AvatarIdentity } from '@/shared/ui/AvatarIdentity';
 import { logOutAction } from "@/features/user/services/account";
 
 interface DashboardShellProps {

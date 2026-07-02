@@ -13,7 +13,7 @@ import {
   LogOut,
 } from "lucide-react";
 import type { User as PrismaUser } from "@/generated/prisma";
-import { notify } from "@/shared/components/feedback/notify";
+import { notify } from '@/shared/feedback/notify';
 import { updatePasswordAction, signOutOtherDevicesAction } from "@/features/user/services/account";
 
 interface SecuritySettingsProps {

@@ -16,7 +16,10 @@
     "architecture:migrate": "tsx tools/architecture/scripts/migrate-legacy.ts",
     "architecture:migrate:dry": "tsx tools/architecture/scripts/migrate-legacy.ts --dry-run",
     "architecture:modules": "tsx tools/architecture/scripts/migrate-modules.ts",
-    "architecture:verify": "tsx tools/architecture/scripts/verify-migration.ts"
+    "architecture:verify": "tsx tools/architecture/scripts/verify-migration.ts",
+    "architecture:shared": "tsx tools/architecture/scripts/build-shared-platform.ts",
+    "architecture:platform": "echo \"Reserved for Platform extraction\" && exit 0",
+    "architecture:design-system": "echo \"Reserved for Design System extraction\" && exit 0"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",

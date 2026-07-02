@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Clock, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
-import { Button } from "@/shared/components/button";
+import { Button } from '@/shared/ui/button';
 
 export default function ChallengePreviewer({ challenge }: { challenge: any }) {
   const [currentIdx, setCurrentIdx] = useState(0);

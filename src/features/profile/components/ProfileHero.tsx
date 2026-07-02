@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AvatarIdentity } from "@/shared/components/AvatarIdentity";
+import { AvatarIdentity } from '@/shared/ui/AvatarIdentity';
 import { Shield, LogIn, Calendar, Target, Share2, Flame } from "lucide-react";
 import { EditProfileModal } from "./EditProfileModal";
 

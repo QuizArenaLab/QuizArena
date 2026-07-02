@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from '@/shared/ui/dialog';
 
 export function UnsavedChangesDialog() {
   const { hasUnsavedChanges, concurrentEditDetected } = useWizardAutoSave();
