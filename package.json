@@ -15,6 +15,7 @@
     "architecture:inventory": "tsx tools/architecture/scripts/generate-inventory.ts",
     "architecture:migrate": "tsx tools/architecture/scripts/migrate-legacy.ts",
     "architecture:migrate:dry": "tsx tools/architecture/scripts/migrate-legacy.ts --dry-run",
+    "architecture:modules": "tsx tools/architecture/scripts/migrate-modules.ts",
     "architecture:verify": "tsx tools/architecture/scripts/verify-migration.ts"
   },
   "dependencies": {
