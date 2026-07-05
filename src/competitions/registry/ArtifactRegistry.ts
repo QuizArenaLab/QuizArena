@@ -1,4 +1,4 @@
-import { CompetitionArtifact } from '../models/CompetitionArtifact';
+import { CompetitionArtifact } from '../artifacts/CompetitionArtifact';
 
 export class ArtifactRepository {
   private artifacts: Map<string, CompetitionArtifact> = new Map();
