@@ -27,6 +27,9 @@ export const useWizardStore = create<WizardState>()(
         composer: {
           sections: [],
         },
+        certificates: {
+          enableCertificates: false,
+        },
       },
       savingState: "idle",
       lastSavedAt: null,
@@ -69,6 +72,15 @@ export const useWizardStore = create<WizardState>()(
           sessionVersion: state.sessionVersion + 1,
         })),
 
+      updateCertificates: (data) =>
+        set((state) => ({
+          draftData: {
+            ...state.draftData,
+            certificates: { ...state.draftData.certificates, ...data },
+          },
+          sessionVersion: state.sessionVersion + 1,
+        })),
+
       setSavingState: (savingState: SavingState) =>
         set((state) => ({
           savingState,
@@ -97,6 +109,7 @@ export const useWizardStore = create<WizardState>()(
             },
             participation: { allowRetake: false },
             composer: { sections: [] },
+            certificates: { enableCertificates: false },
           },
           savingState: "idle",
           lastSavedAt: null,

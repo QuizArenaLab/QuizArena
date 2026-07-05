@@ -10,18 +10,21 @@ import {
   competitionConfigSchema,
   competitionParticipationSchema,
   competitionComposerSchema,
+  competitionCertificatesSchema,
 } from "../validators/wizard.validators";
 
 export type CompetitionBasicsData = z.infer<typeof competitionBasicsSchema>;
 export type CompetitionConfigData = z.infer<typeof competitionConfigSchema>;
 export type CompetitionParticipationData = z.infer<typeof competitionParticipationSchema>;
 export type CompetitionComposerData = z.infer<typeof competitionComposerSchema>;
+export type CompetitionCertificatesData = z.infer<typeof competitionCertificatesSchema>;
 
 export interface WizardDraftData {
   basics: Partial<CompetitionBasicsData>;
   config: Partial<CompetitionConfigData>;
   participation: Partial<CompetitionParticipationData>;
   composer: Partial<CompetitionComposerData>;
+  certificates: Partial<CompetitionCertificatesData>;
 }
 
 export type WizardStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
@@ -41,6 +44,7 @@ export interface WizardState {
   updateConfig: (data: Partial<CompetitionConfigData>) => void;
   updateParticipation: (data: Partial<CompetitionParticipationData>) => void;
   updateComposer: (data: Partial<CompetitionComposerData>) => void;
+  updateCertificates: (data: Partial<CompetitionCertificatesData>) => void;
   setSavingState: (state: SavingState) => void;
   incrementVersion: () => void;
   resetWizard: () => void;

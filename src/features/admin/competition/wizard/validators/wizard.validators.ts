@@ -115,6 +115,12 @@ export const competitionComposerSchema = z.object({
   sections: z.array(composerSectionSchema).default([]),
 });
 
+export const competitionCertificatesSchema = z.object({
+  enableCertificates: z.boolean().default(false),
+  certificateTemplateId: z.string().optional(),
+  passingThreshold: z.number().min(0).max(100).optional(),
+});
+
 export const createDraftWizardSchema = z.object({
   basics: competitionBasicsSchema,
   config: competitionConfigSchema,
