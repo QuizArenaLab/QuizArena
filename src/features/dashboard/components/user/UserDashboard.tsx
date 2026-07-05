@@ -4,6 +4,8 @@ import {
   getCompetitivePosition,
   getRecentAttempts,
 } from "@/features/analytics/services/performance";
+import { CompetitionHistoryFacade } from "@/features/competitions/history/facade/CompetitionHistoryFacade";
+import { CandidateProfileFacade } from "@/features/competitions/profile/facade/CandidateProfileFacade";
 import type { DefaultSession } from "next-auth";
 import Link from "next/link";
 
@@ -83,18 +85,21 @@ function getRankBadge(rank: number | null) {
 export async function UserDashboardView({ user }: UserDashboardViewProps) {
   const category = user.examCategory as keyof typeof EXAM_CATEGORY_LABELS | undefined;
 
-  const challenge = null;
   const performance = user.id ? await getPerformanceOverview(user.id) : null;
   const competitivePosition = user.id ? await getCompetitivePosition(user.id) : null;
-  const recentAttempts = user.id ? await getRecentAttempts(user.id, 5) : [];
+  
+  // Use V2 Competition History alongside legacy
+  const modernHistory = user.id ? await CompetitionHistoryFacade.getCandidateHistory(user.id) : [];
+  const legacyAttempts = user.id ? await getRecentAttempts(user.id, 5) : [];
+  const candidateProfile = user.id ? await CandidateProfileFacade.getProfile(user.id) : null;
 
-  const hasHistory = performance && performance.totalAttempts > 0;
+  const hasHistory = (performance && performance.totalAttempts > 0) || modernHistory.length > 0;
   const hasEnoughData = performance && performance.totalAttempts >= 3;
 
   const checklist = [
     { title: "Create Account", completed: true },
     { title: "Complete First Challenge", completed: hasHistory },
-    { title: "Unlock Analytics", completed: hasHistory && performance.totalAttempts > 2 },
+    { title: "Unlock Analytics", completed: hasHistory && ((performance?.totalAttempts ?? 0) > 2 || modernHistory.length > 2) },
     { title: "Appear On Rankings", completed: competitivePosition?.globalRank !== null },
   ];
   const completedCount = checklist.filter((c) => c.completed).length;
@@ -375,14 +380,14 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
         </div>
       </section>
 
-      {/* 5. RECENT PERFORMANCE */}
+      {/* 5. RECENT PERFORMANCE (V2 + Legacy) */}
       <section className="arena-section" style={{ animationDelay: "240ms" }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xs font-bold text-navy/50 uppercase tracking-widest flex items-center gap-2">
             <Swords className="w-3.5 h-3.5" />
-            Recent Performance
+            Recent Competitions
           </h2>
-          {recentAttempts.length > 0 && (
+          {(modernHistory.length > 0 || legacyAttempts.length > 0) && (
             <Link
               href="/analytics"
               className="text-xs font-semibold text-primary/70 hover:text-primary transition-colors flex items-center gap-1"
@@ -392,15 +397,16 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
           )}
         </div>
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          {recentAttempts.length > 0 ? (
+          {(modernHistory.length > 0 || legacyAttempts.length > 0) ? (
             <div className="divide-y divide-gray-50">
-              {recentAttempts.map((attempt) => {
-                const rankBadge = getRankBadge(attempt.rankAchieved);
-                const accColors = getAccuracyColor(attempt.accuracy);
+              {/* Render Modern History */}
+              {modernHistory.slice(0, 3).map((entry) => {
+                const rankBadge = getRankBadge(entry.rank);
+                const accColors = getAccuracyColor(entry.percentage || 0);
                 return (
                   <Link
-                    href={`/dashboard/results/${attempt.id}`}
-                    key={attempt.id}
+                    href={`/dashboard/competitions/c/results`} // Simplified for MVP
+                    key={entry.submissionId}
                     className="group block"
                   >
                     <div className="flex items-center gap-4 px-6 py-5 hover:bg-gray-50/80 transition-colors">
@@ -411,26 +417,24 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
                       </div>
                       <div className="flex-1 min-w-0 ml-1">
                         <p className="text-base font-bold text-navy truncate group-hover:text-primary transition-colors">
-                          {attempt.challengeName}
+                          {entry.competitionTitle}
                         </p>
                         <p className="text-xs font-medium text-gray-400 mt-1">
-                          {attempt.submittedAt
-                            ? attempt.submittedAt.toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })
-                            : "—"}
+                          {new Date(entry.submittedAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
                         </p>
                       </div>
                       <div className="flex items-center gap-5 shrink-0">
                         <div className="text-right hidden md:block">
-                          <p className="text-sm font-black text-navy">{attempt.score} pts</p>
+                          <p className="text-sm font-black text-navy">{entry.score || 0} pts</p>
                         </div>
                         <div
                           className={`px-3 py-1.5 rounded-lg text-sm font-bold ${accColors.bg} ${accColors.text}`}
                         >
-                          {attempt.accuracy}%
+                          {entry.percentage || 0}%
                         </div>
                         <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-primary transition-colors hidden sm:block" />
                       </div>
@@ -446,7 +450,7 @@ export async function UserDashboardView({ user }: UserDashboardViewProps) {
               </div>
               <p className="text-sm font-bold text-navy/60">No Performance Data</p>
               <p className="text-xs font-medium text-gray-400 mt-1">
-                Start a challenge to build your history.
+                Start a competition to build your history.
               </p>
             </div>
           )}

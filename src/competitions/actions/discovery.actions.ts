@@ -7,6 +7,8 @@ export async function fetchDiscoverableCompetitionsAction(filters?: {
   category?: string;
   difficulty?: string;
   status?: CompetitionLifecycle;
+  cursor?: string;
+  limit?: number;
 }) {
   try {
     const competitions = await discoveryService.getDiscoverableCompetitions(filters);

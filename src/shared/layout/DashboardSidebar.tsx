@@ -27,10 +27,8 @@ interface DashboardSidebarProps {
 
 const navItems = [
   { href: "/dashboard/home", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/competitions", label: "Competitions", icon: Trophy },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/profile", label: "Profile", icon: User },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard/competitions", label: "Competitions", icon: Trophy },
+  // Feature Flags: Analytics, Profile, and Settings are hidden for MVP
 ];
 
 export function DashboardSidebar({ session, isOpen, onClose }: DashboardSidebarProps) {

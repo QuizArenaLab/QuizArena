@@ -1,8 +1,12 @@
 export interface PlatformEvent {
   eventId: string;
   type: string;
-  timestamp: Date;
-  [key: string]: any;
+  timestamp: string; // ISO String
+  correlationId: string;
+  workflowId?: string;
+  version: string;
+  sourceDomain: string;
+  payload: any;
 }
 
 export type EventHandler<T extends PlatformEvent> = (event: T) => void | Promise<void>;

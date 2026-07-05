@@ -45,7 +45,8 @@ export class SubmissionManager implements IRuntimeManager {
         );
 
         if (typeof window !== "undefined") {
-          window.location.href = `/dashboard/competitions/${state.competitionSlug}/processing`;
+          const srId = (res.data as any)?.submissionRecordId;
+          window.location.href = `/dashboard/competitions/${state.competitionSlug}/processing${srId ? `?sid=${srId}` : ""}`;
         }
       } else {
         throw new Error("error" in res ? res.error : "Submission failed");

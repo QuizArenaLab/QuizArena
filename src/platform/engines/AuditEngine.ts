@@ -19,10 +19,10 @@ export class AuditEngine {
   private async handleDomainAudit(event: PlatformEvent): Promise<void> {
     const audit: PlatformAudit = {
       auditId: event.eventId,
-      domain: event.producer,
+      domain: event.sourceDomain,
       action: event.payload.action,
       actor: event.payload.actor,
-      timestamp: event.occurredAt,
+      timestamp: new Date(event.timestamp),
       details: event.payload.details,
     };
 

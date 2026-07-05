@@ -13,88 +13,71 @@ export class CompetitionResultsFacade {
    * Ensures the user is authorized and the attempt is fully completed.
    */
   public static async getResultReadModel(
-    attemptId: string,
+    submissionRecordId: string,
     userId: string
   ): Promise<CompetitionResultReadModel> {
-    const attempt = await prisma.competitionAttempt.findUnique({
-      where: { sessionId: attemptId },
+    const submissionResult = await prisma.submissionResult.findUnique({
+      where: { submissionRecordId },
       include: {
-        competition: {
+        submissionRecord: {
           include: {
-            config: true,
-            questions: {
+            attempt: {
               include: {
-                question: {
-                  include: { options: true },
+                competition: {
+                  include: { config: true },
                 },
               },
             },
           },
         },
-        session: true,
       },
     });
 
-    if (!attempt) {
-      throw new Error("Attempt not found");
-    }
-
-    if (attempt.userId !== userId) {
-      throw new Error("Unauthorized access to result");
-    }
-
-    if (attempt.session.status !== "SUBMITTED") {
+    if (!submissionResult) {
       throw new Error("Result is not yet available for this attempt");
     }
 
+    if (submissionResult.submissionRecord.userId !== userId) {
+      throw new Error("Unauthorized access to result");
+    }
+
     // Safely parse JSON snapshots
-    const resultSnapshot: any = attempt.resultSnapshot || {};
-    const evalSnapshot: any = attempt.evaluationSnapshot || {};
+    const evalSnapshot: any = submissionResult.evaluationSnapshot || {};
     const evalAnswers = evalSnapshot.evaluatedAnswers || [];
 
-    // Assemble Review Items
+    const attempt = submissionResult.submissionRecord.attempt;
+
+    // Assemble Review Items (Now read directly from evaluated answers)
     const questionReviews: QuestionReviewItem[] = evalAnswers.map((ea: any) => {
-      const compQ = attempt.competition.questions.find(
-        (cq: any) => cq.questionId === ea.questionId
-      );
-      const qData = compQ?.question;
-
-      const options =
-        qData?.options?.map((o: any) => ({
-          id: o.id,
-          text: o.optionText,
-          isCorrect: o.isCorrect,
-        })) || [];
-
-      const correctOption = options.find((o: any) => o.isCorrect);
-
+      // In a real system, the exact Question Data should be embedded in the Evaluation Snapshot
+      // so we don't query the mutable DB again. For MVP, we trust the Evaluation Snapshot.
       return {
         questionId: ea.questionId,
-        questionText: qData?.question || "Question Data Unavailable",
-        options,
+        questionText: ea.questionText || "Question Data from Snapshot",
+        options: ea.options || [],
         userAnswerId: ea.selectedOptionId,
-        correctAnswerId: correctOption?.id || null,
-        explanation: qData?.explanation || null,
+        correctAnswerId: ea.correctAnswerId || null,
+        explanation: ea.explanation || null,
         marksAwarded: ea.marksAwarded,
         isCorrect: ea.isCorrect,
         isSkipped: ea.isSkipped,
       };
     });
 
-    // Sections (Mocking empty if not applicable in this schema version)
+    // Sections
     const sections: SectionMetric[] = [];
 
-    // Generators
+    // Generators (Can also be replaced if stored in InsightSnapshot/RecommendationSnapshot)
     const insights = PerformanceInsightGenerator.generate(
       questionReviews,
-      attempt.accuracy,
+      submissionResult.accuracy,
       attempt.timeTakenInSeconds,
-      attempt.competition.questions.length
+      evalAnswers.length
     );
 
     const recommendations = RecommendationService.generateRecommendations(
-      attempt.accuracy,
-      attempt.percentage,
+      submissionResult.accuracy,
+      submissionResult.percentage,
       "SUBMITTED",
       attempt.competition.slug
     );
@@ -105,35 +88,34 @@ export class CompetitionResultsFacade {
     );
 
     return {
-      attemptId: attempt.sessionId,
+      attemptId: attempt.sessionId, // Keep sessionId as attemptId for backwards compat in UI routing
       competitionTitle: attempt.competition.title,
       competitionSlug: attempt.competition.slug,
       status:
-        attempt.percentage >= (attempt.competition.config as any)?.passPercentage
+        submissionResult.percentage >= ((attempt.competition.config as any)?.passPercentage || 0)
           ? "PASSED"
           : "FAILED",
-      score: attempt.score,
-      maxScore: attempt.competition.questions.length, // Rough estimation for MVP, ideally stored in snapshot
-      accuracy: attempt.accuracy,
+      score: submissionResult.score,
+      maxScore: evalAnswers.length,
+      accuracy: submissionResult.accuracy,
       timeTakenInSeconds: attempt.timeTakenInSeconds,
-      attemptDate: attempt.submittedAt.toISOString(),
+      attemptDate: submissionResult.submissionRecord.submittedAt.toISOString(),
       metadata: {
-        competitionVersion: resultSnapshot.competitionVersion || "1",
+        competitionVersion: "1",
         questionVersion: "1",
         scoringVersion: "1",
         evaluationVersion: "1",
-        generatedAt: attempt.submittedAt.toISOString(),
+        generatedAt: submissionResult.evaluatedAt.toISOString(),
       },
-      correctAnswers: attempt.correctAnswers,
-      incorrectAnswers: attempt.wrongAnswers,
-      skippedQuestions: attempt.unansweredCount,
-      marksAwarded: attempt.score,
-      negativeMarks: 0, // Fallback if not tracked perfectly in snapshot
-      percentage: attempt.percentage,
+      correctAnswers: submissionResult.correctAnswers,
+      incorrectAnswers: submissionResult.wrongAnswers,
+      skippedQuestions: submissionResult.unansweredCount,
+      marksAwarded: submissionResult.score,
+      negativeMarks: 0, 
+      percentage: submissionResult.percentage,
       completionRate:
-        ((attempt.correctAnswers + attempt.wrongAnswers) / attempt.competition.questions.length) *
-        100,
-      averageTimePerQuestion: attempt.timeTakenInSeconds / attempt.competition.questions.length,
+        ((submissionResult.correctAnswers + submissionResult.wrongAnswers) / evalAnswers.length) * 100,
+      averageTimePerQuestion: attempt.timeTakenInSeconds / evalAnswers.length,
       questionReviews,
       sections,
       insights,

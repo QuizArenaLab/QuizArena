@@ -5,6 +5,6 @@ export default async function CompetitionDiscoveryPage() {
   const response = await fetchDiscoverableCompetitionsAction();
   
   return (
-    <CompetitionDiscoveryKernel initialCompetitions={response.success ? response.data : []} />
+    <CompetitionDiscoveryKernel initialCompetitions={response.success ? response.data.items : []} />
   );
 }

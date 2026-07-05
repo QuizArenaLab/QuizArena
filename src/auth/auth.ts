@@ -6,7 +6,7 @@ import { authConfig } from "./auth.config";
 import { verifyPassword } from "@/lib/password";
 import { loginRateLimiter } from "@/lib/rate-limiter";
 import type { ExamCategory, PreparationLevel } from "@/types/next-auth";
-import type { User as PrismaUser } from "@prisma/client";
+import type { User as PrismaUser } from "@/generated/prisma";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,

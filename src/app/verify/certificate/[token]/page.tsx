@@ -1,5 +1,6 @@
 import { verifyCertificateAction } from "@/features/competitions/rewards/actions/rewards.actions";
 import { CheckCircle, XCircle } from "lucide-react";
+import { PrintCertificateButton } from "./PrintCertificateButton";
 
 export default async function CertificateVerificationPage({
   params,
@@ -66,6 +67,8 @@ export default async function CertificateVerificationPage({
             Verified securely by QuizArena at {result.data.verifiedAt.toLocaleString()}
           </p>
         </div>
+
+        <PrintCertificateButton />
       </div>
     </div>
   );

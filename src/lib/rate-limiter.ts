@@ -106,6 +106,7 @@ class RateLimiter {
 // Singleton instances
 export const signupRateLimiter = new RateLimiter(5, 15 * 60 * 1000); // 5 attempts per 15 min
 export const loginRateLimiter = new RateLimiter(10, 15 * 60 * 1000); // 10 attempts per 15 min
+export const apiRateLimiter = new RateLimiter(50, 60 * 1000); // 50 attempts per minute for API/Actions
 
 let cleanupInterval: NodeJS.Timeout | null = null;
 

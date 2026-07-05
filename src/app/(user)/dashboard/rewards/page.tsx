@@ -4,6 +4,8 @@ import { CertificatesRegion } from "./components/CertificatesRegion";
 import { BadgesRegion } from "./components/BadgesRegion";
 import { RewardHistoryRegion } from "./components/RewardHistoryRegion";
 
+export const dynamic = "force-dynamic";
+
 export default async function RewardsDashboardPage() {
   const result = await getUserRewardsAction();
 

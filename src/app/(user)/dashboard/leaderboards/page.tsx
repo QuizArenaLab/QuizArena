@@ -7,6 +7,8 @@ import { FiltersRegion } from "@/features/competitions/leaderboard/components/re
 import { StatisticsRegion } from "@/features/competitions/leaderboard/components/regions/statistics/StatisticsRegion";
 import { LeaderboardKeyGenerator } from "@/features/competitions/ranking/engine/LeaderboardKeyGenerator";
 
+export const dynamic = "force-dynamic";
+
 export default async function GlobalLeaderboardPage({
   searchParams,
 }: {

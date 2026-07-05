@@ -10,6 +10,8 @@ export interface LogContext {
   userId?: string;
   action?: string;
   category?: string;
+  correlationId?: string;
+  workflowId?: string;
   [key: string]: any;
 }
 

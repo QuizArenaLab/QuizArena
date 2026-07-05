@@ -11,30 +11,27 @@ export class RankingWorker {
   public static async executeCompetitionRanking(competitionId: string) {
     console.log(`[RankingWorker] Executing ranking for competition: ${competitionId}`);
 
-    // 1. Fetch all attempts for this competition that are COMPLETED/SUBMITTED
-    const attempts = await prisma.competitionAttempt.findMany({
+    // 1. Fetch all submission records for this competition that have results
+    const submissions = await prisma.submissionRecord.findMany({
       where: {
-        competitionId,
-        session: { status: "SUBMITTED" },
+        attempt: { competitionId },
+        result: { isNot: null },
       },
-      select: {
-        userId: true,
-        score: true,
-        accuracy: true,
-        timeTakenInSeconds: true,
-        submittedAt: true,
+      include: {
+        attempt: true,
+        result: true,
       },
     });
 
-    if (attempts.length === 0) return;
+    if (submissions.length === 0) return;
 
     // 2. Format for strategy
-    const participants = attempts.map((a) => ({
-      userId: a.userId,
-      score: a.score,
-      accuracy: a.accuracy,
-      completionTime: a.timeTakenInSeconds,
-      submittedAt: a.submittedAt,
+    const participants = submissions.map((s) => ({
+      userId: s.userId,
+      score: s.result!.score,
+      accuracy: s.result!.accuracy,
+      completionTime: s.attempt.timeTakenInSeconds,
+      submittedAt: s.submittedAt,
     }));
 
     // 3. Compute Rankings

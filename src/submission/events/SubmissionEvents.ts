@@ -1,7 +1,7 @@
-export interface SubmissionEvent {
-  eventId: string;
+import { PlatformEvent } from "../../platform/events/PlatformEventBus";
+
+export interface SubmissionEvent extends PlatformEvent {
   attemptId: string;
-  timestamp: Date;
 }
 
 export interface SubmissionStarted extends SubmissionEvent {

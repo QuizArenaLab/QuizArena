@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateApiRequest } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { isValidExamCategory, isValidPreparationLevel } from "@/lib/onboarding";
-import type { User } from "@prisma/client";
+import type { User } from "@/generated/prisma";
 
 export async function PATCH(request: NextRequest) {
   try {

@@ -49,8 +49,7 @@ interface DashboardShellProps {
 const userNavItems = [
   { href: "/dashboard/home", label: "Workspace", icon: LayoutDashboard },
   { href: "/dashboard/competitions", label: "Competitions", icon: Trophy },
-  { href: "/challenges", label: "Practice", icon: Target },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  // Feature Flags: Practice and Analytics are hidden for MVP
 ];
 
 const moderatorNavItems = [
@@ -223,6 +222,8 @@ export function DashboardShell({ children, userStatsNode, freshUser }: Dashboard
           onClick={() => setSidebarOpen(true)}
           className="p-1.5 group flex flex-col gap-[4.5px] items-start justify-center w-9 h-9 text-navy hover:bg-gray-50 rounded-lg transition-colors"
           aria-label="Open menu"
+          aria-expanded={sidebarOpen}
+          aria-controls="mobile-sidebar"
         >
           <span className="w-5 h-[2px] bg-current rounded-full transition-all group-hover:w-5"></span>
           <span className="w-3.5 h-[2px] bg-current rounded-full transition-all group-hover:w-5"></span>
@@ -392,6 +393,7 @@ export function DashboardShell({ children, userStatsNode, freshUser }: Dashboard
             />
 
             <motion.div
+              id="mobile-sidebar"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}

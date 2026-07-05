@@ -1,5 +1,5 @@
 import { PipelineContext } from "../types/pipeline.types";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@/generated/prisma";
 
 export interface IPipelineStage {
   /**

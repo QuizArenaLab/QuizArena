@@ -7,8 +7,7 @@
  * - Protected API endpoints
  */
 
-import { getServerSession, requireAuth, requireAdmin } from "./session-utils";
-import type { User } from "@prisma/client";
+import { getServerSession, requireAuth, requireAdmin, AuthUser } from "./session-utils";
 
 // ─── Authorization Result Patterns ───────────────────────────
 
@@ -63,7 +62,7 @@ export async function getUserInAction() {
  * });
  * ```
  */
-export async function withAuth<T>(action: (user: User) => Promise<T>): Promise<T> {
+export async function withAuth<T>(action: (user: AuthUser) => Promise<T>): Promise<T> {
   const user = await requireAuth();
   return await action(user);
 }
@@ -71,7 +70,7 @@ export async function withAuth<T>(action: (user: User) => Promise<T>): Promise<T
 /**
  * Admin-only action wrapper.
  */
-export async function withAdmin<T>(action: (user: User) => Promise<T>): Promise<T> {
+export async function withAdmin<T>(action: (user: AuthUser) => Promise<T>): Promise<T> {
   const user = await requireAdmin();
   return await action(user);
 }
@@ -95,7 +94,7 @@ export async function withAdmin<T>(action: (user: User) => Promise<T>): Promise<
 export async function validateApiRequest(
   request: Request,
   options?: { requireRole?: "USER" | "ADMIN" }
-): Promise<User | Response> {
+): Promise<AuthUser | Response> {
   const session = await getServerSession();
 
   if (!session?.user) {
@@ -106,7 +105,7 @@ export async function validateApiRequest(
     return forbiddenResponse();
   }
 
-  return session.user as User;
+  return session.user as AuthUser;
 }
 
 // ─── Middleware Auth Check (for edge-compatible use) ──────────

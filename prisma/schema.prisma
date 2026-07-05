@@ -2467,6 +2467,7 @@ model CompetitionSession {
   // Timing (Server-Authoritative)
   startedAt DateTime  @default(now())
   expiresAt DateTime?
+  lastHeartbeatAt DateTime?
 
   // Randomization (Deterministic)
   shuffleSeed   String
@@ -2512,27 +2513,14 @@ model CompetitionAttempt {
   competitionId String
   userId        String
 
-  // This model is generated upon submission and is immutable.
-  // It represents the final state of the attempt to be processed by the Evaluation Engine.
-  submittedAt DateTime @default(now())
-
-  score              Int   @default(0)
-  accuracy           Float @default(0)
-  percentage         Float @default(0)
-  correctAnswers     Int   @default(0)
-  wrongAnswers       Int   @default(0)
-  unansweredCount    Int   @default(0)
+  // Runtime tracking model - tracks autosaves, events, navigation etc.
   timeTakenInSeconds Int   @default(0)
-
-  evaluationSnapshot Json?
-  resultSnapshot     Json?
-  fraudAssessment    Json?
-
-  pipelineMetrics Json?
-
-  session     CompetitionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  competition Competition        @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pipelineMetrics    Json?
+  
+  session          CompetitionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  competition      Competition        @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  submissionRecord SubmissionRecord?
 
   @@unique([userId, competitionId])
   @@index([competitionId])
@@ -2540,6 +2528,52 @@ model CompetitionAttempt {
   @@map("competition_attempts")
 }
 
+model SubmissionRecord {
+  id        String   @id @default(cuid())
+  attemptId String   @unique
+  userId    String
+  
+  // Immutable snapshots from the moment of submission
+  evaluationSnapshot Json?
+  manifests          Json?
+  hashes             Json?
+  
+  submittedAt DateTime @default(now())
+
+  attempt CompetitionAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  result  SubmissionResult?
+
+  @@index([userId])
+  @@map("submission_records")
+}
+
+model SubmissionResult {
+  id                 String @id @default(cuid())
+  submissionRecordId String @unique
+
+  // Evaluated properties
+  score              Int   @default(0)
+  accuracy           Float @default(0)
+  percentage         Float @default(0)
+  correctAnswers     Int   @default(0)
+  wrongAnswers       Int   @default(0)
+  unansweredCount    Int   @default(0)
+
+  // Separated Snapshots
+  evaluationSnapshot      Json?
+  presentationSnapshot    Json?
+  rankingSnapshot         Json?
+  certificateSnapshot     Json?
+  recommendationSnapshot  Json?
+  insightSnapshot         Json?
+
+  fraudAssessment Json?
+  evaluatedAt     DateTime @default(now())
+
+  submissionRecord SubmissionRecord @relation(fields: [submissionRecordId], references: [id], onDelete: Cascade)
+
+  @@map("submission_results")
+}
 model CompetitionSessionAuditLog {
   id        String   @id @default(cuid())
   sessionId String

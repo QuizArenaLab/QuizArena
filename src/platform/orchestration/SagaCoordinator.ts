@@ -34,10 +34,13 @@ export class SagaCoordinator {
     await this.eventBus.publish({
       eventId: `${event.eventId}-cmd-results`,
       type: "GenerateResultsCommand",
-      timestamp: new Date(),
-      sagaId,
-      payload: event.payload,
-    });
+      timestamp: new Date().toISOString(),
+      correlationId: event.correlationId,
+      workflowId: sagaId,
+      version: "1.0",
+      sourceDomain: "Orchestration",
+      payload: { ...event.payload, sagaId },
+    } as any);
   }
 
   public async advanceSubmissionProcessingSaga(sagaId: string, newState: SagaState): Promise<void> {

@@ -61,6 +61,7 @@ export async function createTournament(data: {
 
 export async function joinTournament(tournamentId: string) {
   return await withAuth(async (user) => {
+    if (!user.id) throw new Error("Unauthorized");
     const tournament = await prisma.tournament.findUnique({
       where: { id: tournamentId },
       include: { season: true },
@@ -103,6 +104,7 @@ export async function joinTournament(tournamentId: string) {
 
 export async function getSeasonProgress(seasonId: string) {
   return await withAuth(async (user) => {
+    if (!user.id) throw new Error("Unauthorized");
     const leaderboards = await prisma.tournamentLeaderboard.findMany({
       where: {
         userId: user.id,

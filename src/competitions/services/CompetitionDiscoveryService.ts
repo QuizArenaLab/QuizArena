@@ -3,12 +3,14 @@ import { CompetitionLifecycle } from "@/generated/prisma";
 
 export class CompetitionDiscoveryService {
   /**
-   * Fetch all competitions available to candidates (SCHEDULED, LIVE, COMPLETED)
+   * Fetch all competitions available to candidates with cursor pagination
    */
   async getDiscoverableCompetitions(filters?: {
     category?: string;
     difficulty?: string;
     status?: CompetitionLifecycle;
+    cursor?: string;
+    limit?: number;
   }) {
     const whereClause: any = {
       lifecycleState: {
@@ -20,37 +22,54 @@ export class CompetitionDiscoveryService {
       whereClause.lifecycleState = filters.status;
     }
 
-    if (filters?.category) {
-      whereClause.config = {
-        is: {
-          category: filters.category,
-        },
-      };
-    }
+    if (filters?.category) whereClause.exam = filters.category;
+    if (filters?.difficulty) whereClause.difficulty = filters.difficulty;
 
-    if (filters?.difficulty) {
-      whereClause.config = {
-        ...whereClause.config,
-        is: {
-          ...whereClause.config?.is,
-          difficulty: filters.difficulty,
-        },
-      };
-    }
+    const limit = filters?.limit ?? 12;
 
-    const competitions = await prisma.competition.findMany({
+    const queryArgs: any = {
       where: whereClause,
-      include: {
-        config: true,
-        schedule: true,
-        economics: true,
+      take: limit + 1, // Fetch one extra to determine if there's a next page
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        description: true,
+        lifecycleState: true,
+        durationMinutes: true,
+        difficulty: true,
+        exam: true,
+        startsAt: true,
+        endsAt: true,
+        economics: {
+          select: {
+            entryFee: true,
+            rewardPool: true,
+          }
+        }
       },
       orderBy: {
         createdAt: "desc",
       },
-    });
+    };
 
-    return competitions;
+    if (filters?.cursor) {
+      queryArgs.cursor = { id: filters.cursor };
+      queryArgs.skip = 1; // Skip the cursor itself
+    }
+
+    const competitions = await prisma.competition.findMany(queryArgs);
+    
+    let nextCursor: string | undefined = undefined;
+    if (competitions.length > limit) {
+      const nextItem = competitions.pop();
+      nextCursor = nextItem?.id;
+    }
+
+    return {
+      items: competitions,
+      nextCursor
+    };
   }
 }
 
