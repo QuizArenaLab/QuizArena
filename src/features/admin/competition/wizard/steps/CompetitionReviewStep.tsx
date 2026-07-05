@@ -1,20 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWizardStore } from "../context/useWizardStore";
 import { createDraftCompetition } from "../actions/wizard.actions";
 import { Loader2, CheckCircle2, AlertTriangle, XCircle, ArrowRight } from "lucide-react";
 import { createDraftWizardSchema } from "../validators/wizard.validators";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { checkCompetitionReadinessAction } from "@/competitions/actions/readiness.actions";
+import { ReadinessReport } from "@/competitions/services/CompetitionReadinessService";
 
 export function CompetitionReviewStep() {
   const { draftData, setStep, resetWizard } = useWizardStore();
   const [submitting, setSubmitting] = useState(false);
+  const [readiness, setReadiness] = useState<ReadinessReport | null>(null);
   const router = useRouter();
 
-  const validationResult = createDraftWizardSchema.safeParse(draftData);
-  const isValid = validationResult.success;
+  useEffect(() => {
+    // Load readiness report
+    checkCompetitionReadinessAction(draftData).then((res) => {
+      if (res.success && res.data) {
+        setReadiness(res.data);
+      }
+    });
+  }, [draftData]);
+
+  const isValid = readiness?.isReady || false;
 
   const handleSubmit = async () => {
     if (!isValid) return;
@@ -41,24 +52,52 @@ export function CompetitionReviewStep() {
       <div className="mb-6 border-b border-gray-100 pb-6">
         <h2 className="text-2xl font-bold text-navy">Review & Create Draft</h2>
         <p className="text-gray-500 text-sm mt-1">
-          Verify all details before persisting this competition to the database.
+          Verify all details and fix any readiness errors before persisting this competition to the database.
         </p>
       </div>
 
-      {!validationResult.success && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl mb-6">
-          <div className="flex items-center gap-2 text-red-700 font-bold mb-2">
-            <XCircle className="w-5 h-5" />
-            Validation Failed
-          </div>
-          <ul className="list-disc list-inside text-sm text-red-600 space-y-1">
-            {validationResult.error.issues.map((err: any, i: number) => (
-              <li key={i}>
-                {err.path.join(".")} - {err.message}
-              </li>
-            ))}
-          </ul>
+      {!readiness ? (
+        <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl mb-6 flex items-center justify-center">
+          <Loader2 className="w-5 h-5 text-gray-400 animate-spin mr-2" />
+          <span className="text-gray-500 text-sm">Checking readiness...</span>
         </div>
+      ) : (
+        <>
+          {readiness.errors.length > 0 && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl mb-6">
+              <div className="flex items-center gap-2 text-red-700 font-bold mb-2">
+                <XCircle className="w-5 h-5" />
+                Readiness Errors ({readiness.errors.length})
+              </div>
+              <ul className="list-disc list-inside text-sm text-red-600 space-y-1">
+                {readiness.errors.map((err: string, i: number) => (
+                  <li key={i}>{err}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {readiness.warnings.length > 0 && (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-xl mb-6">
+              <div className="flex items-center gap-2 text-yellow-700 font-bold mb-2">
+                <AlertTriangle className="w-5 h-5" />
+                Readiness Warnings ({readiness.warnings.length})
+              </div>
+              <ul className="list-disc list-inside text-sm text-yellow-600 space-y-1">
+                {readiness.warnings.map((warn: string, i: number) => (
+                  <li key={i}>{warn}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {readiness.isReady && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-xl mb-6">
+              <div className="flex items-center gap-2 text-green-700 font-bold">
+                <CheckCircle2 className="w-5 h-5" />
+                All mandatory readiness checks passed.
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Summary Grids */}
