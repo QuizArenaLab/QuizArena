@@ -36,9 +36,12 @@ export class SubmissionOrchestrator {
           const stageEnd = performance.now();
           this.recordStageMetrics(context, stageName, stageEnd - stageStart);
         }
+
+        // Publish events atomically before transaction commit
+        await this.eventPublisher.publishTx(context, tx);
       });
 
-      // After successful commit, publish domain events
+      // After successful commit, trigger relay immediately
       context.metrics.totalPipelineDurationMs = performance.now() - startTime;
       await this.eventPublisher.publishAfterCommit(context);
 

@@ -5,22 +5,22 @@ export class RankingWorker {
   /**
    * Processes a finalized attempt to update leaderboards asynchronously.
    */
-  async processAttempt(context: PipelineContext): Promise<void> {
+  async processAttempt(payload: { sessionId: string; competitionId: string; userId: string; scoreData: any; attemptResult: any }): Promise<void> {
     // 1. Check if the competition uses ranking / leaderboards
-    const compId = context.competitionId;
-    const userId = context.userId;
-    const scoreData = (context as any).scoreCalculation;
-    const attemptResult = context.resultSnapshot;
+    const compId = payload.competitionId;
+    const userId = payload.userId;
+    const scoreData = payload.scoreData;
+    const attemptResult = payload.attemptResult;
 
     if (!scoreData || !attemptResult) return;
 
     // 2. Fetch the attempt to bind to the leaderboard entry
     const attempt = await prisma.competitionAttempt.findUnique({
-      where: { sessionId: context.sessionId },
+      where: { sessionId: payload.sessionId },
     });
 
     if (!attempt) {
-      console.warn(`[RankingWorker] Attempt not found for session ${context.sessionId}`);
+      console.warn(`[RankingWorker] Attempt not found for session ${payload.sessionId}`);
       return;
     }
 
