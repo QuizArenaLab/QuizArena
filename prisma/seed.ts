@@ -95,18 +95,18 @@ async function main() {
   console.log("Generating Leaderboard & Certificates for Ended Competition...");
   const endedComp = comps[0];
   
-  await prisma.attempt.create({
+  const attempt = await prisma.attempt.create({
     data: {
       userId: candidateUser.id,
       challengeId: endedComp.id,
       status: "EVALUATED",
       score: 85,
-      totalQuestions: 10,
+      totalAnswered: 10,
       correctAnswers: 9,
-      incorrectAnswers: 1,
-      timeTaken: 1200,
+      wrongAnswers: 1,
+      timeTakenInSeconds: 1200,
       startedAt: new Date(),
-      completedAt: new Date(),
+      submittedAt: new Date(),
     }
   });
 
@@ -114,9 +114,11 @@ async function main() {
     data: {
       challengeId: endedComp.id,
       userId: candidateUser.id,
+      attemptId: attempt.id,
       score: 85,
       rank: 1,
-      timeTaken: 1200,
+      accuracy: 90.0,
+      timeTakenInSeconds: 1200,
     }
   });
 
@@ -126,8 +128,16 @@ async function main() {
       competitionId: endedComp.id,
       certificateType: "WINNER",
       certificateVersion: "1.0",
-      issuedAt: new Date(),
-      metadata: { rank: 1, score: 85 }
+      issueDate: new Date(),
+      verificationToken: randomUUID(),
+      participantName: candidateUser.name || "Demo Candidate",
+      competitionName: endedComp.title,
+      competitionVersion: "1.0",
+      rank: 1,
+      score: 85,
+      completionDate: new Date(),
+      qrPayload: "dummy-payload",
+      brandAssetsVersion: "1.0",
     }
   });
 

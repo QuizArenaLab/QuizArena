@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   try {
     const result = await certificateVerificationService.verifyCertificate(id);
     if (!result.valid) {
-      return NextResponse.json({ error: result.reason, revokedAt: result.revokedAt }, { status: 404 });
+      return NextResponse.json({ error: result.reason }, { status: 404 });
     }
 
     return NextResponse.json(result);

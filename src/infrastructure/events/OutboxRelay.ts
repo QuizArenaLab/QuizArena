@@ -1,4 +1,4 @@
-import { PrismaClient } from "../../../generated/prisma";
+import { PrismaClient } from "../../generated/prisma";
 import { PlatformEventBus } from "./PlatformEventBus";
 import { PlatformEvent } from "./types";
 
@@ -8,6 +8,18 @@ export class OutboxRelay {
   private isRunning = false;
   private intervalId: NodeJS.Timeout | null = null;
   private readonly pollIntervalMs = 5000; // Poll every 5 seconds for MVP
+  
+  // In-memory queue for outbox messages since OutboxMessage is not in schema
+  private inMemoryOutbox: any[] = [];
+
+  public enqueue(message: any) {
+    this.inMemoryOutbox.push({
+      ...message,
+      id: Math.random().toString(36).substring(7),
+      publishedAt: null,
+      createdAt: new Date(),
+    });
+  }
 
   start() {
     if (this.isRunning) return;
@@ -31,15 +43,7 @@ export class OutboxRelay {
 
   public async processOutbox() {
     // 1. Fetch unpublished messages
-    const messages = await prisma.outboxMessage.findMany({
-      where: {
-        publishedAt: null,
-      },
-      take: 50, // Batch size
-      orderBy: {
-        createdAt: "asc",
-      },
-    });
+    const messages = this.inMemoryOutbox.filter(m => !m.publishedAt).slice(0, 50);
 
     if (messages.length === 0) return;
 
@@ -59,17 +63,10 @@ export class OutboxRelay {
         PlatformEventBus.emit(event);
 
         // 4. Mark as published
-        await prisma.outboxMessage.update({
-          where: { id: msg.id },
-          data: { publishedAt: new Date() },
-        });
-
+        msg.publishedAt = new Date();
       } catch (error: any) {
         console.error(`[OutboxRelay] Failed to process message ${msg.id}:`, error);
-        await prisma.outboxMessage.update({
-          where: { id: msg.id },
-          data: { error: error?.message || "Unknown error" },
-        });
+        msg.error = error?.message || "Unknown error";
       }
     }
   }

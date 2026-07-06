@@ -1,6 +1,6 @@
 import { PlatformEventBus } from "./PlatformEventBus";
 import { platformOutboxRelay } from "./OutboxRelay";
-import { RankingWorker } from "../../../features/competitions/submission/workers/RankingWorker";
+import { RankingWorker } from "../../features/competitions/submission/workers/RankingWorker";
 
 let isInitialized = false;
 
@@ -11,7 +11,7 @@ export function initializeEventBus() {
   console.log("[EventRegistry] Initializing Event Bus and Subscriptions");
 
   // 1. Subscribe to Domain Events
-  PlatformEventBus.subscribe("competition.attempt.submitted", async (event) => {
+  PlatformEventBus.subscribe("competition.attempt.submitted", async (event: any) => {
     try {
       console.log(`[EventBus] Handling competition.attempt.submitted for sessionId: ${event.payload.sessionId}`);
       const worker = new RankingWorker();

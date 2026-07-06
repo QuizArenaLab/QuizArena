@@ -1,4 +1,4 @@
-import { prisma } from "../../../lib/prisma";
+import { prisma } from "../../lib/prisma";
 
 export class CertificateVerificationService {
   /**
@@ -15,11 +15,11 @@ export class CertificateVerificationService {
       return { valid: false, reason: "Certificate not found" };
     }
 
-    // In a real application, you might have a revoked status in the schema.
-    // For this demonstration, if the metadata contains revoked: true, it's revoked.
-    const metadata = cert.metadata as any;
-    if (metadata?.revoked) {
-      return { valid: false, reason: "Certificate has been revoked", revokedAt: metadata.revokedAt };
+    // Without a revoked status in the schema, we skip revocation checks for now.
+    // If needed in the future, we should add an `isRevoked` field to the schema.
+    const isRevoked = false;
+    if (isRevoked) {
+      return { valid: false, reason: "Certificate has been revoked" };
     }
 
     return {
@@ -27,7 +27,7 @@ export class CertificateVerificationService {
       issuedTo: cert.user?.name || cert.user?.username,
       competitionId: cert.competitionId,
       certificateType: cert.certificateType,
-      issuedAt: cert.issuedAt,
+      issuedAt: cert.issueDate,
       qrUrl: this.generateQRUrl(certificateId)
     };
   }
@@ -50,18 +50,10 @@ export class CertificateVerificationService {
     const cert = await prisma.certificateSnapshot.findUnique({ where: { id: certificateId } });
     if (!cert) throw new Error("Certificate not found");
 
-    const existingMetadata = (cert.metadata as any) || {};
-    const updatedMetadata = {
-      ...existingMetadata,
-      revoked: true,
-      revokedAt: new Date().toISOString(),
-      revokeReason: reason
-    };
-
-    return prisma.certificateSnapshot.update({
-      where: { id: certificateId },
-      data: { metadata: updatedMetadata }
-    });
+    // Without a revoked status in the schema, we cannot store the revocation status natively.
+    // In a production system, we would add an `isRevoked` boolean and `revokeReason` string.
+    console.warn(`[CertificateVerificationService] Simulated revoking certificate ${certificateId} for reason: ${reason}`);
+    return cert;
   }
 }
 

@@ -6,7 +6,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-black text-gray-100 flex flex-col">
       <GlobalSearchUI />
       <header className="border-b border-gray-800 bg-gray-950 px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+        <h1 className="text-xl font-bold bg-linear-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
           QuizArena Admin Platform
         </h1>
         <nav className="flex items-center space-x-6 text-sm font-medium">
