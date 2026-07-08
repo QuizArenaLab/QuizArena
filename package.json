@@ -15,6 +15,7 @@
     "intelligence:certify": "tsx src/features/intelligence/scripts/certify.ts",
     "operations:certify": "tsx src/features/operations/scripts/certify.ts",
     "communication:certify": "tsx src/features/communication/scripts/certify.ts",
+    "question:certify": "tsx src/features/questions/scripts/certify.ts",
     "db:push": "prisma db push",
     "architecture:inventory": "tsx tools/architecture/scripts/generate-inventory.ts",
     "architecture:migrate": "tsx tools/architecture/scripts/migrate-legacy.ts",
