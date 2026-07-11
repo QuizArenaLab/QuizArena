@@ -24,7 +24,7 @@ export function WorkspaceShell({ children, freshUser, userStatsNode }: Workspace
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const { isSidebarCollapsed, responsiveState } = useLayout();
-  const { setWorkspaceId } = useWorkspace();
+  const { setMetadata } = useWorkspace();
 
   const user = session?.user;
   const role = (user?.role as string) ?? ROLES.USER;
@@ -39,8 +39,8 @@ export function WorkspaceShell({ children, freshUser, userStatsNode }: Workspace
 
   // Update global workspace context
   useEffect(() => {
-    setWorkspaceId(workspaceKey);
-  }, [workspaceKey, setWorkspaceId]);
+    setMetadata({ id: workspaceKey, name: workspaceKey });
+  }, [workspaceKey, setMetadata]);
 
   const navItems = NavigationRegistry.getItemsForWorkspace(workspaceKey) || [];
 
