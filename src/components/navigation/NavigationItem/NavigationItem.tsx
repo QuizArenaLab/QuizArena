@@ -49,7 +49,11 @@ export const NavigationItem = React.forwardRef<HTMLAnchorElement, NavigationItem
 
         {(icon || activeIcon) && (
           <span className="flex-shrink-0">
-            <Icon name={(active && activeIcon ? activeIcon : icon) as any} size={18} className={active ? "text-primary" : "text-gray-500"} />
+            <Icon
+              name={(active && activeIcon ? activeIcon : icon) as any}
+              size={18}
+              className={active ? "text-primary" : "text-gray-500"}
+            />
           </span>
         )}
 

@@ -14,7 +14,8 @@ export type ComponentCategory =
   | "filters"
   | "overlays"
   | "loading"
-  | "layout";
+  | "layout"
+  | "header";
 
 export interface ComponentDocumentation {
   description: string;
