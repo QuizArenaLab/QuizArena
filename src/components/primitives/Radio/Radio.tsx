@@ -1,0 +1,51 @@
+import * as React from "react";
+import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
+import { Circle } from "lucide-react";
+import { cn } from "@/utilities";
+import { PrimitiveRegistry } from "@/registry";
+
+const RadioRoot = React.forwardRef<
+  React.ElementRef<typeof RadioGroupPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <RadioGroupPrimitive.Root className={cn("grid gap-2", className)} {...props} ref={ref} />
+));
+RadioRoot.displayName = RadioGroupPrimitive.Root.displayName;
+
+const RadioItem = React.forwardRef<
+  React.ElementRef<typeof RadioGroupPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>
+>(({ className, ...props }, ref) => (
+  <RadioGroupPrimitive.Item
+    ref={ref}
+    className={cn(
+      "aspect-square h-4 w-4 rounded-full border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+      className
+    )}
+    {...props}
+  >
+    <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
+      <Circle className="h-2.5 w-2.5 fill-current text-current" />
+    </RadioGroupPrimitive.Indicator>
+  </RadioGroupPrimitive.Item>
+));
+RadioItem.displayName = RadioGroupPrimitive.Item.displayName;
+
+PrimitiveRegistry.register({
+  id: "primitive-radio",
+  name: "Radio Group",
+  version: "1.0.0",
+  registryVersion: "1.0.0",
+  status: "stable",
+  category: "primitives",
+  description:
+    "A set of checkable buttons, known as radio buttons, where no more than one of the buttons can be checked at a time.",
+  dependencies: ["@radix-ui/react-radio-group", "lucide-react"],
+  tokens: ["border-primary", "text-primary", "ring-ring"],
+  accessibility: ["roving tabindex", "arrow key navigation"],
+  responsive: true,
+  motion: ["focus-ring"],
+  component: RadioRoot,
+});
+
+export { RadioRoot, RadioItem };

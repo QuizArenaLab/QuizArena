@@ -2,6 +2,7 @@ import * as React from "react";
 import { cn } from "@/utilities";
 import { PrimitiveRegistry } from "@/registry";
 import { Icon } from "@/icons";
+import { ValidationState } from "@/types";
 import {
   InputProps,
   InputWrapperProps,
@@ -139,12 +140,13 @@ const InputError = React.forwardRef<HTMLParagraphElement, InputErrorProps>(
   ({ className, validationState = "error", children, ...props }, ref) => {
     if (!children) return null;
 
-    const colors = {
+    const colors: Record<ValidationState, string> = {
       idle: "text-muted-foreground",
       success: "text-green-500",
       warning: "text-amber-500",
       error: "text-destructive",
       info: "text-blue-500",
+      loading: "text-muted-foreground animate-pulse",
     };
 
     return (
