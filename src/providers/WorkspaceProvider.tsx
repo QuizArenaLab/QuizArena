@@ -79,5 +79,6 @@ export function useWorkspace() {
 ProviderRegistry.register({
   id: "workspace-provider",
   name: "WorkspaceProvider",
-  description: "Global provider for active workspace context, layout state, and responsive breakpoints.",
+  description:
+    "Global provider for active workspace context, layout state, and responsive breakpoints.",
 });

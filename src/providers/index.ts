@@ -5,3 +5,4 @@ export * from "./DrawerProvider";
 export * from "./CommandPaletteProvider";
 export * from "./LayoutProvider";
 export * from "./WorkspaceProvider";
+export * from "./NavigationProvider";

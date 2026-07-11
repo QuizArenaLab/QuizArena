@@ -42,22 +42,24 @@ class WorkspaceRegistryImpl {
     if (!layout.manifest) {
       throw new Error(`[WorkspaceRegistry] Layout ${layout.id} is missing a manifest.`);
     }
-    
+
     // Slot Validation
     const slotSet = new Set<string>();
-    layout.slots.forEach(slot => {
+    layout.slots.forEach((slot) => {
       if (slotSet.has(slot)) {
         throw new Error(`[WorkspaceRegistry] Layout ${layout.id} has duplicate slot: ${slot}`);
       }
-      const allowedSlots = ['navigation', 'header', 'toolbar', 'content', 'aside', 'footer'];
+      const allowedSlots = ["navigation", "header", "toolbar", "content", "aside", "footer"];
       if (!allowedSlots.includes(slot)) {
         throw new Error(`[WorkspaceRegistry] Layout ${layout.id} has unknown slot: ${slot}`);
       }
       slotSet.add(slot);
     });
 
-    if (layout.manifest.supportsHeader && !slotSet.has('header')) {
-      throw new Error(`[WorkspaceRegistry] Layout ${layout.id} claims to support header but is missing Header slot.`);
+    if (layout.manifest.supportsHeader && !slotSet.has("header")) {
+      throw new Error(
+        `[WorkspaceRegistry] Layout ${layout.id} claims to support header but is missing Header slot.`
+      );
     }
 
     return true;

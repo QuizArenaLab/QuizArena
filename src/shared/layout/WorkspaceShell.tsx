@@ -3,9 +3,12 @@
 import React, { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { NavigationRegistry, ComponentRegistry } from "@/registry";
+import { ComponentRegistry } from "@/registry";
+import { NavigationRegistry } from "@/navigation";
 import { ROLES } from "@/features/rbac/services/roles";
-import { Sidebar, MobileDrawer, Header } from "@/components/layout";
+import { Header } from "@/components/layout";
+import { ResponsiveSidebar } from "@/components/navigation";
+import { NavigationProvider } from "@/providers/NavigationProvider";
 import { useLayout } from "@/providers/LayoutProvider";
 import { useWorkspace } from "@/providers/WorkspaceProvider";
 
@@ -42,7 +45,9 @@ export function WorkspaceShell({ children, freshUser, userStatsNode }: Workspace
     setMetadata({ id: workspaceKey, name: workspaceKey });
   }, [workspaceKey, setMetadata]);
 
-  const navItems = NavigationRegistry.getItemsForWorkspace(workspaceKey) || [];
+  // The new NavigationRegistry uses a global manifest list.
+  // We resolve the tree based on the user's role.
+  const resolvedGroups = NavigationRegistry.resolveTree([role]);
 
   let settingsHref = "/settings";
   if (role === ROLES.ADMIN) {
@@ -117,32 +122,26 @@ export function WorkspaceShell({ children, freshUser, userStatsNode }: Workspace
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 flex flex-col">
-      <Header user={mergedUser} />
+    <NavigationProvider>
+      <div className="min-h-screen bg-gray-50/50 flex flex-col">
+        <Header user={mergedUser} />
 
-      <Sidebar
-        items={navItems}
-        user={mergedUser}
-        userStatsNode={role === ROLES.USER ? userStatsNode : null}
-        settingsHref={settingsHref}
-        roleLabel={getRoleLabel(role)}
-      />
+        <ResponsiveSidebar
+          groups={resolvedGroups}
+          currentRoute={pathname}
+          headerNode={null}
+          footerNode={null}
+        />
 
-      <MobileDrawer
-        items={navItems}
-        user={mergedUser}
-        settingsHref={settingsHref}
-        roleLabel={getRoleLabel(role)}
-      />
-
-      <main
-        className={`flex-1 flex flex-col transition-[margin] duration-220 ease-out ${
-          responsiveState === "desktop" ? (isSidebarCollapsed ? "ml-20" : "ml-[280px]") : "ml-0"
-        }`}
-      >
-        <div className="flex-1 w-full px-4 md:px-8 py-6 md:py-8 flex flex-col">{children}</div>
-      </main>
-    </div>
+        <main
+          className={`flex-1 flex flex-col transition-[margin] duration-220 ease-out ${
+            responsiveState === "desktop" ? (isSidebarCollapsed ? "ml-20" : "ml-[280px]") : "ml-0"
+          }`}
+        >
+          <div className="flex-1 w-full px-4 md:px-8 py-6 md:py-8 flex flex-col">{children}</div>
+        </main>
+      </div>
+    </NavigationProvider>
   );
 }
 

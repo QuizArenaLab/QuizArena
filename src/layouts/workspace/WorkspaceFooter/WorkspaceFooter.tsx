@@ -16,12 +16,12 @@ export function WorkspaceFooter({ children, className, ...props }: WorkspaceFoot
   );
 }
 
-import { ComponentRegistry } from '@/registry';
+import { ComponentRegistry } from "@/registry";
 ComponentRegistry.register({
-  id: 'layout-workspace-footer',
-  name: 'WorkspaceFooter',
-  category: 'layout',
-  version: '1.0.0',
-  status: 'stable',
-  owner: 'FS-02.1',
+  id: "layout-workspace-footer",
+  name: "WorkspaceFooter",
+  category: "layout",
+  version: "1.0.0",
+  status: "stable",
+  owner: "FS-02.1",
 });

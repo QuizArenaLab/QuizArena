@@ -1,6 +1,6 @@
 import React from "react";
 
-export interface CalendarRootProps extends React.HTMLAttributes<HTMLDivElement> {}
+export type CalendarRootProps = React.HTMLAttributes<HTMLDivElement>;
 
 export function CalendarRoot({ children, className = "", ...props }: CalendarRootProps) {
   return (

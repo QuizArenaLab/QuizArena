@@ -85,6 +85,7 @@ export function BaseField({
   let value: any = undefined;
 
   if (controlled) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const { field } = useController({ name, control: rhf.control, defaultValue });
     inputProps = field;
     value = field.value;

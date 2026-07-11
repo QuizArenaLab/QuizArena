@@ -154,7 +154,6 @@ export default function LayoutsPlaygroundPage() {
           </div>
         </div>
       </section>
-
     </div>
   );
 }

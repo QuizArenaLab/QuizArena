@@ -49,8 +49,19 @@ function SelectFieldInner({
   placeholder,
   className,
 }: Omit<SelectFieldProps, "name" | "controlled" | "disabled" | "required">) {
-  const { id, inputProps, validationState, isLoading, error, descriptionId, errorId, value } =
-    useField();
+  const {
+    id,
+    inputProps,
+    validationState,
+    isLoading,
+    error,
+    descriptionId,
+    errorId,
+    value,
+    isDisabled,
+  } = useField();
+
+  const { ref, onChange, onBlur, disabled: fieldDisabled, name } = inputProps;
 
   const describedBy =
     [description ? descriptionId : null, error ? errorId : null].filter(Boolean).join(" ") ||
@@ -66,17 +77,17 @@ function SelectFieldInner({
       <SelectRoot
         value={value}
         onValueChange={(val) => {
-          if (inputProps.onChange) {
-            inputProps.onChange({ target: { name: inputProps.name, value: val } });
+          if (onChange) {
+            onChange({ target: { name: name, value: val } });
           }
         }}
-        disabled={isLoading || inputProps.disabled}
+        disabled={isDisabled || fieldDisabled}
       >
         <SelectTrigger
           id={id}
           aria-invalid={validationState === "error"}
           aria-describedby={describedBy}
-          ref={inputProps.ref}
+          ref={ref}
         >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>

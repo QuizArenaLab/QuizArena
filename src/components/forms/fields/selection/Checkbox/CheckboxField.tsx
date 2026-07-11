@@ -32,8 +32,19 @@ function CheckboxFieldInner({
   hint,
   className,
 }: Omit<CheckboxFieldProps, "name" | "controlled" | "disabled" | "required">) {
-  const { id, inputProps, validationState, isLoading, error, descriptionId, errorId, value } =
-    useField();
+  const {
+    id,
+    inputProps,
+    validationState,
+    isLoading,
+    error,
+    descriptionId,
+    errorId,
+    value,
+    isDisabled,
+  } = useField();
+
+  const { ref, onChange, onBlur, disabled: fieldDisabled, name } = inputProps;
 
   const describedBy =
     [description ? descriptionId : null, error ? errorId : null].filter(Boolean).join(" ") ||
@@ -46,16 +57,16 @@ function CheckboxFieldInner({
           id={id}
           checked={value}
           onCheckedChange={(checked) => {
-            if (inputProps.onChange) {
-              inputProps.onChange({
-                target: { name: inputProps.name, type: "checkbox", checked, value: checked },
+            if (onChange) {
+              onChange({
+                target: { name: name, type: "checkbox", checked, value: checked },
               });
             }
           }}
-          disabled={isLoading || inputProps.disabled}
+          disabled={isDisabled || fieldDisabled}
           aria-invalid={validationState === "error"}
           aria-describedby={describedBy}
-          ref={inputProps.ref}
+          ref={ref}
         />
         <div className="space-y-1 leading-none">
           <FieldLabel>{label}</FieldLabel>

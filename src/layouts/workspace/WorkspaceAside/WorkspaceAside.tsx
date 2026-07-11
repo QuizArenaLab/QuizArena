@@ -16,12 +16,12 @@ export function WorkspaceAside({ children, className, ...props }: WorkspaceAside
   );
 }
 
-import { ComponentRegistry } from '@/registry';
+import { ComponentRegistry } from "@/registry";
 ComponentRegistry.register({
-  id: 'layout-workspace-aside',
-  name: 'WorkspaceAside',
-  category: 'layout',
-  version: '1.0.0',
-  status: 'stable',
-  owner: 'FS-02.1',
+  id: "layout-workspace-aside",
+  name: "WorkspaceAside",
+  category: "layout",
+  version: "1.0.0",
+  status: "stable",
+  owner: "FS-02.1",
 });

@@ -1,6 +1,6 @@
 import React from "react";
 
-export interface CalendarGridProps extends React.HTMLAttributes<HTMLTableElement> {}
+export type CalendarGridProps = React.HTMLAttributes<HTMLTableElement>;
 
 export function CalendarGrid({ children, className = "", ...props }: CalendarGridProps) {
   return (
