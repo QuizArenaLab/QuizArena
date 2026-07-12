@@ -33,7 +33,7 @@ import {
   QuestionExplanationPlaceholder,
   QuestionImagePlaceholder,
   QuestionCodePlaceholder,
-} from "@/features/questions/components";
+} from "@/features/questions/client/components";
 
 export default function QuestionCardsPlayground() {
   const [stressTest, setStressTest] = useState(false);

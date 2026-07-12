@@ -24,14 +24,14 @@ import {
   EditorSplitLayout,
   EditorFocusLayout,
   InspectorMetadata,
-} from "@/features/questions/components";
+} from "@/features/questions/client/components";
 import {
   QuestionCard,
   QuestionCardHeader,
   QuestionCardBody,
   QuestionTitle,
   QuestionStatement,
-} from "@/features/questions/components";
+} from "@/features/questions/client/components";
 import { QuestionEditorProvider, useQuestionEditor } from "@/features/questions";
 
 function EditorPlayground() {

@@ -26,7 +26,7 @@ import {
   QuestionCardBody,
   QuestionCardFooter,
   QuestionCardStatus,
-} from "@/features/questions/components/cards";
+} from "@/features/questions/client/components/cards";
 import { Toolbar } from "@/components/toolbar/Toolbar/Toolbar";
 import { ToolbarGroup } from "@/components/toolbar/ToolbarGroup/ToolbarGroup";
 import { ToolbarAction } from "@/components/toolbar/ToolbarAction/ToolbarAction";

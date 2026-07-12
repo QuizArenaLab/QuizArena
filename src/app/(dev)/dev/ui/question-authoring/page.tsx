@@ -31,7 +31,7 @@ import {
   QuestionTitle,
   QuestionCardBody,
   QuestionStatement,
-} from "@/features/questions/components";
+} from "@/features/questions/client/components";
 
 export default function AuthoringPlayground() {
   const [activeStep, setActiveStep] = useState(1);
