@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import {
   QuizDeliveryState,
   QuizDeliveryStage,
-  DeliveryStagePresentation
+  DeliveryStagePresentation,
 } from "@/features/quizzes/delivery";
 import { QuizDeliveryProvider } from "@/features/quizzes/providers";
 import { DeliveryShell } from "@/features/quizzes/components/delivery/composition";

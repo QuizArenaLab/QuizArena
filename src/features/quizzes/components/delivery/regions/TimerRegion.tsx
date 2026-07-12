@@ -16,9 +16,7 @@ export function TimerRegion({
 
   return (
     <div className={`${className}`}>
-      <QuizTimer className="border-none bg-transparent shadow-none p-0">
-        {children}
-      </QuizTimer>
+      <QuizTimer className="border-none bg-transparent shadow-none p-0">{children}</QuizTimer>
     </div>
   );
 }

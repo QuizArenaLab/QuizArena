@@ -10,9 +10,7 @@ export function ResultsRegion({
 }) {
   return (
     <div className={`w-full h-full ${className}`}>
-      <div className="h-full border-none">
-        {children}
-      </div>
+      <div className="h-full border-none">{children}</div>
     </div>
   );
 }
