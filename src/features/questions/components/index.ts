@@ -6,3 +6,4 @@ export * from "./options";
 export * from "./variants";
 export * from "./browser";
 export * from "./explorer";
+export * from "./editor";
