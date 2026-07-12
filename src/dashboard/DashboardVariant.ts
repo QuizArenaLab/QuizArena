@@ -1,0 +1,9 @@
+export enum DashboardVariant {
+  DEFAULT = "DEFAULT",
+  COMPACT = "COMPACT",
+  WIDE = "WIDE",
+  ANALYTICS = "ANALYTICS",
+  REPORT = "REPORT",
+  EXECUTIVE = "EXECUTIVE",
+  DENSE = "DENSE",
+}
