@@ -1,0 +1,12 @@
+export enum MetricFormat {
+  NUMBER = "NUMBER",
+  INTEGER = "INTEGER",
+  DECIMAL = "DECIMAL",
+  PERCENT = "PERCENT",
+  CURRENCY = "CURRENCY",
+  TIME = "TIME",
+  DATE = "DATE",
+  DURATION = "DURATION",
+  TEXT = "TEXT",
+  CUSTOM = "CUSTOM",
+}

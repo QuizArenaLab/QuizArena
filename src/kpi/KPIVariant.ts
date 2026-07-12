@@ -1,0 +1,9 @@
+export enum KPIVariant {
+  DEFAULT = "DEFAULT",
+  COMPACT = "COMPACT",
+  MINIMAL = "MINIMAL",
+  DETAILED = "DETAILED",
+  HERO = "HERO",
+  SMALL = "SMALL",
+  LARGE = "LARGE",
+}

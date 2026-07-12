@@ -1,0 +1,6 @@
+export enum KPIPriority {
+  PRIMARY = "PRIMARY",
+  SECONDARY = "SECONDARY",
+  TERTIARY = "TERTIARY",
+  OPTIONAL = "OPTIONAL",
+}
