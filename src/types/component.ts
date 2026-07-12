@@ -18,7 +18,8 @@ export type ComponentCategory =
   | "header"
   | "breadcrumb"
   | "toolbar"
-  | "workspace-state";
+  | "workspace-state"
+  | "dashboard-builder";
 
 export interface ComponentDocumentation {
   description: string;

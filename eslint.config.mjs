@@ -23,6 +23,23 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    ignores: ["src/chart/adapters/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "recharts",
+              message:
+                "Import recharts only inside src/chart/adapters/ to maintain architectural boundaries.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;

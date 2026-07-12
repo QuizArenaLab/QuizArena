@@ -1,0 +1,7 @@
+export enum ChartLoadingStrategy {
+  STATIC = "STATIC",
+  REALTIME_READY = "REALTIME_READY",
+  LAZY = "LAZY",
+  STREAMING_READY = "STREAMING_READY",
+  SNAPSHOT = "SNAPSHOT",
+}

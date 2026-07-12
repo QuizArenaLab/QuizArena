@@ -453,9 +453,9 @@ function FieldsPlaygroundInner() {
         </div>
       )}
 
-      <div className="p-4 mt-8 border border-gray-200 rounded-md bg-gray-50 dark:bg-gray-900/50">
+      <div className="p-4 mt-8 border border-gray-200 rounded-md bg-gray-50">
         <h3 className="font-semibold text-lg mb-2">Form State Data</h3>
-        <pre className="text-xs text-gray-700 dark:text-gray-300 overflow-auto">
+        <pre className="text-xs text-gray-700 overflow-auto">
           {JSON.stringify(rhf.watch(), null, 2)}
         </pre>
       </div>
