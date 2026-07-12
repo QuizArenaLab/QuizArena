@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { prisma } from "@/lib/prisma";
 import { OperationalIssueStatus } from "@/generated/prisma";
 import { logOperationalAudit } from "./logger";

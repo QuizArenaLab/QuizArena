@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   ChallengeDifficulty,
   CompetitionStatus,

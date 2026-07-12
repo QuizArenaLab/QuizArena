@@ -33,35 +33,86 @@ async function main() {
   const adminUser = users.find((u) => u.role === "ADMIN")!;
   const candidateUser = users.find((u) => u.role === "USER")!;
 
-  // 2. Generate 50 Questions
-  console.log("Generating 50 Questions...");
+  // 2. Setup Taxonomy
+  console.log("Setting up taxonomy...");
+  const subject = await prisma.subject.upsert({
+    where: { name: "General Science" },
+    update: {},
+    create: {
+      name: "General Science",
+      description: "Basic science principles",
+      topics: {
+        create: [
+          {
+            name: "Physics",
+            chapters: {
+              create: [{ name: "Mechanics" }, { name: "Thermodynamics" }],
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  const chapter = await prisma.chapter.findFirst({ where: { name: "Mechanics" } });
+
+  // 3. Create Question Bank
+  const bank = await prisma.questionBank.create({
+    data: {
+      name: "Global Enterprise Bank",
+      isPublic: true,
+    },
+  });
+
+  // 4. Generate 50 Questions (v1.0 Architecture)
+  console.log("Generating 50 Enterprise Questions...");
   const questions = [];
   for (let i = 1; i <= 50; i++) {
     const q = await prisma.question.create({
       data: {
-        questionCode: `QZ-${1000 + i}`,
-        question: `Sample Question ${i} for rigorous testing. What is the expected outcome?`,
-        explanation: `Explanation for Sample Question ${i}.`,
-        subject: ["Science", "History", "Math", "Tech"][i % 4],
-        difficulty: ["BEGINNER", "MEDIUM", "HARDCORE"][i % 3] as any,
-        status: "APPROVED",
-        marks: 10,
-        negativeMarks: 2,
+        bankId: bank.id,
+        type: "MCQ",
         createdById: adminUser.id,
-        options: {
-          create: [
-            { optionText: `Option A for Q${i}`, isCorrect: true, order: 0 },
-            { optionText: `Option B for Q${i}`, isCorrect: false, order: 1 },
-            { optionText: `Option C for Q${i}`, isCorrect: false, order: 2 },
-            { optionText: `Option D for Q${i}`, isCorrect: false, order: 3 },
-          ],
+        revisions: {
+          create: {
+            revisionNumber: 1,
+            status: "PUBLISHED",
+            difficulty: ["BEGINNER", "MEDIUM", "HARD"][i % 3] as any,
+            chapterId: chapter?.id,
+            publishedById: adminUser.id,
+            publishedAt: new Date(),
+            statement: {
+              create: { content: `Sample Enterprise Question ${i}. What is the expected outcome?` },
+            },
+            explanation: {
+              create: { content: `Detailed explanation for question ${i}.` },
+            },
+            options: {
+              create: [
+                { content: `Option A for Q${i}`, isCorrect: true, displayOrder: 1 },
+                { content: `Option B for Q${i}`, isCorrect: false, displayOrder: 2 },
+                { content: `Option C for Q${i}`, isCorrect: false, displayOrder: 3 },
+                { content: `Option D for Q${i}`, isCorrect: false, displayOrder: 4 },
+              ],
+            },
+          },
         },
       },
+      include: {
+        revisions: true,
+      },
     });
+
+    // Update currentRevisionId to point to the created revision
+    await prisma.question.update({
+      where: { id: q.id },
+      data: { currentRevisionId: q.revisions[0].id },
+    });
+
     questions.push(q);
   }
 
-  // 3. Generate 5 Competitions
+  // 5. Generate 5 Competitions
   console.log("Generating 5 Competitions...");
   const comps = [];
   for (let i = 1; i <= 5; i++) {
@@ -91,7 +142,7 @@ async function main() {
     comps.push(comp);
   }
 
-  // 4. Generate Leaderboard & Results for Ended Competition
+  // 6. Generate Leaderboard & Results for Ended Competition
   console.log("Generating Leaderboard & Certificates for Ended Competition...");
   const endedComp = comps[0];
 

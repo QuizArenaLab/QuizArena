@@ -36,8 +36,6 @@ model User {
   reviewedChallenges   Challenge[]           @relation("ChallengeReviewer")
   publishedChallenges  Challenge[]           @relation("ChallengePublisher")
   createdQuestions     Question[]
-  reviewedQuestions    Question[]            @relation("QuestionReviewer")
-  approvedQuestions    Question[]            @relation("QuestionApprovedBy")
   moderationNotes      ModerationNote[]      @relation("ModerationNoteUser")
   createdByNotes       ModerationNote[]      @relation("ModerationNoteCreator")
   moderatorNotes       ModeratorNote[]       @relation("ModeratorNoteModerator")
@@ -95,13 +93,13 @@ model User {
   deploymentAudits     DeploymentAudit[]   @relation("DeploymentAuditActor")
   deploymentLocks      DeploymentLock[]    @relation("DeploymentLockUser")
 
-  ownedIncidents          PlatformIncident[]        @relation("IncidentOwner")
-  acknowledgedAlerts      PlatformAlert[]           @relation("AlertAcknowledger")
-  monitoringAudits        PlatformMonitoringAudit[] @relation("MonitoringAuditActor")
+  ownedIncidents     PlatformIncident[]        @relation("IncidentOwner")
+  acknowledgedAlerts PlatformAlert[]           @relation("AlertAcknowledger")
+  monitoringAudits   PlatformMonitoringAudit[] @relation("MonitoringAuditActor")
 
   // Revenue Domain
-  registrations           Registration[]
-  paymentOrders           PaymentOrder[]
+  registrations Registration[]
+  paymentOrders PaymentOrder[]
 
   @@index([email])
   @@index([username])
@@ -482,15 +480,6 @@ enum InviteStatus {
   EXPIRED
 }
 
-enum QuestionStatus {
-  DRAFT
-  REVIEW
-  APPROVED
-  REJECTED
-  ARCHIVED
-  FLAGGED
-}
-
 enum LifecycleState {
   HEALTHY
   INSUFFICIENT_DATA
@@ -519,11 +508,6 @@ enum SignalSeverity {
   MEDIUM
   HIGH
   CRITICAL
-}
-
-enum QuestionCategory {
-  STATIC
-  DYNAMIC
 }
 
 enum TriggerSource {
@@ -598,91 +582,6 @@ model Challenge {
   @@map("challenges")
 }
 
-model Question {
-  id              String              @id @default(cuid())
-  questionCode    String?             @unique
-  question        String              @db.Text
-  explanation     String?             @db.Text
-  subject         String?
-  topic           String?
-  category        String?
-  examCategory    ExamCategory?
-  language        String              @default("en")
-  marks           Int                 @default(1)
-  negativeMarks   Float               @default(0)
-  difficulty      ChallengeDifficulty @default(MEDIUM)
-  status          QuestionStatus      @default(DRAFT)
-  tags            String[]            @default([])
-  version         Int                 @default(1)
-  isActive        Boolean             @default(true)
-  usageCount      Int                 @default(0)
-  createdById     String?
-  createdBy       User?               @relation(fields: [createdById], references: [id])
-  reviewedById    String?
-  reviewedBy      User?               @relation("QuestionReviewer", fields: [reviewedById], references: [id])
-  approvedById    String?
-  approvedBy      User?               @relation("QuestionApprovedBy", fields: [approvedById], references: [id])
-  reviewNotes     String?             @db.Text
-  rejectionReason String?             @db.Text
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
-  reviewedAt      DateTime?
-
-  // Health & Validation Engine
-  healthScore            Int?
-  healthGrade            String?
-  healthStatus           String?
-  healthLastCalculatedAt DateTime?
-
-  // Governance & Lifecycle Engine
-  lifecycleState           LifecycleState   @default(INSUFFICIENT_DATA)
-  governanceScore          Float?
-  governanceVersion        Int              @default(1)
-  lastGovernanceEvaluation DateTime?
-  freshnessStatus          FreshnessStatus?
-  retirementRisk           RetirementRisk?
-  questionCategory         QuestionCategory @default(STATIC)
-
-  options                  QuestionOption[]
-  challenges               ChallengeQuestion[]
-  reports                  Report[]                          @relation("ReportedQuestion")
-  analytics                QuestionAnalytics?
-  QuestionAuditLog         QuestionAuditLog[]
-  QuestionGovernanceAudit  QuestionGovernanceAudit[]
-  usageStats               QuestionUsageStats?
-  attemptLogs              QuestionAttemptLog[]
-  flags                    QuestionFlag[]
-  recommendationDismissals QuestionRecommendationDismissal[]
-  operationalIssues        OperationalIssue[]
-  competitions             CompetitionQuestion[]
-
-  @@index([questionCode])
-  @@index([category])
-  @@index([subject])
-  @@index([topic])
-  @@index([difficulty])
-  @@index([status])
-  @@index([createdById])
-  @@index([reviewedById])
-  @@index([approvedById])
-  @@index([createdAt])
-  @@index([status, category, difficulty])
-  @@index([updatedAt])
-  @@map("questions")
-}
-
-model QuestionOption {
-  id         String   @id @default(cuid())
-  questionId String
-  optionText String
-  isCorrect  Boolean  @default(false)
-  order      Int      @default(0)
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-  @@index([questionId])
-  @@map("question_options")
-}
-
 // ─── Question Bank Governance ────────────────────────────────
 
 enum QuestionAuditAction {
@@ -707,8 +606,8 @@ model QuestionAuditLog {
 
   action QuestionAuditAction
 
-  previousStatus QuestionStatus?
-  nextStatus     QuestionStatus?
+  previousStatus RevisionStatus?
+  nextStatus     RevisionStatus?
 
   previousVersion Int?
   nextVersion     Int?
@@ -2104,16 +2003,16 @@ model Competition {
   lifecycleAudits CompetitionLifecycleAudit[]
   deploymentLocks DeploymentLock[]
 
-  monitoringSnapshots   PlatformMonitoringSnapshot[]
-  incidents             PlatformIncident[]
-  alerts                PlatformAlert[]
-  operationalMetrics    PlatformOperationalMetric[]
+  monitoringSnapshots PlatformMonitoringSnapshot[]
+  incidents           PlatformIncident[]
+  alerts              PlatformAlert[]
+  operationalMetrics  PlatformOperationalMetric[]
 
   // Revenue Domain
-  pricingPolicies       CompetitionPricingPolicy[]
-  registrations         Registration[]
-  paymentOrders         PaymentOrder[]
-  coupons               Coupon[]
+  pricingPolicies CompetitionPricingPolicy[]
+  registrations   Registration[]
+  paymentOrders   PaymentOrder[]
+  coupons         Coupon[]
 
   @@index([slug])
   @@index([competitionType])
@@ -2325,8 +2224,6 @@ model BulkOperationJob {
   @@map("bulk_operation_jobs")
 }
 
-
-
 enum ArtifactStatus {
   BUILDING
   VERIFIED
@@ -2475,8 +2372,8 @@ model CompetitionSession {
   status        SessionState @default(INITIALIZING)
 
   // Timing (Server-Authoritative)
-  startedAt DateTime  @default(now())
-  expiresAt DateTime?
+  startedAt       DateTime  @default(now())
+  expiresAt       DateTime?
   lastHeartbeatAt DateTime?
 
   // Randomization (Deterministic)
@@ -2526,7 +2423,7 @@ model CompetitionAttempt {
   // Runtime tracking model - tracks autosaves, events, navigation etc.
   timeTakenInSeconds Int   @default(0)
   pipelineMetrics    Json?
-  
+
   session          CompetitionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   competition      Competition        @relation(fields: [competitionId], references: [id], onDelete: Cascade)
   user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -2539,15 +2436,15 @@ model CompetitionAttempt {
 }
 
 model SubmissionRecord {
-  id        String   @id @default(cuid())
-  attemptId String   @unique
+  id        String @id @default(cuid())
+  attemptId String @unique
   userId    String
-  
+
   // Immutable snapshots from the moment of submission
   evaluationSnapshot Json?
   manifests          Json?
   hashes             Json?
-  
+
   submittedAt DateTime @default(now())
 
   attempt CompetitionAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
@@ -2562,20 +2459,20 @@ model SubmissionResult {
   submissionRecordId String @unique
 
   // Evaluated properties
-  score              Int   @default(0)
-  accuracy           Float @default(0)
-  percentage         Float @default(0)
-  correctAnswers     Int   @default(0)
-  wrongAnswers       Int   @default(0)
-  unansweredCount    Int   @default(0)
+  score           Int   @default(0)
+  accuracy        Float @default(0)
+  percentage      Float @default(0)
+  correctAnswers  Int   @default(0)
+  wrongAnswers    Int   @default(0)
+  unansweredCount Int   @default(0)
 
   // Separated Snapshots
-  evaluationSnapshot      Json?
-  presentationSnapshot    Json?
-  rankingSnapshot         Json?
-  certificateSnapshot     Json?
-  recommendationSnapshot  Json?
-  insightSnapshot         Json?
+  evaluationSnapshot     Json?
+  presentationSnapshot   Json?
+  rankingSnapshot        Json?
+  certificateSnapshot    Json?
+  recommendationSnapshot Json?
+  insightSnapshot        Json?
 
   fraudAssessment Json?
   evaluatedAt     DateTime @default(now())
@@ -2584,6 +2481,7 @@ model SubmissionResult {
 
   @@map("submission_results")
 }
+
 model CompetitionSessionAuditLog {
   id        String   @id @default(cuid())
   sessionId String
@@ -2656,7 +2554,7 @@ model VersionManifest {
 
   createdAt DateTime @default(now())
 
-  version CompetitionVersion @relation(fields: [competitionVersionId], references: [id], onDelete: Cascade)
+  version     CompetitionVersion  @relation(fields: [competitionVersionId], references: [id], onDelete: Cascade)
   deployments PublishDeployment[]
 
   @@map("version_manifests")
@@ -2781,17 +2679,17 @@ model PublishDeployment {
   reason           DeploymentReason
   deploymentResult DeploymentResult?
 
-  manifestId String?
-  pipelineVersion String @default("1.0.0")
-  builderVersion String?
+  manifestId      String?
+  pipelineVersion String  @default("1.0.0")
+  builderVersion  String?
 
   queuePosition Int?
   queuedAt      DateTime?
 
   startedAt   DateTime  @default(now())
   completedAt DateTime?
-  
-  initiatedById String
+
+  initiatedById        String
   rollbackDeploymentId String?
 
   reasonNote String? @db.Text
@@ -2823,7 +2721,7 @@ model DeploymentStage {
   stage      DeploymentStageType
   status     StageStatus
   durationMs Int?
-  retryCount Int @default(0)
+  retryCount Int                 @default(0)
 
   logs Json?
 
@@ -2835,13 +2733,13 @@ model DeploymentStage {
 }
 
 model DeploymentAudit {
-  id                  String @id @default(cuid())
+  id                  String  @id @default(cuid())
   publishDeploymentId String
   actorId             String?
 
   action    DeploymentAuditAction
   metadata  Json?
-  timestamp DateTime @default(now())
+  timestamp DateTime              @default(now())
 
   deployment PublishDeployment @relation(fields: [publishDeploymentId], references: [id], onDelete: Cascade)
   actor      User?             @relation("DeploymentAuditActor", fields: [actorId], references: [id], onDelete: SetNull)
@@ -2858,16 +2756,16 @@ model DeploymentHealth {
   status DeploymentHealthStatus
   score  Int
 
-  warnings Json?
-  errors   Json?
+  warnings         Json?
+  errors           Json?
   downstreamHealth Json?
 
   durationMs Int?
-  retryCount Int @default(0)
+  retryCount Int  @default(0)
 
   verifiedAt DateTime?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   deployment PublishDeployment @relation(fields: [publishDeploymentId], references: [id], onDelete: Cascade)
 
@@ -2879,11 +2777,11 @@ model DeploymentMetrics {
   id                  String @id @default(cuid())
   publishDeploymentId String @unique
 
-  planningMs     Int?
-  validationMs   Int?
-  executionMs    Int?
-  verificationMs Int?
-  activationMs   Int?
+  planningMs      Int?
+  validationMs    Int?
+  executionMs     Int?
+  verificationMs  Int?
+  activationMs    Int?
   totalDurationMs Int?
 
   deployment PublishDeployment @relation(fields: [publishDeploymentId], references: [id], onDelete: Cascade)
@@ -2892,12 +2790,12 @@ model DeploymentMetrics {
 }
 
 model DeploymentLock {
-  id            String @id @default(cuid())
-  competitionId String @unique
+  id            String  @id @default(cuid())
+  competitionId String  @unique
   versionId     String?
-  
-  userId String
-  reason String
+
+  userId   String
+  reason   String
   isActive Boolean @default(true)
 
   acquiredAt DateTime @default(now())
@@ -2961,7 +2859,7 @@ model MonitoringConfiguration {
 
   alertDeduplicationWindowMs Int @default(60000)
   retentionDays              Int @default(30)
-  
+
   updatedAt DateTime @updatedAt
   updatedBy String
 
@@ -2970,15 +2868,15 @@ model MonitoringConfiguration {
 
 model PlatformSystemHealth {
   id String @id @default("global-health")
-  
+
   overallScore Int @default(100)
-  
-  databaseHealth     PlatformComponentHealth
-  redisHealth        PlatformComponentHealth
-  storageHealth      PlatformComponentHealth
-  cronHealth         PlatformComponentHealth
+
+  databaseHealth       PlatformComponentHealth
+  redisHealth          PlatformComponentHealth
+  storageHealth        PlatformComponentHealth
+  cronHealth           PlatformComponentHealth
   authenticationHealth PlatformComponentHealth
-  paymentsHealth     PlatformComponentHealth
+  paymentsHealth       PlatformComponentHealth
 
   lastCheckedAt DateTime @default(now())
 
@@ -2988,17 +2886,17 @@ model PlatformSystemHealth {
 model WorkerHealth {
   id   String @id @default(cuid())
   name String @unique
-  
-  status       WorkerStatus
-  healthScore  Int          @default(100)
-  successRate  Float        @default(100.0)
-  
+
+  status      WorkerStatus
+  healthScore Int          @default(100)
+  successRate Float        @default(100.0)
+
   tasksProcessed Int @default(0)
   tasksFailed    Int @default(0)
-  
+
   lastHeartbeatAt DateTime @default(now())
   uptimeMs        Int?
-  
+
   @@index([status])
   @@map("worker_health")
 }
@@ -3006,20 +2904,20 @@ model WorkerHealth {
 model QueueHealth {
   id   String @id @default(cuid())
   name String @unique
-  
+
   status QueueStatus
-  
+
   pendingCount    Int @default(0)
   processingCount Int @default(0)
   completedCount  Int @default(0)
   failedCount     Int @default(0)
   deadLetterCount Int @default(0)
   retriesCount    Int @default(0)
-  
+
   averageProcessingTimeMs Int?
-  
+
   lastUpdatedAt DateTime @default(now())
-  
+
   @@index([status])
   @@map("queue_health")
 }
@@ -3028,29 +2926,29 @@ model PlatformMonitoringSnapshot {
   id                   String @id @default(cuid())
   competitionVersionId String @unique
   competitionId        String
-  
+
   snapshotVersion String
   pipelineVersion String
   fingerprint     String
-  
+
   healthScore Int @default(100)
-  
-  activeUsers    Int @default(0)
-  submissionRate Float @default(0)
-  completionRate Float @default(0)
+
+  activeUsers       Int   @default(0)
+  submissionRate    Float @default(0)
+  completionRate    Float @default(0)
   averageDurationMs Int?
 
-  runtimeStatus      PlatformComponentHealth
-  deploymentStatus   PlatformComponentHealth
-  leaderboardStatus  PlatformComponentHealth
-  rewardStatus       PlatformComponentHealth
-  certificateStatus  PlatformComponentHealth
-  lifecycleStatus    PlatformComponentHealth
+  runtimeStatus     PlatformComponentHealth
+  deploymentStatus  PlatformComponentHealth
+  leaderboardStatus PlatformComponentHealth
+  rewardStatus      PlatformComponentHealth
+  certificateStatus PlatformComponentHealth
+  lifecycleStatus   PlatformComponentHealth
 
   processingTimeMs Int
 
   generatedAt DateTime @default(now())
-  
+
   // Relations
   version     CompetitionVersion @relation(fields: [competitionVersionId], references: [id], onDelete: Cascade)
   competition Competition        @relation(fields: [competitionId], references: [id], onDelete: Cascade)
@@ -3061,22 +2959,22 @@ model PlatformMonitoringSnapshot {
 }
 
 model PlatformIncident {
-  id            String @id @default(cuid())
+  id            String  @id @default(cuid())
   competitionId String?
-  
+
   title       String
-  description String @db.Text
+  description String         @db.Text
   severity    AlertSeverity
   status      IncidentStatus
-  
-  detectedAt   DateTime  @default(now())
-  resolvedAt   DateTime?
-  closedAt     DateTime?
-  durationMs   Int?
-  
-  ownerId      String?
+
+  detectedAt DateTime  @default(now())
+  resolvedAt DateTime?
+  closedAt   DateTime?
+  durationMs Int?
+
+  ownerId         String?
   resolutionNotes String? @db.Text
-  
+
   // Relations
   competition Competition? @relation(fields: [competitionId], references: [id], onDelete: SetNull)
   owner       User?        @relation("IncidentOwner", fields: [ownerId], references: [id], onDelete: SetNull)
@@ -3088,23 +2986,23 @@ model PlatformIncident {
 }
 
 model PlatformAlert {
-  id            String @id @default(cuid())
+  id            String  @id @default(cuid())
   competitionId String?
-  
-  type        String
-  message     String
-  severity    AlertSeverity
-  
-  occurrenceCount Int @default(1)
+
+  type     String
+  message  String
+  severity AlertSeverity
+
+  occurrenceCount Int     @default(1)
   isAcknowledged  Boolean @default(false)
   isResolved      Boolean @default(false)
   isSuppressed    Boolean @default(false)
-  
+
   firstSeenAt DateTime @default(now())
   lastSeenAt  DateTime @default(now())
-  
+
   acknowledgedById String?
-  
+
   // Relations
   competition    Competition? @relation(fields: [competitionId], references: [id], onDelete: SetNull)
   acknowledgedBy User?        @relation("AlertAcknowledger", fields: [acknowledgedById], references: [id], onDelete: SetNull)
@@ -3118,13 +3016,13 @@ model PlatformAlert {
 model PlatformOperationalMetric {
   id            String @id @default(cuid())
   competitionId String
-  
+
   metricKey   String
   metricValue Float
   dimensions  Json?
-  
+
   timestamp DateTime @default(now())
-  
+
   competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
 
   @@index([competitionId, metricKey])
@@ -3134,14 +3032,14 @@ model PlatformOperationalMetric {
 
 model PlatformMonitoringAudit {
   id String @id @default(cuid())
-  
+
   action   String
   actorId  String?
   targetId String?
   metadata Json?
-  
+
   timestamp DateTime @default(now())
-  
+
   actor User? @relation("MonitoringAuditActor", fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([timestamp])
@@ -3168,7 +3066,7 @@ model CompetitionPricingPolicy {
   isActive      Boolean           @default(true)
   createdAt     DateTime          @default(now())
 
-  competition   Competition       @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  competition   Competition    @relation(fields: [competitionId], references: [id], onDelete: Cascade)
   registrations Registration[]
 
   @@unique([competitionId, version])
@@ -3190,21 +3088,21 @@ enum CouponState {
 }
 
 model Coupon {
-  id             String       @id @default(cuid())
-  code           String       @unique
-  type           CouponType
-  value          Float
-  state          CouponState  @default(DRAFT)
-  competitionId  String?      // If null, it's global
-  maxUsage       Int?         // Limit total usages
-  currentUsage   Int          @default(0)
-  expiresAt      DateTime?
-  firstUserOnly  Boolean      @default(false)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id            String      @id @default(cuid())
+  code          String      @unique
+  type          CouponType
+  value         Float
+  state         CouponState @default(DRAFT)
+  competitionId String? // If null, it's global
+  maxUsage      Int? // Limit total usages
+  currentUsage  Int         @default(0)
+  expiresAt     DateTime?
+  firstUserOnly Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
-  competition    Competition? @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  paymentOrders  PaymentOrder[]
+  competition   Competition?   @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  paymentOrders PaymentOrder[]
 
   @@index([code])
   @@index([competitionId])
@@ -3223,19 +3121,19 @@ enum RegistrationState {
 }
 
 model Registration {
-  id               String            @id @default(cuid())
-  userId           String
-  competitionId    String
-  pricingPolicyId  String
-  state            RegistrationState @default(REGISTERING)
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  enrolledAt       DateTime?
+  id              String            @id @default(cuid())
+  userId          String
+  competitionId   String
+  pricingPolicyId String
+  state           RegistrationState @default(REGISTERING)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  enrolledAt      DateTime?
 
-  user             User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  competition      Competition              @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  pricingPolicy    CompetitionPricingPolicy @relation(fields: [pricingPolicyId], references: [id])
-  paymentOrders    PaymentOrder[]
+  user          User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  competition   Competition              @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  pricingPolicy CompetitionPricingPolicy @relation(fields: [pricingPolicyId], references: [id])
+  paymentOrders PaymentOrder[]
 
   @@unique([userId, competitionId])
   @@index([userId])
@@ -3256,23 +3154,23 @@ enum PaymentOrderStatus {
 }
 
 model PaymentOrder {
-  id             String             @id @default(cuid())
-  registrationId String
-  userId         String
-  competitionId  String
-  couponId       String?
-  razorpayOrderId String?           @unique
-  amount         Float
-  currency       String             @default("INR")
-  status         PaymentOrderStatus @default(CREATED)
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  id              String             @id @default(cuid())
+  registrationId  String
+  userId          String
+  competitionId   String
+  couponId        String?
+  razorpayOrderId String?            @unique
+  amount          Float
+  currency        String             @default("INR")
+  status          PaymentOrderStatus @default(CREATED)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
 
-  registration   Registration       @relation(fields: [registrationId], references: [id], onDelete: Cascade)
-  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  competition    Competition        @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  coupon         Coupon?            @relation(fields: [couponId], references: [id], onDelete: SetNull)
-  attempts       PaymentAttempt[]
+  registration       Registration        @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  competition        Competition         @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  coupon             Coupon?             @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  attempts           PaymentAttempt[]
   revenueTransaction RevenueTransaction?
 
   @@index([registrationId])
@@ -3284,25 +3182,25 @@ model PaymentOrder {
 }
 
 model PaymentAttempt {
-  id             String       @id @default(cuid())
-  paymentOrderId String
-  razorpayPaymentId String?   @unique
-  status         PaymentOrderStatus
-  amount         Float
-  currency       String       @default("INR")
-  errorReason    String?      @db.Text
-  
+  id                String             @id @default(cuid())
+  paymentOrderId    String
+  razorpayPaymentId String?            @unique
+  status            PaymentOrderStatus
+  amount            Float
+  currency          String             @default("INR")
+  errorReason       String?            @db.Text
+
   // Fraud Signals
-  ipAddress      String?
-  userAgent      String?      @db.Text
-  deviceId       String?
-  country        String?
-  attemptCount   Int          @default(1)
+  ipAddress    String?
+  userAgent    String? @db.Text
+  deviceId     String?
+  country      String?
+  attemptCount Int     @default(1)
 
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  paymentOrder   PaymentOrder @relation(fields: [paymentOrderId], references: [id], onDelete: Cascade)
+  paymentOrder PaymentOrder @relation(fields: [paymentOrderId], references: [id], onDelete: Cascade)
 
   @@index([paymentOrderId])
   @@index([razorpayPaymentId])
@@ -3310,17 +3208,17 @@ model PaymentAttempt {
 }
 
 model RevenueTransaction {
-  id               String         @id @default(cuid())
-  paymentOrderId   String         @unique
-  amount           Float
-  currency         String         @default("INR")
-  taxAmount        Float          @default(0)
-  platformFee      Float          @default(0)
-  netAmount        Float
-  capturedAt       DateTime       @default(now())
+  id             String   @id @default(cuid())
+  paymentOrderId String   @unique
+  amount         Float
+  currency       String   @default("INR")
+  taxAmount      Float    @default(0)
+  platformFee    Float    @default(0)
+  netAmount      Float
+  capturedAt     DateTime @default(now())
 
-  paymentOrder     PaymentOrder   @relation(fields: [paymentOrderId], references: [id], onDelete: Cascade)
-  refunds          RefundRecord[]
+  paymentOrder PaymentOrder   @relation(fields: [paymentOrderId], references: [id], onDelete: Cascade)
+  refunds      RefundRecord[]
 
   @@index([paymentOrderId])
   @@index([capturedAt])
@@ -3336,18 +3234,18 @@ enum RefundStatus {
 }
 
 model RefundRecord {
-  id                   String             @id @default(cuid())
+  id                   String       @id @default(cuid())
   revenueTransactionId String
-  razorpayRefundId     String?            @unique
+  razorpayRefundId     String?      @unique
   amount               Float
-  currency             String             @default("INR")
-  reason               String?            @db.Text
-  status               RefundStatus       @default(PENDING)
+  currency             String       @default("INR")
+  reason               String?      @db.Text
+  status               RefundStatus @default(PENDING)
   approvedById         String?
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
 
-  revenueTransaction   RevenueTransaction @relation(fields: [revenueTransactionId], references: [id], onDelete: Cascade)
+  revenueTransaction RevenueTransaction @relation(fields: [revenueTransactionId], references: [id], onDelete: Cascade)
 
   @@index([revenueTransactionId])
   @@index([razorpayRefundId])
@@ -3356,17 +3254,17 @@ model RefundRecord {
 }
 
 model SettlementRecord {
-  id                   String   @id @default(cuid())
-  razorpaySettlementId String   @unique
+  id                   String    @id @default(cuid())
+  razorpaySettlementId String    @unique
   status               String
   amount               Float
-  currency             String   @default("INR")
-  fees                 Float    @default(0)
-  tax                  Float    @default(0)
+  currency             String    @default("INR")
+  fees                 Float     @default(0)
+  tax                  Float     @default(0)
   utr                  String?
   settledAt            DateTime?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   @@index([razorpaySettlementId])
   @@index([status])
@@ -3374,17 +3272,17 @@ model SettlementRecord {
 }
 
 model WebhookEvent {
-  id         String   @id @default(cuid())
-  eventId    String   @unique
-  eventType  String
-  payload    Json
-  processed  Boolean  @default(false)
+  id          String    @id @default(cuid())
+  eventId     String    @unique
+  eventType   String
+  payload     Json
+  processed   Boolean   @default(false)
   processedAt DateTime?
-  retries    Int      @default(0)
-  status     String   @default("PENDING")
-  error      String?  @db.Text
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  retries     Int       @default(0)
+  status      String    @default("PENDING")
+  error       String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([eventId])
   @@index([eventType])
@@ -3393,51 +3291,51 @@ model WebhookEvent {
 }
 
 model GstConfiguration {
-  id            String   @id @default(cuid())
-  gstEnabled    Boolean  @default(true)
-  gstPercentage Float    @default(18.0)
-  invoicePrefix String   @default("QA-")
+  id            String    @id @default(cuid())
+  gstEnabled    Boolean   @default(true)
+  gstPercentage Float     @default(18.0)
+  invoicePrefix String    @default("QA-")
   hsnSacCode    String?
   businessName  String?
   panNumber     String?
   gstin         String?
-  version       Int      @default(1)
-  isActive      Boolean  @default(true)
-  validFrom     DateTime @default(now())
+  version       Int       @default(1)
+  isActive      Boolean   @default(true)
+  validFrom     DateTime  @default(now())
   validTo       DateTime?
-  updatedAt     DateTime @updatedAt
+  updatedAt     DateTime  @updatedAt
 
   @@map("gst_configuration")
 }
 
 model PaymentPolicy {
-  id              String   @id @default(cuid())
-  timeoutMinutes  Int      @default(15)
-  retryLimit      Int      @default(3)
-  autoCapture     Boolean  @default(true)
-  partialRefunds  Boolean  @default(false)
-  defaultCurrency String   @default("INR")
-  receiptPrefix   String   @default("RCT-")
-  version         Int      @default(1)
-  isActive        Boolean  @default(true)
-  validFrom       DateTime @default(now())
+  id              String    @id @default(cuid())
+  timeoutMinutes  Int       @default(15)
+  retryLimit      Int       @default(3)
+  autoCapture     Boolean   @default(true)
+  partialRefunds  Boolean   @default(false)
+  defaultCurrency String    @default("INR")
+  receiptPrefix   String    @default("RCT-")
+  version         Int       @default(1)
+  isActive        Boolean   @default(true)
+  validFrom       DateTime  @default(now())
   validTo         DateTime?
-  updatedAt       DateTime @updatedAt
+  updatedAt       DateTime  @updatedAt
 
   @@map("payment_policies")
 }
 
 model RevenueAuditLog {
-  id            String   @id @default(cuid())
-  action        String
-  actorId       String?
-  targetId      String?
-  metadata      Json?
+  id             String   @id @default(cuid())
+  action         String
+  actorId        String?
+  targetId       String?
+  metadata       Json?
   beforeSnapshot Json?
-  afterSnapshot Json?
-  reason        String?
-  ipAddress     String?
-  timestamp     DateTime @default(now())
+  afterSnapshot  Json?
+  reason         String?
+  ipAddress      String?
+  timestamp      DateTime @default(now())
 
   @@index([action])
   @@index([targetId])
@@ -3446,44 +3344,398 @@ model RevenueAuditLog {
 }
 
 model PaymentReconciliationReport {
-  id              String   @id @default(cuid())
-  dateRun         DateTime @default(now())
-  totalChecked    Int      @default(0)
-  mismatchesFound Int      @default(0)
-  status          String   @default("COMPLETED")
+  id              String                   @id @default(cuid())
+  dateRun         DateTime                 @default(now())
+  totalChecked    Int                      @default(0)
+  mismatchesFound Int                      @default(0)
+  status          String                   @default("COMPLETED")
   snapshots       ReconciliationSnapshot[]
 
   @@map("payment_reconciliation_reports")
 }
 
 model ReconciliationSnapshot {
-  id                  String   @id @default(cuid())
-  reportId            String
-  paymentOrderId      String
-  razorpayPaymentId   String?
-  razorpayStatus      String
-  databaseStatus      String
-  resolved            Boolean  @default(false)
-  resolutionAction    String?
-  createdAt           DateTime @default(now())
+  id                String   @id @default(cuid())
+  reportId          String
+  paymentOrderId    String
+  razorpayPaymentId String?
+  razorpayStatus    String
+  databaseStatus    String
+  resolved          Boolean  @default(false)
+  resolutionAction  String?
+  createdAt         DateTime @default(now())
 
-  report              PaymentReconciliationReport @relation(fields: [reportId], references: [id])
+  report PaymentReconciliationReport @relation(fields: [reportId], references: [id])
 
   @@map("reconciliation_snapshots")
 }
 
 model WebhookDeadLetterQueue {
-  id              String   @id @default(cuid())
-  eventId         String   @unique
-  eventType       String
-  payload         Json
-  failureReason   String?
-  retryCount      Int      @default(0)
-  nextRetryAt     DateTime?
-  status          String   @default("FAILED") // FAILED, RETRYING, ARCHIVED, RECOVERED
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            String    @id @default(cuid())
+  eventId       String    @unique
+  eventType     String
+  payload       Json
+  failureReason String?
+  retryCount    Int       @default(0)
+  nextRetryAt   DateTime?
+  status        String    @default("FAILED") // FAILED, RETRYING, ARCHIVED, RECOVERED
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@map("webhook_dlq")
 }
 
+// ─── Enterprise Question Database Platform (v1.0) ──────────────────────────
+
+enum QuestionType {
+  MCQ
+  MSQ
+  TRUE_FALSE
+  FILL_BLANK
+  MATCHING
+  SEQUENCE
+  ASSERTION_REASON
+  NUMERICAL
+  SUBJECTIVE
+  CODING
+  CASE_STUDY
+  COMPREHENSION
+}
+
+enum QuestionDifficulty {
+  BEGINNER
+  EASY
+  MEDIUM
+  HARD
+  EXPERT
+}
+
+enum QuestionLanguage {
+  EN
+  HI
+  FR
+  ES
+  DE
+}
+
+enum RevisionStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  ARCHIVED
+  DEPRECATED
+}
+
+enum QuestionSourceType {
+  MANUAL
+  AI
+  IMPORT
+  COPY
+  MARKETPLACE
+  SYSTEM
+}
+
+enum AssetAssignmentType {
+  QUESTION
+  OPTION
+  EXPLANATION
+  HINT
+  REFERENCE
+}
+
+model QuestionBank {
+  id             String  @id @default(cuid())
+  organizationId String? // Multi-tenant SaaS support
+  name           String
+  description    String? @db.Text
+  isPublic       Boolean @default(false)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  questions Question[]
+
+  @@index([organizationId])
+  @@map("question_banks")
+}
+
+model QuestionTemplate {
+  id             String       @id @default(cuid())
+  organizationId String? // Multi-tenant SaaS support
+  name           String
+  description    String?      @db.Text
+  type           QuestionType
+  structure      Json?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([organizationId])
+  @@map("question_templates")
+}
+
+model Question {
+  id                String       @id @default(cuid())
+  organizationId    String? // Multi-tenant SaaS support
+  bankId            String
+  type              QuestionType
+  currentRevisionId String? // Points to the active published QuestionRevision
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String?
+  deletedAt   DateTime?
+
+  bank      QuestionBank       @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  createdBy User?              @relation(fields: [createdById], references: [id])
+  revisions QuestionRevision[]
+
+  // Retained legacy relations for compatibility with other domains (Reporting, Audits, Competitions)
+  reports                  Report[]                          @relation("ReportedQuestion")
+  analytics                QuestionAnalytics?
+  QuestionAuditLog         QuestionAuditLog[]
+  QuestionGovernanceAudit  QuestionGovernanceAudit[]
+  usageStats               QuestionUsageStats?
+  attemptLogs              QuestionAttemptLog[]
+  flags                    QuestionFlag[]
+  recommendationDismissals QuestionRecommendationDismissal[]
+  operationalIssues        OperationalIssue[]
+  competitions             CompetitionQuestion[]
+  challenges               ChallengeQuestion[]
+
+  @@index([organizationId])
+  @@index([bankId])
+  @@index([currentRevisionId])
+  @@map("questions")
+}
+
+model QuestionRevision {
+  id             String             @id @default(cuid())
+  questionId     String
+  organizationId String? // Multi-tenant SaaS support
+  revisionNumber Int                @default(1)
+  version        Int                @default(1) // Optimistic locking
+  status         RevisionStatus     @default(DRAFT)
+  sourceType     QuestionSourceType @default(MANUAL)
+
+  difficulty QuestionDifficulty @default(MEDIUM)
+  language   QuestionLanguage   @default(EN)
+
+  chapterId String?
+
+  // Publishing Metadata
+  publishedAt   DateTime?
+  publishedById String?
+  archivedAt    DateTime?
+  archivedById  String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Aggregate root level soft delete for the revision
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  chapter  Chapter? @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+
+  // Question Content Models
+  statement   QuestionStatement?
+  explanation QuestionExplanation?
+  instruction QuestionInstruction?
+  passage     QuestionPassage?
+
+  hints        QuestionHint[]
+  references   QuestionReference[]
+  options      QuestionOption[]
+  optionGroups QuestionOptionGroup[]
+  assets       QuestionAssetAssignment[]
+
+  @@index([questionId])
+  @@index([chapterId])
+  @@index([status])
+  @@index([difficulty])
+  @@index([language])
+  @@map("question_revisions")
+}
+
+// ─── Taxonomy (Subject -> Topic -> Chapter) ───────────────────
+
+model Subject {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  topics Topic[]
+
+  @@map("subjects")
+}
+
+model Topic {
+  id          String   @id @default(cuid())
+  subjectId   String
+  name        String
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  subject  Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  chapters Chapter[]
+
+  @@index([subjectId])
+  @@map("topics")
+}
+
+model Chapter {
+  id          String   @id @default(cuid())
+  topicId     String
+  name        String
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  topic     Topic              @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  revisions QuestionRevision[]
+
+  @@index([topicId])
+  @@map("chapters")
+}
+
+// ─── Content Models ───────────────────────────────────────────
+
+model QuestionStatement {
+  id         String @id @default(cuid())
+  revisionId String @unique
+  content    String @db.Text
+
+  revision QuestionRevision @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+
+  @@map("question_statements")
+}
+
+model QuestionExplanation {
+  id         String @id @default(cuid())
+  revisionId String @unique
+  content    String @db.Text
+
+  revision QuestionRevision @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+
+  @@map("question_explanations")
+}
+
+model QuestionInstruction {
+  id         String @id @default(cuid())
+  revisionId String @unique
+  content    String @db.Text
+
+  revision QuestionRevision @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+
+  @@map("question_instructions")
+}
+
+model QuestionPassage {
+  id         String @id @default(cuid())
+  revisionId String @unique
+  content    String @db.Text
+
+  revision QuestionRevision @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+
+  @@map("question_passages")
+}
+
+model QuestionHint {
+  id           String @id @default(cuid())
+  revisionId   String
+  content      String @db.Text
+  displayOrder Int    @default(0)
+
+  revision QuestionRevision @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+
+  @@index([revisionId])
+  @@map("question_hints")
+}
+
+model QuestionReference {
+  id           String  @id @default(cuid())
+  revisionId   String
+  content      String  @db.Text
+  url          String?
+  displayOrder Int     @default(0)
+
+  revision QuestionRevision @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+
+  @@index([revisionId])
+  @@map("question_references")
+}
+
+// ─── Options Architecture ──────────────────────────────────────
+
+model QuestionOptionGroup {
+  id           String @id @default(cuid())
+  revisionId   String
+  name         String
+  displayOrder Int    @default(0)
+
+  revision QuestionRevision @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+  options  QuestionOption[]
+
+  @@index([revisionId])
+  @@map("question_option_groups")
+}
+
+model QuestionOption {
+  id           String  @id @default(cuid())
+  revisionId   String
+  groupId      String?
+  content      String  @db.Text
+  isCorrect    Boolean @default(false)
+  displayOrder Int     @default(0)
+
+  revision QuestionRevision     @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+  group    QuestionOptionGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  assets QuestionAssetAssignment[]
+
+  @@index([revisionId])
+  @@index([groupId])
+  @@map("question_options")
+}
+
+// ─── Media Architecture ────────────────────────────────────────
+
+model QuestionAsset {
+  id             String  @id @default(cuid())
+  organizationId String? // Multi-tenant SaaS support
+  url            String
+  assetType      String // IMAGE, VIDEO, AUDIO, PDF
+  fileName       String?
+  fileSize       Int?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Aggregate root level soft delete
+
+  assignments QuestionAssetAssignment[]
+
+  @@index([organizationId])
+  @@map("question_assets")
+}
+
+model QuestionAssetAssignment {
+  id             String              @id @default(cuid())
+  assetId        String
+  revisionId     String?
+  optionId       String?
+  assignmentType AssetAssignmentType
+  displayOrder   Int                 @default(0)
+
+  asset    QuestionAsset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  revision QuestionRevision? @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+  option   QuestionOption?   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@index([assetId])
+  @@index([revisionId])
+  @@index([optionId])
+  @@map("question_asset_assignments")
+}

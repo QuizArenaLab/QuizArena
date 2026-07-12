@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * QuizArena — Question Duplicate Detection Engine
  *

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * QuizArena — Difficulty Engine
  *

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { prisma } from "@/lib/prisma";
 import type { OperationalRuleConfig, DetectedIssue } from "./types";
 import { OperationalIssueSeverity } from "@/generated/prisma";

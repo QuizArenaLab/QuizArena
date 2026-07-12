@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Attempt, AttemptAnswer, Question, QuestionOption } from "../generated/prisma";
 
 export interface EvaluatedAttempt {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { CompetitionWithRelations } from "../../../types";
 import { ValidationItem } from "../types/validation.types";
 

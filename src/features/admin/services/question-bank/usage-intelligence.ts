@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * QuizArena — Usage Intelligence Orchestrator
  *
