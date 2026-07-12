@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import {
-  IdentityContextProvider,
+  AuthProvider,
   IdentityWorkspace,
   AuthenticationWorkspace,
   LoginFlow,
@@ -25,21 +25,28 @@ import {
 } from "@/features/identity";
 
 export default function IdentityPlayground() {
+  const [demoMode, setDemoMode] = useState<boolean>(true);
   const [gallery, setGallery] = useState<
     "AUTH_STATES" | "PROFILE" | "SESSION" | "VERIFICATION" | "STRESS"
   >("AUTH_STATES");
 
   return (
-    <IdentityContextProvider>
+    <AuthProvider demoMode={demoMode}>
       <div className="min-h-screen bg-background flex flex-col">
         <div className="border-b border-border bg-card p-4 sticky top-0 z-10 flex justify-between items-center shadow-sm">
           <div>
             <h1 className="text-xl font-bold">Enterprise Identity Foundation</h1>
             <p className="text-xs text-muted-foreground mt-1">
-              FA-01.1 Presentation Architecture (Supabase-First)
+              FA-01.2 Supabase Authentication Integration
             </p>
           </div>
           <div className="flex gap-2">
+            <button
+              className={`px-3 py-1 text-xs border rounded ${!demoMode ? "bg-orange-500 text-white" : "bg-muted"}`}
+              onClick={() => setDemoMode(!demoMode)}
+            >
+              {demoMode ? "Enable Live Supabase Auth" : "Live Mode Active"}
+            </button>
             {["AUTH_STATES", "PROFILE", "SESSION", "VERIFICATION", "STRESS"].map((g) => (
               <button
                 key={g}
@@ -311,6 +318,6 @@ export default function IdentityPlayground() {
           </IdentityWorkspace>
         </div>
       </div>
-    </IdentityContextProvider>
+    </AuthProvider>
   );
 }
