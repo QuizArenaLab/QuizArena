@@ -24,6 +24,7 @@ To safeguard the system's structural integrity by verifying all implementations 
 - **Reports To:** Chief Architect
 - **Governed By:** AI-SDLC-v1.0
 - **Produces:** ArchitectureReview.md
+- **Required Checklists:** ArchitectureChecklist.md
 - **Consumes:** ImplementationReport.md, Source Code
 - **May Approve:** Architectural Compliance
 - **May Reject:** Architectural Violations

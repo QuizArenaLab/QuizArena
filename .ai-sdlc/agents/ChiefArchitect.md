@@ -27,6 +27,7 @@ To provide the highest level of engineering leadership, ensuring all architectur
 - **Reports To:** AI SDLC Constitution
 - **Governed By:** AI-SDLC-v1.0
 - **Produces:** Sprint Planning, Architecture Decisions
+- **Required Checklists:** ArchitectureChecklist.md
 - **Consumes:** All System Context, Open Questions
 - **May Approve:** Sprint Plans, Design Decisions, Architectural Changes
 - **May Reject:** Non-compliant plans, Flawed Architecture

@@ -30,6 +30,7 @@ To orchestrate the operational workflow of every sprint, ensuring strict adheren
 - **Reports To:** Chief Architect
 - **Governed By:** AI-SDLC-v1.0
 - **Produces:** Sprint State Updates, Lock Approvals
+- **Required Checklists:** SprintLockChecklist.md
 - **Consumes:** All Artifacts, Sprint Plan
 - **May Approve:** Stage Transitions, Sprint Lock Eligibility
 - **May Reject:** Premature transitions, missing artifacts

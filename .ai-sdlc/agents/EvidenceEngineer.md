@@ -26,6 +26,7 @@ To collect undeniable, objective facts about the repository state without bias, 
 - **Reports To:** Chief Architect
 - **Governed By:** AI-SDLC-v1.0
 - **Produces:** EvidenceReport.md
+- **Required Checklists:** EvidenceChecklist.md
 - **Consumes:** Implementation Source Code
 - **May Approve:** N/A
 - **May Reject:** N/A

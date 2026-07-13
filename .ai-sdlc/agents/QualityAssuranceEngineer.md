@@ -24,6 +24,7 @@ To ensure the system functions correctly and meets all defined quality and produ
 - **Reports To:** Chief Architect
 - **Governed By:** AI-SDLC-v1.0
 - **Produces:** QAReview.md
+- **Required Checklists:** QAReviewChecklist.md
 - **Consumes:** ArchitectureReview.md, EvidenceReport.md
 - **May Approve:** Build, Runtime, & Quality Compliance
 - **May Reject:** Quality Failures

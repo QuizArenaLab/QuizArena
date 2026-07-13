@@ -26,6 +26,7 @@ To translate sprint plans and architectural decisions into robust, compliant, an
 - **Reports To:** Chief Architect
 - **Governed By:** AI-SDLC-v1.0
 - **Produces:** ImplementationReport.md
+- **Required Checklists:** ImplementationChecklist.md
 - **Consumes:** Constitution, Sprint Plan
 - **May Approve:** N/A
 - **May Reject:** N/A

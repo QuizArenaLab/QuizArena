@@ -24,6 +24,7 @@ To maintain the canonical engineering records, ensuring absolute traceability of
 - **Reports To:** Chief Architect
 - **Governed By:** AI-SDLC-v1.0
 - **Produces:** DocumentationSummary.md, SprintManifest.md
+- **Required Checklists:** DocumentationChecklist.md
 - **Consumes:** QAReview.md, ArchitectureReview.md, ImplementationReport.md
 - **May Approve:** Documentation completeness
 - **May Reject:** Incomplete reports
