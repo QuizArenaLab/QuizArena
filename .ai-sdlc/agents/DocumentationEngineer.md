@@ -31,3 +31,38 @@ To maintain the canonical engineering records, ensuring absolute traceability of
 - **May Modify Repository:** YES (Documentation Only)
 - **May Execute Commands:** NO
 - **Authority Level:** Engineer
+
+
+## Automation Contract
+
+**Preconditions:**
+- QA PASS
+
+**Postconditions:**
+- Documentation updated
+
+**Inputs:**
+- Sprint Manifest
+- ArchitecturePlan.md
+- Source Code
+
+**Outputs:**
+- DocumentationUpdates.md
+
+**Ready When:**
+- QAReview is PASS
+
+**Blocked When:**
+- QA is missing or FAIL
+
+**Success Conditions:**
+- Documentation VERIFIED
+
+**Failure Conditions:**
+- Documentation FAIL
+
+**Next Worker (on Success):**
+- Repository Automation (via Engineering Manager)
+
+**Next Worker (on Failure):**
+- Documentation Engineer (self-correction)

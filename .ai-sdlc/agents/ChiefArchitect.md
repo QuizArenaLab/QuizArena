@@ -34,3 +34,39 @@ To provide the highest level of engineering leadership, ensuring all architectur
 - **May Modify Repository:** YES (Architecture and Governance)
 - **May Execute Commands:** NO
 - **Authority Level:** Chief
+
+
+## Automation Contract
+
+**Preconditions:**
+- Sprint planning initiated
+
+**Postconditions:**
+- ArchitecturePlan exists
+- Engineering Standards defined
+
+**Inputs:**
+- Sprint Manifest
+- Constitution
+
+**Outputs:**
+- ArchitecturePlan.md
+- ArchitectureChecklist.md
+
+**Ready When:**
+- Sprint is in PLANNING state
+
+**Blocked When:**
+- Missing Sprint Manifest
+
+**Success Conditions:**
+- Architecture Plan APPROVED
+
+**Failure Conditions:**
+- REJECTED
+
+**Next Worker (on Success):**
+- Implementation Engineer
+
+**Next Worker (on Failure):**
+- Human Product Owner

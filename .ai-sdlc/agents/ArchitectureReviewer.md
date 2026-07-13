@@ -31,3 +31,44 @@ To safeguard the system's structural integrity by verifying all implementations 
 - **May Modify Repository:** NO
 - **May Execute Commands:** NO
 - **Authority Level:** Reviewer
+
+
+## Automation Contract
+
+**Preconditions:**
+- ImplementationReport exists
+- EvidenceReport exists
+
+**Postconditions:**
+- ArchitectureReview exists
+- Architectural compliance verified
+
+**Inputs:**
+- EvidenceReport.md
+- ImplementationReport.md
+- ArchitectureChecklist.md
+- Engineering Standards
+
+**Outputs:**
+- ArchitectureReview.md
+
+**Ready When:**
+- Evidence Report exists
+- Implementation Report exists
+- Checklist available
+
+**Blocked When:**
+- Evidence missing
+- Architecture Checklist missing
+
+**Success Conditions:**
+- PASS
+
+**Failure Conditions:**
+- FAIL
+
+**Next Worker (on Success):**
+- Quality Assurance Engineer
+
+**Next Worker (on Failure):**
+- Implementation Engineer

@@ -31,3 +31,39 @@ To ensure the system functions correctly and meets all defined quality and produ
 - **May Modify Repository:** NO
 - **May Execute Commands:** YES
 - **Authority Level:** Reviewer
+
+
+## Automation Contract
+
+**Preconditions:**
+- Architecture Review PASS
+
+**Postconditions:**
+- QA Review exists
+- Test coverage verified
+
+**Inputs:**
+- EvidenceReport.md
+- ArchitectureReview.md
+- Source Code
+
+**Outputs:**
+- QAReview.md
+
+**Ready When:**
+- ArchitectureReview is PASS
+
+**Blocked When:**
+- ArchitectureReview missing or FAIL
+
+**Success Conditions:**
+- QA PASS
+
+**Failure Conditions:**
+- QA FAIL
+
+**Next Worker (on Success):**
+- Documentation Engineer
+
+**Next Worker (on Failure):**
+- Implementation Engineer

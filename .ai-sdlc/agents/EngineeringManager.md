@@ -37,3 +37,37 @@ To orchestrate the operational workflow of every sprint, ensuring strict adheren
 - **May Modify Repository:** NO
 - **May Execute Commands:** NO
 - **Authority Level:** Manager
+
+
+## Automation Contract
+
+**Preconditions:**
+- Sprint defined OR workflow interruption occurs
+
+**Postconditions:**
+- Sprint Lock achieved OR deadlock resolved
+
+**Inputs:**
+- Sprint State
+- All produced artifacts
+
+**Outputs:**
+- SprintStateUpdate.md
+
+**Ready When:**
+- Timeout occurs, Invalid State detected, or READY_FOR_LOCK
+
+**Blocked When:**
+- N/A
+
+**Success Conditions:**
+- Workflow unblocked or Sprint LOCKED
+
+**Failure Conditions:**
+- Escalation required
+
+**Next Worker (on Success):**
+- Human Product Owner (on Lock) or target worker
+
+**Next Worker (on Failure):**
+- Human Product Owner

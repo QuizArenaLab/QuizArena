@@ -33,3 +33,38 @@ To collect undeniable, objective facts about the repository state without bias, 
 - **May Modify Repository:** NO
 - **May Execute Commands:** YES
 - **Authority Level:** Inspector
+
+
+## Automation Contract
+
+**Preconditions:**
+- Implementation completed
+
+**Postconditions:**
+- EvidenceReport exists
+
+**Inputs:**
+- ImplementationReport.md
+- Source Code
+- Build Outputs
+
+**Outputs:**
+- EvidenceReport.md
+
+**Ready When:**
+- ImplementationReport exists
+
+**Blocked When:**
+- Implementation missing or Build failed
+
+**Success Conditions:**
+- Evidence VERIFIED
+
+**Failure Conditions:**
+- Evidence MISSING
+
+**Next Worker (on Success):**
+- Architecture Reviewer
+
+**Next Worker (on Failure):**
+- Implementation Engineer
