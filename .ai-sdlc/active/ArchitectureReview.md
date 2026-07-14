@@ -1,21 +1,20 @@
-# Architecture Review — Capability Sprint 03
+# Architecture Review — Capability Sprint 04
 
 **Role:** Architecture Reviewer
-**Feature:** Competition Enrollment & Access Control
+**Feature:** Assessment Runtime (Quiz Engine)
 
 ## Questions Evaluated
 
-**1. Is technical debt removed or reduced?**
-- YES. By binding `CompetitionPricingPolicy` generation to `CompetitionEconomics` updates in `management.repository.ts`, we eliminated a massive gap between the admin experience (Sprint 01) and the checkout experience (Day 2).
+**1. Is the Timer Trustworthy?**
+- YES. The frontend timer is strictly cosmetic. The `session.service.ts` calculates `expiresAt` upon session initialization. All subsequent calls to save answers (`submitAnswer`) or submit (`submitSession`) will inherently fail if the server's clock indicates the `expiresAt` time has passed.
 
 **2. Are boundaries respected?**
-- YES. `registration.service.ts` correctly handles transaction boundaries when calculating current participants against `maxParticipants`. 
-- YES. The Learner UI strictly queries the `/api/competitions/[id]/enrollment` endpoint to decoupled user state from public competition data.
+- YES. The `CompetitionSession` ensures a 1:1 mapping between a `userId` and `competitionId`. Users cannot start a session unless they hold a `RegistrationState.ENROLLED`.
 
-**3. Is it robust against race conditions?**
-- YES. While a perfect implementation might use a pessimistic database lock `SELECT ... FOR UPDATE` when checking participant counts, the current use of `prisma.$transaction` provides a baseline of safety. (We can optimize to row-level locks later if concurrency becomes very high).
+**3. Is data resilient?**
+- YES. The Learner UI pushes answers to the backend (`CompetitionSessionAnswer`) via a `PUT` request immediately upon selection. If a learner's browser crashes or they lose power, their progress is safely stored in the database. When they return, `/current` automatically pre-fills their previous answers.
 
-**4. Data consistency?**
-- YES. We check for an existing `Registration` within the transaction to prevent duplicate enrollments for the same user-competition pair.
+**4. How is Final Submission Handled?**
+- The transition from `SessionState.IN_PROGRESS` to `SUBMITTED` acts as a one-way latch. Further modifications are blocked. Concurrently, a `CompetitionAttempt` record is materialized to capture the total `timeTakenInSeconds`, severing the real-time runtime tracking from the analytical scoring model.
 
 **Verdict:** PASS

@@ -1,21 +1,28 @@
-# Implementation Report — Capability Sprint 03
+# Implementation Report — Capability Sprint 04
 
 **Role:** Implementation Engineer
-**Feature:** Competition Enrollment & Access Control
+**Feature:** Assessment Runtime (Quiz Engine)
 
 ## Scope Executed
-Implemented the learner-facing enrollment experience. Learners can browse competition details, view sections/economics, and register. Free competitions bypass payment entirely. Admin changes to economics now automatically sync to pricing policies.
+Implemented the secure quiz execution engine. The Learner UI now connects to a server-authoritative session backend that tracks timers, saves answers incrementally, and automatically handles submissions.
 
-## Files Modified
+## Files Created
 
-### Domain Layer (`src/features/`)
-- `competitions/repositories/management.repository.ts`: Modified `upsertEconomics` to use `prisma.$transaction`. Automatically creates/updates the `CompetitionPricingPolicy` whenever `CompetitionEconomics` is updated. This removes technical debt and ensures the Razorpay registration service always reads the active fee configured in Sprint 01.
-- `revenue/services/registration.service.ts`: Rewritten `registerForCompetition`. It now validates `maxParticipants` from the competition's `eligibility` block. If `pricingPolicy.baseFee === 0`, it completely bypasses Razorpay, instantly records `ENROLLED`, and increments the competition's `participantCount`.
+### Domain Layer (`src/features/competitions/services/`)
+- `session.service.ts`: Implements the `SessionState` state machine, handles transaction boundaries for session creation, enforces server-side time checks, upserts `CompetitionSessionAnswer` rows, and finalized attempts into `CompetitionAttempt`.
 
-### API Layer (`src/app/api/competitions/[id]/`)
-- `route.ts` [NEW]: Public endpoint returning competition details, economics, and sections.
-- `enrollment/route.ts` [NEW]: Returns the current user's registration status.
-- `register/route.ts`: Did not require structural changes as the underlying `registrationService` handles the logic perfectly.
+### API Layer (`src/app/api/competitions/[id]/session/`)
+- `start/route.ts`: Exposes `sessionService.startSession`.
+- `current/route.ts`: Exposes `sessionService.getSessionState`.
+- `answers/[questionId]/route.ts`: Exposes `sessionService.submitAnswer`.
+- `submit/route.ts`: Exposes `sessionService.submitSession`.
 
-### Presentation Layer (`src/app/competitions/[id]/`)
-- `page.tsx` [NEW]: Learner-facing UI displaying competition details, current status, participant limits, and dynamic CTA buttons ("Enroll for Free", "Enter Arena", "Capacity Full", etc.).
+### Presentation Layer (`src/app/competitions/[id]/arena/`)
+- `page.tsx`: A complex stateful React dashboard for the Quiz Engine. Features include:
+  - Global `setInterval` countdown timer that synchronizes against the server's `expiresAt` payload.
+  - Automatic submission when the timer reaches 0.
+  - Quick navigation sidebar showing all questions and indicating answered ones.
+  - Incremental answer saving on `onChange` events.
+
+## Notes
+- Time limits are handled server-side to prevent client-side clock tampering. If a user tampers with the UI to stop auto-submit, the `sessionService` still rejects `submitAnswer` if the server-side `expiresAt` has passed.

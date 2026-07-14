@@ -1,21 +1,21 @@
-# QA Review — Capability Sprint 03
+# QA Review — Capability Sprint 04
 
 **Role:** QA Engineer
-**Feature:** Competition Enrollment & Access Control
+**Feature:** Assessment Runtime (Quiz Engine)
 
 ## Checks Evaluated
 
-**1. Free vs Paid Logic:**
-- If an admin sets `entryFee = 0`, the backend creates a `PricingPolicy` with `baseFee = 0` and `type = FREE`. 
-- When a user clicks "Enroll for Free", the `registration.service.ts` instantly returns an `ENROLLED` status and increments the participant counter without touching Razorpay.
+**1. Session Initialization:**
+- API accurately verifies enrollment before creating a session. Generates `expiresAt` based on Competition config.
 
-**2. Participant Limits:**
-- The system correctly counts existing `Registration` rows and blocks new registrations if the count is `>= maxParticipants`.
+**2. State Recovery:**
+- Refreshing the `/arena` dashboard triggers the `/current` API. The UI accurately fetches already recorded answers and correctly recalculates the remaining time down to the second.
 
-**3. State Management in UI:**
-- The Learner UI appropriately reads the `enrollmentStatus`. It dynamically changes the call-to-action button based on state: "Enroll for Free" vs "Complete Payment" vs "Enter Arena" vs "Capacity Full".
+**3. Timer & Expiration:**
+- The frontend `setInterval` accurately displays countdown.
+- If the countdown reaches zero, the UI automatically triggers the `submitSession` logic and gracefully kicks the user back to the competition detail page.
 
-**4. Admin Config Sync:**
-- The `management.repository.ts` effectively deactivates old `PricingPolicy` rows and creates a new one every time the admin saves changes to the Economics tab. This ensures the learner always gets billed the most up-to-date fee.
+**4. Final Lockout:**
+- Once `submitSession` is called, the `CompetitionSession` state switches to `SUBMITTED`. Attempting to answer a question after submission yields an error.
 
 **Verdict:** PASS

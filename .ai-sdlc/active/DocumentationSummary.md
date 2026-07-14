@@ -1,20 +1,19 @@
 # Documentation Summary
 
 **Date:** 14 July
-**Sprint:** Capability Sprint 03
-**Objective:** Competition Enrollment & Access Control
+**Sprint:** Capability Sprint 04
+**Objective:** Assessment Runtime (Quiz Engine)
 
 **Completed:** Yes
 **Definition of Done:** PASS
 
-**Launch Confidence:** 85%
+**Launch Confidence:** 92%
 
 **What the business can do now:**
-Learners can browse upcoming and live competitions on a dedicated public page. They can view the competition's rules, sections, and entry fee. The system natively handles free competitions by instantly enrolling the user and allocating their seat. If the competition is paid, it initiates the Razorpay checkout process. The platform strictly enforces participant limits to prevent overbooking. Furthermore, the Admin's configuration of the "Economics" tab now flawlessly syncs to the underlying financial pricing policies, removing previous technical debt.
+The platform now has a fully functional, secure testing environment ("The Arena"). Learners who enroll can take the exam in a protected dashboard. The system tracks time server-side, preventing cheating via device clocks. Answers are automatically saved on every click, meaning learners can drop connection, refresh, or switch devices and resume exactly where they left off without losing a single answer. Upon completion or time expiration, the exam auto-submits.
 
 **Current Blockers / Next Steps:**
-- Assessment Runtime: Learners who click "Enter Arena" currently do nothing. We need to build the actual quiz-taking engine (Session creation, question delivery, countdown timer).
-- Submissions & Leaderboard.
+- Automated Scoring & Leaderboards: We have captured the `CompetitionAttempt` and `CompetitionSessionAnswer` data. Next, we need the background engine to actually calculate marks, apply negative scoring, and project the results onto a Leaderboard!
 
 **Tomorrow:**
-- Capability Sprint 04: Assessment Runtime (Quiz Engine)
+- Capability Sprint 05: Scoring & Leaderboards
