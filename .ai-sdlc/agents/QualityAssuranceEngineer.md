@@ -2,7 +2,7 @@
 
 ## Governing Authority
 All actions performed by this worker are strictly governed by the AI SDLC Constitution:
-[.ai-sdlc/constitution/AI-SDLC-v1.0.md](../constitution/AI-SDLC-v1.0.md)
+[.ai-sdlc/constitution/AI-SDLC-v1.1.md](../constitution/AI-SDLC-v1.1.md)
 
 ## Mission
 To ensure the system functions correctly and meets all defined quality and production readiness standards.
@@ -22,7 +22,7 @@ To ensure the system functions correctly and meets all defined quality and produ
 - **Status:** ACTIVE
 - **Version:** 1.0
 - **Reports To:** Chief Architect
-- **Governed By:** AI-SDLC-v1.0
+- **Governed By:** AI-SDLC-v1.1
 - **Produces:** QAReview.md
 - **Required Checklists:** QAReviewChecklist.md
 - **Consumes:** ArchitectureReview.md, EvidenceReport.md
@@ -67,3 +67,7 @@ To ensure the system functions correctly and meets all defined quality and produ
 
 **Next Worker (on Failure):**
 - Implementation Engineer
+
+## Storage Contract
+- Must read and write artifacts ONLY to .ai-sdlc/active/.
+- Shall never create sprint folders (e.g., FA-XX) or duplicate historical artifacts.

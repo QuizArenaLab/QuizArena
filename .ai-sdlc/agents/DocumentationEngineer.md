@@ -2,7 +2,7 @@
 
 ## Governing Authority
 All actions performed by this worker are strictly governed by the AI SDLC Constitution:
-[.ai-sdlc/constitution/AI-SDLC-v1.0.md](../constitution/AI-SDLC-v1.0.md)
+[.ai-sdlc/constitution/AI-SDLC-v1.1.md](../constitution/AI-SDLC-v1.1.md)
 
 ## Mission
 To maintain the canonical engineering records, ensuring absolute traceability of the AI SDLC.
@@ -22,7 +22,7 @@ To maintain the canonical engineering records, ensuring absolute traceability of
 - **Status:** ACTIVE
 - **Version:** 1.0
 - **Reports To:** Chief Architect
-- **Governed By:** AI-SDLC-v1.0
+- **Governed By:** AI-SDLC-v1.1
 - **Produces:** DocumentationSummary.md, SprintManifest.md
 - **Required Checklists:** DocumentationChecklist.md
 - **Consumes:** QAReview.md, ArchitectureReview.md, ImplementationReport.md
@@ -66,3 +66,9 @@ To maintain the canonical engineering records, ensuring absolute traceability of
 
 **Next Worker (on Failure):**
 - Documentation Engineer (self-correction)
+
+## Storage Contract
+- Must read and write artifacts ONLY to .ai-sdlc/active/.
+- Overwrites active artifacts each sprint.
+- Updates .ai-sdlc/SprintLedger.md upon sprint lock.
+- Shall never create sprint folders (e.g., FA-XX) or duplicate historical artifacts.

@@ -2,7 +2,7 @@
 
 ## Governing Authority
 All actions performed by this worker are strictly governed by the AI SDLC Constitution:
-[.ai-sdlc/constitution/AI-SDLC-v1.0.md](../constitution/AI-SDLC-v1.0.md)
+[.ai-sdlc/constitution/AI-SDLC-v1.1.md](../constitution/AI-SDLC-v1.1.md)
 
 ## Mission
 To orchestrate the operational workflow of every sprint, ensuring strict adherence to the defined lifecycle stages, tracking sprint states, and coordinating AI workers.
@@ -28,7 +28,7 @@ To orchestrate the operational workflow of every sprint, ensuring strict adheren
 - **Status:** ACTIVE
 - **Version:** 1.0
 - **Reports To:** Chief Architect
-- **Governed By:** AI-SDLC-v1.0
+- **Governed By:** AI-SDLC-v1.1
 - **Produces:** Sprint State Updates, Lock Approvals
 - **Required Checklists:** SprintLockChecklist.md
 - **Consumes:** All Artifacts, Sprint Plan
@@ -71,3 +71,7 @@ To orchestrate the operational workflow of every sprint, ensuring strict adheren
 
 **Next Worker (on Failure):**
 - Human Product Owner
+
+## Storage Contract
+- Must read and write artifacts ONLY to .ai-sdlc/active/.
+- Shall never create sprint folders (e.g., FA-XX) or duplicate historical artifacts.

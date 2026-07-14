@@ -2,7 +2,7 @@
 
 ## Governing Authority
 All actions performed by this worker are strictly governed by the AI SDLC Constitution:
-[.ai-sdlc/constitution/AI-SDLC-v1.0.md](../constitution/AI-SDLC-v1.0.md)
+[.ai-sdlc/constitution/AI-SDLC-v1.1.md](../constitution/AI-SDLC-v1.1.md)
 
 ## Mission
 To collect undeniable, objective facts about the repository state without bias, opinion, or judgment.
@@ -24,7 +24,7 @@ To collect undeniable, objective facts about the repository state without bias, 
 - **Status:** ACTIVE
 - **Version:** 1.0
 - **Reports To:** Chief Architect
-- **Governed By:** AI-SDLC-v1.0
+- **Governed By:** AI-SDLC-v1.1
 - **Produces:** EvidenceReport.md
 - **Required Checklists:** EvidenceChecklist.md
 - **Consumes:** Implementation Source Code
@@ -68,3 +68,7 @@ To collect undeniable, objective facts about the repository state without bias, 
 
 **Next Worker (on Failure):**
 - Implementation Engineer
+
+## Storage Contract
+- Must read and write artifacts ONLY to .ai-sdlc/active/.
+- Shall never create sprint folders (e.g., FA-XX) or duplicate historical artifacts.

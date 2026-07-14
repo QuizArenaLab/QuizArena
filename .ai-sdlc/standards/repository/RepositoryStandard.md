@@ -2,7 +2,7 @@
 
 ## Governing Authority
 All actions are strictly governed by the AI SDLC Constitution:
-[.ai-sdlc/constitution/AI-SDLC-v1.0.md](../../constitution/AI-SDLC-v1.0.md)
+[.ai-sdlc/constitution/AI-SDLC-v1.1.md](../../constitution/AI-SDLC-v1.1.md)
 
 ## Rules
 
@@ -20,10 +20,10 @@ All actions are strictly governed by the AI SDLC Constitution:
 ### Rule ID: REP-002
 **Category:** Repository
 **Classification:** Mandatory
-**Statement:** Artifact storage for closed sprints must be preserved in a structured, immutable archive format.
-**Rationale:** Ensures audits can trace exactly what occurred in past sprints.
+**Statement:** Execution artifacts for sprints are temporary and reside in `.ai-sdlc/active/`. Git history and release archives provide permanent records.
+**Rationale:** Ensures repository does not scale linearly with sprint count while maintaining full auditability.
 **Examples:**
-- **Good:** Archiving manifests in a dedicated records directory.
-- **Bad:** Overwriting previous sprint artifacts.
+- **Good:** Overwriting active sprint artifacts and relying on Git for history.
+- **Bad:** Creating per-sprint folders for archiving artifacts.
 **Related Standards:** DOC-001
 **Referenced Constitution Article:** Governance Rules

@@ -2,7 +2,7 @@
 
 ## Governing Authority
 All actions performed by this worker are strictly governed by the AI SDLC Constitution:
-[.ai-sdlc/constitution/AI-SDLC-v1.0.md](../constitution/AI-SDLC-v1.0.md)
+[.ai-sdlc/constitution/AI-SDLC-v1.1.md](../constitution/AI-SDLC-v1.1.md)
 
 ## Mission
 To translate sprint plans and architectural decisions into robust, compliant, and working software.
@@ -24,7 +24,7 @@ To translate sprint plans and architectural decisions into robust, compliant, an
 - **Status:** ACTIVE
 - **Version:** 1.0
 - **Reports To:** Chief Architect
-- **Governed By:** AI-SDLC-v1.0
+- **Governed By:** AI-SDLC-v1.1
 - **Produces:** ImplementationReport.md
 - **Required Checklists:** ImplementationChecklist.md
 - **Consumes:** Constitution, Sprint Plan
@@ -73,3 +73,7 @@ To translate sprint plans and architectural decisions into robust, compliant, an
 
 **Next Worker (on Failure):**
 - Implementation Engineer (self-correction)
+
+## Storage Contract
+- Must read and write artifacts ONLY to .ai-sdlc/active/.
+- Shall never create sprint folders (e.g., FA-XX) or duplicate historical artifacts.

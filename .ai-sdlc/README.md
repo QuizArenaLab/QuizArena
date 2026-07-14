@@ -8,10 +8,19 @@ Every future engineering artifact (Implementation Reports, Reviews, Documentatio
 ## AI SDLC
 
 **Version**
-v1
+v1.1
 
 **Current Constitution**
-constitution/AI-SDLC-v1.0.md
+constitution/AI-SDLC-v1.1.md
+
+**Sprint Ledger**
+SprintLedger.md
+
+**Retention Policy**
+RetentionPolicy.md
+
+**Active Workspace**
+active/
 
 **Current Workflow**
 workflows/
@@ -24,9 +33,6 @@ agents/
 
 **Current Standards**
 standards/
-
-**Artifacts**
-artifacts/
 
 **Metrics**
 metrics/

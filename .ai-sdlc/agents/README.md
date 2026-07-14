@@ -4,7 +4,7 @@ This directory defines the immutable responsibilities, authority boundaries, inp
 
 ## Governance
 All workers are strictly governed by the AI SDLC Constitution:
-[.ai-sdlc/constitution/AI-SDLC-v1.0.md](../constitution/AI-SDLC-v1.0.md)
+[.ai-sdlc/constitution/AI-SDLC-v1.1.md](../constitution/AI-SDLC-v1.1.md)
 
 ## Worker Roles
 Every worker functions as a specialized engineering role with zero overlap in authority. Prompts for the underlying AI model must be derived dynamically from these specifications, enforcing engineering boundaries over specific prompt wordings.
@@ -47,3 +47,7 @@ Every worker functions as a specialized engineering role with zero overlap in au
 
 ## Lifecycle
 Workers are instantiated during the sprint lifecycle. They receive their context, consume their specified artifacts, execute their responsibilities within their defined boundaries, and output their required reports. No worker may duplicate the responsibilities of another worker.
+
+## Storage Contract
+- Must read and write artifacts ONLY to .ai-sdlc/active/.
+- Shall never create sprint folders (e.g., FA-XX) or duplicate historical artifacts.
