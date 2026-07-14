@@ -49,13 +49,47 @@ export class ManagementRepository {
   ): Promise<CompetitionEconomics> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { competition: _comp, ...rest } = data as Prisma.CompetitionEconomicsCreateInput & { competition?: unknown };
-    return prisma.competitionEconomics.upsert({
-      where: { competitionId },
-      update: data,
-      create: {
-        competition: { connect: { id: competitionId } },
-        ...rest,
-      },
+    
+    // We use a transaction to ensure CompetitionPricingPolicy stays in sync with Economics
+    return prisma.$transaction(async (tx) => {
+      const economics = await tx.competitionEconomics.upsert({
+        where: { competitionId },
+        update: data,
+        create: {
+          competition: { connect: { id: competitionId } },
+          ...rest,
+        },
+      });
+
+      // Find highest version or default to 1
+      const latestPolicy = await tx.competitionPricingPolicy.findFirst({
+        where: { competitionId },
+        orderBy: { version: 'desc' },
+      });
+
+      const nextVersion = latestPolicy ? latestPolicy.version + 1 : 1;
+
+      // Deactivate older policies
+      if (latestPolicy) {
+        await tx.competitionPricingPolicy.updateMany({
+          where: { competitionId },
+          data: { isActive: false },
+        });
+      }
+
+      // Create new policy matching the economics
+      await tx.competitionPricingPolicy.create({
+        data: {
+          competitionId,
+          version: nextVersion,
+          type: economics.entryFee > 0 ? "PAID" : "FREE",
+          currency: economics.currency,
+          baseFee: economics.entryFee,
+          isActive: true,
+        },
+      });
+
+      return economics;
     });
   }
 

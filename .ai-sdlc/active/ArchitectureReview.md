@@ -1,23 +1,21 @@
-# Architecture Review — Sprint 02
+# Architecture Review — Capability Sprint 03
 
 **Role:** Architecture Reviewer
-**Feature:** Competition Scheduling & Lifecycle
+**Feature:** Competition Enrollment & Access Control
 
 ## Questions Evaluated
 
-**1. Layering correct?**
-- YES. Logic is cleanly separated between `lifecycle.repository.ts` and `lifecycle.service.ts`. The API routes only validate input and invoke the service layer.
+**1. Is technical debt removed or reduced?**
+- YES. By binding `CompetitionPricingPolicy` generation to `CompetitionEconomics` updates in `management.repository.ts`, we eliminated a massive gap between the admin experience (Sprint 01) and the checkout experience (Day 2).
 
-**2. State machine enforcement?**
-- YES. `VALID_TRANSITIONS` map explicitly defines all legal transitions. The system rejects any invalid state change dynamically and correctly routes error messages.
+**2. Are boundaries respected?**
+- YES. `registration.service.ts` correctly handles transaction boundaries when calculating current participants against `maxParticipants`. 
+- YES. The Learner UI strictly queries the `/api/competitions/[id]/enrollment` endpoint to decoupled user state from public competition data.
 
-**3. Data consistency?**
-- YES. The `transitionTo` method uses `prisma.$transaction` to guarantee that if a competition state changes, the audit log (`CompetitionLifecycleAudit`) is strictly recorded. No orphaned states can exist.
+**3. Is it robust against race conditions?**
+- YES. While a perfect implementation might use a pessimistic database lock `SELECT ... FOR UPDATE` when checking participant counts, the current use of `prisma.$transaction` provides a baseline of safety. (We can optimize to row-level locks later if concurrency becomes very high).
 
-**4. Separation of concerns?**
-- YES. Lifecycle and scheduling logic are isolated from core competition CRUD (handled by `competition.repository/service`). This prevents bloated files and keeps the domain boundaries sharp.
-
-**5. Future extensibility preserved?**
-- YES. To add a new state, one only needs to update the Prisma enum and the `VALID_TRANSITIONS` map. To track an additional timestamps, update `getTimestampField`.
+**4. Data consistency?**
+- YES. We check for an existing `Registration` within the transaction to prevent duplicate enrollments for the same user-competition pair.
 
 **Verdict:** PASS

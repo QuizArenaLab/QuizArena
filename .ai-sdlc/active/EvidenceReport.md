@@ -1,24 +1,20 @@
-# Evidence Report — Sprint 02
+# Evidence Report — Capability Sprint 03
 
 **Role:** Evidence Engineer
-**Feature:** Competition Scheduling & Lifecycle
+**Feature:** Competition Enrollment & Access Control
 
 ## Type Checking
 - **Command:** `npx tsc --noEmit`
 - **Result:** PASS (0 errors)
-- **Notes:** All DTOs, Schemas, Repositories, Services, API routes, and the React UI compile successfully.
+- **Notes:** All DTOs, API routes, Repositories, Services, and the React UI compile successfully.
 
 ## Files Created
-- `src/features/competitions/validators/lifecycle.schema.ts`
-- `src/features/competitions/repositories/lifecycle.repository.ts`
-- `src/features/competitions/services/lifecycle.service.ts`
-- `src/app/api/admin/competitions/[id]/lifecycle/route.ts`
-- `src/app/api/admin/competitions/[id]/schedule/route.ts`
-- `src/app/api/admin/competitions/[id]/audit/route.ts`
+- `src/app/api/competitions/[id]/route.ts`
+- `src/app/api/competitions/[id]/enrollment/route.ts`
+- `src/app/competitions/[id]/page.tsx`
 
 ## Files Modified
-- `src/features/competitions/types/dto.ts`
-- `src/features/competitions/shared/mappers.ts`
-- `src/app/admin/competitions/[id]/page.tsx`
+- `src/features/competitions/repositories/management.repository.ts`
+- `src/features/revenue/services/registration.service.ts`
 
 Evidence Engineer review complete. Code compiles and runs clean.

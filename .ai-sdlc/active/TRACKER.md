@@ -1,25 +1,25 @@
 # AI SDLC Tracker
 Launch Countdown
 
-Sprint: Capability Sprint 02
+Sprint: Capability Sprint 03
 Status: COMPLETED
 
-Objective: Competition Scheduling & Lifecycle
+Objective: Competition Enrollment & Access Control
 
 Deliverables:
-- API routes for Lifecycle, Schedule, Audit.
-- Admin UI tabs for managing state transitions, schedule, and viewing logs.
-- Lifecycle Service and Repository implementing a rigid state machine.
-- Strict Zod validation and transactional audit logging.
+- Refactored `management.service.ts` to auto-create `CompetitionPricingPolicy`.
+- Refactored `registration.service.ts` to handle free bypass and limits.
+- Learner Public Competition Detail API.
+- Learner Enrollment Status API.
+- Learner Enrollment UI (`src/app/competitions/[id]/page.tsx`).
 
 Definition of Done:
 - [x] APIs exist and are tested.
-- [x] Admin can transition competition state using valid paths only.
-- [x] Admin can schedule future publication.
-- [x] Audit logs are strictly generated.
+- [x] Free competitions bypass Razorpay safely.
+- [x] Participant limits are strictly enforced.
 - [x] TypeScript passes.
 - [x] ESLint passes.
 - [x] Architecture Review = PASS.
 - [x] QA Review = PASS.
-- [x] Documentation updated (DailyOutcome.md).
+- [x] Documentation updated (DocumentationSummary.md).
 - [x] Git committed.
