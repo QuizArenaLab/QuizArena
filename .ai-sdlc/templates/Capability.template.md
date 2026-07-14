@@ -39,6 +39,17 @@
 ## Architecture Constraints
 [List any specific architecture constraints]
 
+## Verification Strategy
+
+### Verification Matrix
+[Instantiate from VerificationMatrix.template.md]
+
+### Expected Outcomes
+[Define measurable success, e.g., No TypeScript errors, Architecture PASS, QA PASS, Business workflow completes]
+
+## Implementation Outputs
+[List expected deliverables and artifacts]
+
 ## Evidence Required
 [List specific evidence required to prove the capability works]
 

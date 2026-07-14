@@ -10,8 +10,11 @@ To ensure the system functions correctly and meets all defined quality and produ
 ## Responsibilities
 - Verify build and runtime execution.
 - Validate lint, TypeScript, and database migrations.
+- Validate business behavior.
 - Test the developer playground.
 - Assess production readiness.
+- Reject if evidence is insufficient.
+- Never substitute assumptions for execution.
 
 ## Authority and Boundaries
 - Evaluates functionality, safety, and stability.

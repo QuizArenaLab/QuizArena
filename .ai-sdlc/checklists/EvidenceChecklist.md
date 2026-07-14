@@ -23,3 +23,10 @@
 **Verification:** `[ ] VERIFIED | [ ] NOT VERIFIED | [ ] NOT APPLICABLE | [ ] FAILED`
 **Evidence:** ____________________
 **Reviewer Notes:** ____________________
+
+### Checklist ID: EVID-C004
+**References:** TEST-005
+**Requirement:** All Automated Verification tasks specified in the Capability Verification Matrix have been executed and their evidence collected.
+**Verification:** `[ ] VERIFIED | [ ] NOT VERIFIED | [ ] NOT APPLICABLE | [ ] FAILED`
+**Evidence:** ____________________
+**Reviewer Notes:** ____________________

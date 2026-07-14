@@ -12,7 +12,7 @@ A Capability is a complete business outcome that can be demonstrated to an end u
 
 ## Capability Lifecycle
 Capabilities follow this lifecycle:
-`DISCOVERED` -> `PLANNED` -> `APPROVED` -> `IMPLEMENTING` -> `UNDER REVIEW` -> `PASSED` -> `LOCKED` -> `RELEASED`
+`DISCOVERED` -> `PLANNED` -> `VERIFICATION PLANNED` -> `APPROVED` -> `IMPLEMENTING` -> `UNDER REVIEW` -> `PASSED` -> `LOCKED` -> `RELEASED`
 
 ## Launch Priorities
 Launch planning shall prioritize capabilities using:

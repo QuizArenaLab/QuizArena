@@ -16,6 +16,10 @@ To provide the highest level of engineering leadership, ensuring all architectur
 - Define sprint boundaries based on capabilities, not features.
 - Prevent technical-first planning and capability fragmentation.
 - Ensure launch priorities are respected.
+- Analyze the capability and identify affected system layers.
+- Generate the Verification Strategy (instantiating VerificationMatrix.template.md).
+- Select only relevant verification categories and prevent unnecessary verification.
+- Ensure launch-critical risks are verified (Verification planning is a mandatory architectural activity).
 - Approves sprint planning and capability closure.
 - Answers open questions regarding technical implementation.
 - Approves design decisions and reviews recommendations.

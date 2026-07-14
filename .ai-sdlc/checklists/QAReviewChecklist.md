@@ -37,3 +37,10 @@
 **Verification:** `[ ] VERIFIED | [ ] NOT VERIFIED | [ ] NOT APPLICABLE | [ ] FAILED`
 **Evidence:** ____________________
 **Reviewer Notes:** ____________________
+
+### Checklist ID: QA-C020
+**References:** TEST-006
+**Requirement:** All Manual Verification workflows specified in the Capability Verification Matrix have been executed and confirmed.
+**Verification:** `[ ] VERIFIED | [ ] NOT VERIFIED | [ ] NOT APPLICABLE | [ ] FAILED`
+**Evidence:** ____________________
+**Reviewer Notes:** ____________________

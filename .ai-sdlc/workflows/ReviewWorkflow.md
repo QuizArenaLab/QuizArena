@@ -10,9 +10,9 @@ The review workflow ensures all implementation efforts are rigorously evaluated 
 `IMPLEMENTATION` -> `EVIDENCE` -> `ARCHITECTURE REVIEW` -> `QA`
 
 ## Dependencies
-- **Evidence Collection** cannot begin until `ImplementationReport.md` is finalized.
+- **Evidence Collection** cannot begin until `ImplementationReport.md` is finalized and the `Verification Matrix` is defined. The Evidence Engineer strictly executes the Automated Verification tasks defined in the matrix.
 - **Architecture Review** cannot begin until `EvidenceReport.md` is finalized.
-- **QA** cannot begin until `ArchitectureReview.md` explicitly states `PASS` for all criteria.
+- **QA** cannot begin until `ArchitectureReview.md` explicitly states `PASS` for all criteria. The QA Engineer strictly executes the Manual Verification workflows defined in the matrix.
 
 ## Participating Workers
 - Evidence Engineer (Collects)
