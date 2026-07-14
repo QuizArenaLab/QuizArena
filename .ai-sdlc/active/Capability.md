@@ -1,24 +1,16 @@
-# Capability: Security Hardening
+# Deployment & Production Environment (Sprint 08)
 
-## Value Proposition
-Ensure the QuizArena platform is secure by removing development mocks, protecting all API endpoints against unauthenticated and unauthorized access, and implementing baseline HTTP security headers. This is a critical P0 launch blocker.
+## Goal
+Prepare the QuizArena web application for production deployment. This involves creating Dockerfiles, CI/CD pipelines (e.g., GitHub Actions), database migration scripts for production, and environment variable templates for production hosting (like Vercel or AWS).
 
-## Technical Scope
-- **Proxy Authorization**: Enforce RBAC rules on `/api/admin` and `/api/super-admin` routes inside `proxy.ts`. Ensure `/api/competitions` endpoints require authentication.
-- **De-mocking Backend**: Replace `MOCK_USER_ID` and `MOCK_ADMIN_ID` placeholders with actual session `auth()` validation in all API routes.
-- **HTTP Security Headers**: Configure `next.config.ts` with standard security headers.
+## Requirements
+- Create a `Dockerfile` optimized for Next.js production.
+- Create a `docker-compose.yml` for local production-like testing.
+- Create a `.github/workflows/deploy.yml` for CI/CD.
+- Document environment variables required for production (`.env.production.example`).
+- Ensure database migration commands (`npx prisma migrate deploy`) are run during the build/deployment phase.
 
-## Contract
-- [ ] API routes protected by role-based auth.
-- [ ] No `MOCK_USER_ID` references remaining in production endpoints.
-- [ ] HTTP Security Headers applied via `next.config.ts`.
-
-## Checklist
-- [ ] Proxy API Protection
-- [ ] Replace `MOCK_USER_ID` with `auth()` session checks
-- [ ] Replace `MOCK_ADMIN_ID` with `auth()` session checks
-- [ ] Configure `next.config.ts` headers
-- [ ] Architecture PASS
-- [ ] QA PASS
-- [ ] Documentation Updated
-- [ ] Git Commit
+## Definition of Done
+- The project can be successfully built and run using `docker compose up --build`.
+- CI/CD workflow is defined and lints/builds on pull requests.
+- Deployment instructions are documented.
