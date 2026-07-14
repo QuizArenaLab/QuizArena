@@ -10,9 +10,11 @@ import type {
   CompetitionEligibilityDTO,
   CompetitionSectionDTO,
   CompetitionQuestionDTO,
+  CompetitionScheduleDTO,
+  CompetitionLifecycleAuditDTO,
 } from "@/features/competitions/types/dto";
 
-type Tab = "overview" | "config" | "economics" | "eligibility" | "sections" | "questions";
+type Tab = "overview" | "config" | "economics" | "eligibility" | "sections" | "questions" | "lifecycle" | "schedule" | "audit";
 
 export default function CompetitionDetail({
   params,
@@ -34,8 +36,15 @@ export default function CompetitionDetail({
   const [eligibility, setEligibility] = useState<CompetitionEligibilityDTO | null>(null);
   const [sections, setSections] = useState<CompetitionSectionDTO[]>([]);
   const [questions, setQuestions] = useState<CompetitionQuestionDTO[]>([]);
+  
+  const [lifecycleInfo, setLifecycleInfo] = useState<{ currentState: string; status: string; validTransitions: string[] } | null>(null);
+  const [schedule, setSchedule] = useState<CompetitionScheduleDTO | null>(null);
+  const [auditLog, setAuditLog] = useState<CompetitionLifecycleAuditDTO[]>([]);
 
   // Form state
+  const [transitionForm, setTransitionForm] = useState({ targetState: "", reason: "" });
+  const [scheduleForm, setScheduleForm] = useState({ publishAt: "", expiresAt: "", timezone: "Asia/Kolkata" });
+
   const [configForm, setConfigForm] = useState({
     negativeMarkingEnabled: false,
     negativeMarkPerQuestion: 0,
@@ -115,6 +124,16 @@ export default function CompetitionDetail({
       }
       if (tab === "sections") setSections(Array.isArray(data) ? data : []);
       if (tab === "questions") setQuestions(Array.isArray(data) ? data : []);
+      if (tab === "lifecycle" && data) setLifecycleInfo(data);
+      if (tab === "schedule" && data) {
+        setSchedule(data);
+        setScheduleForm({
+          publishAt: data.publishAt ? new Date(data.publishAt).toISOString().slice(0, 16) : "",
+          expiresAt: data.expiresAt ? new Date(data.expiresAt).toISOString().slice(0, 16) : "",
+          timezone: data.timezone || "Asia/Kolkata",
+        });
+      }
+      if (tab === "audit") setAuditLog(Array.isArray(data) ? data : []);
     } catch {
       /* silent */
     }
@@ -210,7 +229,62 @@ export default function CompetitionDetail({
       }
       setQuestionForm({ questionId: "", sectionId: "", marks: 1 });
       await fetchTabData("questions");
+      await fetchTabData("questions");
       fetchCompetition(); // Refresh denormalized counters
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTransition = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/competitions/${id}/lifecycle`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targetState: transitionForm.targetState,
+          reason: transitionForm.reason || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Transition failed");
+      }
+      setTransitionForm({ targetState: "", reason: "" });
+      fetchCompetition();
+      await fetchTabData("lifecycle");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSchedule = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const payload: Record<string, unknown> = {
+        publishAt: new Date(scheduleForm.publishAt).toISOString(),
+        timezone: scheduleForm.timezone,
+      };
+      if (scheduleForm.expiresAt) payload.expiresAt = new Date(scheduleForm.expiresAt).toISOString();
+
+      const res = await fetch(`/api/admin/competitions/${id}/schedule`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Schedule failed");
+      }
+      fetchCompetition();
+      await fetchTabData("schedule");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -269,8 +343,8 @@ export default function CompetitionDetail({
       )}
 
       {/* Tab Bar */}
-      <div style={{ display: "flex", gap: "4px", borderBottom: "1px solid #ddd", marginBottom: "20px" }}>
-        {(["overview", "config", "economics", "eligibility", "sections", "questions"] as Tab[]).map((tab) => (
+      <div style={{ display: "flex", gap: "4px", borderBottom: "1px solid #ddd", marginBottom: "20px", flexWrap: "wrap" }}>
+        {(["overview", "config", "economics", "eligibility", "sections", "questions", "lifecycle", "schedule", "audit"] as Tab[]).map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={tabStyle(tab)}>
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
@@ -413,6 +487,99 @@ export default function CompetitionDetail({
           <button style={btnStyle} disabled={saving} onClick={handleAddQuestion}>
             {saving ? "Adding..." : "Add Question"}
           </button>
+        </div>
+      )}
+
+      {/* ─── Lifecycle Tab ──────────────────────────── */}
+      {activeTab === "lifecycle" && (
+        <div>
+          <h3>Lifecycle Management</h3>
+          {lifecycleInfo ? (
+            <div style={{ marginBottom: "20px" }}>
+              <p><strong>Current State:</strong> {lifecycleInfo.currentState}</p>
+              <p><strong>Status:</strong> {lifecycleInfo.status}</p>
+              <p><strong>Valid Next States:</strong> {lifecycleInfo.validTransitions.join(", ") || "None"}</p>
+              
+              {lifecycleInfo.validTransitions.length > 0 && (
+                <div style={{ marginTop: "16px", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}>
+                  <h4>Transition State</h4>
+                  <label>Target State: 
+                    <select 
+                      style={{ ...inputStyle, marginBottom: "12px" }} 
+                      value={transitionForm.targetState} 
+                      onChange={(e) => setTransitionForm({ ...transitionForm, targetState: e.target.value })}
+                    >
+                      <option value="">Select state...</option>
+                      {lifecycleInfo.validTransitions.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </label>
+                  <label>Reason (optional): <input type="text" style={inputStyle} value={transitionForm.reason} onChange={(e) => setTransitionForm({ ...transitionForm, reason: e.target.value })} /></label>
+                  <button style={btnStyle} disabled={saving || !transitionForm.targetState} onClick={handleTransition}>
+                    {saving ? "Processing..." : "Transition State"}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p style={{ color: "#666" }}>Loading lifecycle info...</p>
+          )}
+        </div>
+      )}
+
+      {/* ─── Schedule Tab ───────────────────────────── */}
+      {activeTab === "schedule" && (
+        <div>
+          <h3>Competition Schedule</h3>
+          {schedule && (
+            <div style={{ marginBottom: "20px", padding: "10px", background: "#f8fafc", borderRadius: "4px" }}>
+              <p><strong>Status:</strong> {schedule.status}</p>
+              <p><strong>Publish At:</strong> {schedule.publishAt ? new Date(schedule.publishAt).toLocaleString() : "Not set"}</p>
+              <p><strong>Expires At:</strong> {schedule.expiresAt ? new Date(schedule.expiresAt).toLocaleString() : "Not set"}</p>
+            </div>
+          )}
+          
+          <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}>
+            <h4>Set Schedule</h4>
+            <label>Publish At: <input type="datetime-local" style={inputStyle} value={scheduleForm.publishAt} onChange={(e) => setScheduleForm({ ...scheduleForm, publishAt: e.target.value })} /></label>
+            <label>Expires At (optional): <input type="datetime-local" style={inputStyle} value={scheduleForm.expiresAt} onChange={(e) => setScheduleForm({ ...scheduleForm, expiresAt: e.target.value })} /></label>
+            <label>Timezone: <input type="text" style={inputStyle} value={scheduleForm.timezone} onChange={(e) => setScheduleForm({ ...scheduleForm, timezone: e.target.value })} /></label>
+            <button style={btnStyle} disabled={saving} onClick={handleSchedule}>
+              {saving ? "Scheduling..." : "Save Schedule"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Audit Tab ──────────────────────────────── */}
+      {activeTab === "audit" && (
+        <div>
+          <h3>Lifecycle Audit Log</h3>
+          {auditLog.length > 0 ? (
+            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "20px" }}>
+              <thead>
+                <tr style={{ borderBottom: "2px solid #ddd" }}>
+                  <th style={{ textAlign: "left", padding: "8px" }}>Time</th>
+                  <th style={{ textAlign: "left", padding: "8px" }}>Transition</th>
+                  <th style={{ textAlign: "left", padding: "8px" }}>Actor</th>
+                  <th style={{ textAlign: "left", padding: "8px" }}>Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                {auditLog.map((log) => (
+                  <tr key={log.id} style={{ borderBottom: "1px solid #eee" }}>
+                    <td style={{ padding: "8px", fontSize: "14px" }}>{new Date(log.createdAt).toLocaleString()}</td>
+                    <td style={{ padding: "8px", fontSize: "14px" }}>
+                      {log.previousState || "NONE"} → <strong>{log.newState}</strong>
+                    </td>
+                    <td style={{ padding: "8px", fontSize: "14px" }}>{log.performedByType}</td>
+                    <td style={{ padding: "8px", fontSize: "14px" }}>{log.reason || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p style={{ color: "#666" }}>No audit logs found.</p>
+          )}
         </div>
       )}
     </div>

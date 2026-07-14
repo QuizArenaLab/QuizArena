@@ -5,6 +5,8 @@ import {
   CompetitionEligibility,
   CompetitionSection,
   CompetitionQuestion,
+  CompetitionSchedule,
+  CompetitionLifecycleAudit,
 } from "@/generated/prisma";
 import {
   CompetitionDTO,
@@ -13,6 +15,8 @@ import {
   CompetitionEligibilityDTO,
   CompetitionSectionDTO,
   CompetitionQuestionDTO,
+  CompetitionScheduleDTO,
+  CompetitionLifecycleAuditDTO,
 } from "../types/dto";
 
 export function toCompetitionDTO(competition: Competition): CompetitionDTO {
@@ -112,5 +116,39 @@ export function toCompetitionQuestionDTO(
     isOptional: question.isOptional,
     isBonus: question.isBonus,
     isMandatory: question.isMandatory,
+  };
+}
+
+// ─── Lifecycle & Scheduling Mappers ──────────────────
+
+export function toScheduleDTO(
+  schedule: CompetitionSchedule
+): CompetitionScheduleDTO {
+  return {
+    id: schedule.id,
+    competitionId: schedule.competitionId,
+    publishAt: schedule.publishAt,
+    expiresAt: schedule.expiresAt,
+    timezone: schedule.timezone,
+    status: schedule.status,
+    executedAt: schedule.executedAt,
+    executionLog: schedule.executionLog,
+    createdAt: schedule.createdAt,
+    updatedAt: schedule.updatedAt,
+  };
+}
+
+export function toLifecycleAuditDTO(
+  audit: CompetitionLifecycleAudit
+): CompetitionLifecycleAuditDTO {
+  return {
+    id: audit.id,
+    competitionId: audit.competitionId,
+    previousState: audit.previousState,
+    newState: audit.newState,
+    reason: audit.reason,
+    performedBy: audit.performedBy,
+    performedByType: audit.performedByType,
+    createdAt: audit.createdAt,
   };
 }

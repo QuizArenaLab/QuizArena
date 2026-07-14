@@ -149,3 +149,40 @@ export interface AddCompetitionQuestionDTO {
   isOptional?: boolean;
   isBonus?: boolean;
 }
+
+// ─── Lifecycle & Scheduling DTOs ────────────────────
+
+export interface CompetitionScheduleDTO {
+  id: string;
+  competitionId: string;
+  publishAt: Date | null;
+  expiresAt: Date | null;
+  timezone: string;
+  status: string;
+  executedAt: Date | null;
+  executionLog: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateScheduleDTO {
+  publishAt: string; // ISO date string
+  expiresAt?: string;
+  timezone?: string;
+}
+
+export interface LifecycleTransitionDTO {
+  targetState: string;
+  reason?: string;
+}
+
+export interface CompetitionLifecycleAuditDTO {
+  id: string;
+  competitionId: string;
+  previousState: string | null;
+  newState: string;
+  reason: string | null;
+  performedBy: string | null;
+  performedByType: string;
+  createdAt: Date;
+}
