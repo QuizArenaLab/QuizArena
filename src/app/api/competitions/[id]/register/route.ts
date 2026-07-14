@@ -1,13 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { registrationService } from '@/features/revenue/services/registration.service';
-// In a real app, you would import auth to get the userId. 
+import { NextRequest, NextResponse } from "next/server";
+import { registrationService } from "@/features/revenue/services/registration.service";
+// In a real app, you would import auth to get the userId.
 // For this Day 2 sprint scope, we'll mock a userId.
-const MOCK_USER_ID = 'clzkr123dummyuser';
+const MOCK_USER_ID = "clzkr123dummyuser";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: competitionId } = await params;
     const userId = MOCK_USER_ID; // Replace with await auth()

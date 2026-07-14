@@ -3,10 +3,7 @@ import { managementService } from "@/features/competitions/services/management.s
 import { updateCompetitionEconomicsSchema } from "@/features/competitions/validators/competition.schema";
 import { ZodError } from "zod";
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const economics = await managementService.getEconomics(id);
@@ -17,10 +14,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await req.json();

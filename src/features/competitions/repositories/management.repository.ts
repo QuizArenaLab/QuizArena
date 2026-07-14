@@ -21,8 +21,9 @@ export class ManagementRepository {
     competitionId: string,
     data: Prisma.CompetitionConfigUpdateInput
   ): Promise<CompetitionConfig> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { competition: _comp, ...rest } = data as Prisma.CompetitionConfigCreateInput & { competition?: unknown };
+    const { competition: _comp, ...rest } = data as Prisma.CompetitionConfigCreateInput & {
+      competition?: unknown;
+    };
     return prisma.competitionConfig.upsert({
       where: { competitionId },
       update: data,
@@ -35,9 +36,7 @@ export class ManagementRepository {
 
   // ─── Economics ───────────────────────────────────────
 
-  async getEconomics(
-    competitionId: string
-  ): Promise<CompetitionEconomics | null> {
+  async getEconomics(competitionId: string): Promise<CompetitionEconomics | null> {
     return prisma.competitionEconomics.findUnique({
       where: { competitionId },
     });
@@ -47,9 +46,10 @@ export class ManagementRepository {
     competitionId: string,
     data: Prisma.CompetitionEconomicsUpdateInput
   ): Promise<CompetitionEconomics> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { competition: _comp, ...rest } = data as Prisma.CompetitionEconomicsCreateInput & { competition?: unknown };
-    
+    const { competition: _comp, ...rest } = data as Prisma.CompetitionEconomicsCreateInput & {
+      competition?: unknown;
+    };
+
     // We use a transaction to ensure CompetitionPricingPolicy stays in sync with Economics
     return prisma.$transaction(async (tx) => {
       const economics = await tx.competitionEconomics.upsert({
@@ -64,7 +64,7 @@ export class ManagementRepository {
       // Find highest version or default to 1
       const latestPolicy = await tx.competitionPricingPolicy.findFirst({
         where: { competitionId },
-        orderBy: { version: 'desc' },
+        orderBy: { version: "desc" },
       });
 
       const nextVersion = latestPolicy ? latestPolicy.version + 1 : 1;
@@ -95,9 +95,7 @@ export class ManagementRepository {
 
   // ─── Eligibility ────────────────────────────────────
 
-  async getEligibility(
-    competitionId: string
-  ): Promise<CompetitionEligibility | null> {
+  async getEligibility(competitionId: string): Promise<CompetitionEligibility | null> {
     return prisma.competitionEligibility.findUnique({
       where: { competitionId },
     });
@@ -107,8 +105,9 @@ export class ManagementRepository {
     competitionId: string,
     data: Prisma.CompetitionEligibilityUpdateInput
   ): Promise<CompetitionEligibility> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { competition: _comp, ...rest } = data as Prisma.CompetitionEligibilityCreateInput & { competition?: unknown };
+    const { competition: _comp, ...rest } = data as Prisma.CompetitionEligibilityCreateInput & {
+      competition?: unknown;
+    };
     return prisma.competitionEligibility.upsert({
       where: { competitionId },
       update: data,
@@ -165,9 +164,7 @@ export class ManagementRepository {
       data: {
         competition: { connect: { id: competitionId } },
         question: { connect: { id: data.questionId } },
-        ...(data.sectionId
-          ? { section: { connect: { id: data.sectionId } } }
-          : {}),
+        ...(data.sectionId ? { section: { connect: { id: data.sectionId } } } : {}),
         displayOrder: data.displayOrder ?? 0,
         marks: data.marks ?? 1,
         negativeMarks: data.negativeMarks ?? 0,

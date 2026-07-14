@@ -49,9 +49,7 @@ export class ManagementService {
 
   // ─── Economics ───────────────────────────────────────
 
-  async getEconomics(
-    competitionId: string
-  ): Promise<CompetitionEconomicsDTO | null> {
+  async getEconomics(competitionId: string): Promise<CompetitionEconomicsDTO | null> {
     await this.ensureCompetitionExists(competitionId);
     const economics = await managementRepository.getEconomics(competitionId);
     return economics ? toCompetitionEconomicsDTO(economics) : null;
@@ -62,21 +60,15 @@ export class ManagementService {
     data: UpdateCompetitionEconomicsDTO
   ): Promise<CompetitionEconomicsDTO> {
     await this.ensureCompetitionExists(competitionId);
-    const economics = await managementRepository.upsertEconomics(
-      competitionId,
-      data
-    );
+    const economics = await managementRepository.upsertEconomics(competitionId, data);
     return toCompetitionEconomicsDTO(economics);
   }
 
   // ─── Eligibility ────────────────────────────────────
 
-  async getEligibility(
-    competitionId: string
-  ): Promise<CompetitionEligibilityDTO | null> {
+  async getEligibility(competitionId: string): Promise<CompetitionEligibilityDTO | null> {
     await this.ensureCompetitionExists(competitionId);
-    const eligibility =
-      await managementRepository.getEligibility(competitionId);
+    const eligibility = await managementRepository.getEligibility(competitionId);
     return eligibility ? toCompetitionEligibilityDTO(eligibility) : null;
   }
 
@@ -85,10 +77,7 @@ export class ManagementService {
     data: UpdateCompetitionEligibilityDTO
   ): Promise<CompetitionEligibilityDTO> {
     await this.ensureCompetitionExists(competitionId);
-    const eligibility = await managementRepository.upsertEligibility(
-      competitionId,
-      data
-    );
+    const eligibility = await managementRepository.upsertEligibility(competitionId, data);
     return toCompetitionEligibilityDTO(eligibility);
   }
 
@@ -121,9 +110,7 @@ export class ManagementService {
 
   // ─── Questions ──────────────────────────────────────
 
-  async getQuestions(
-    competitionId: string
-  ): Promise<CompetitionQuestionDTO[]> {
+  async getQuestions(competitionId: string): Promise<CompetitionQuestionDTO[]> {
     await this.ensureCompetitionExists(competitionId);
     const questions = await managementRepository.getQuestions(competitionId);
     return questions.map(toCompetitionQuestionDTO);
@@ -143,9 +130,7 @@ export class ManagementService {
         data: {
           competition: { connect: { id: competitionId } },
           question: { connect: { id: data.questionId } },
-          ...(data.sectionId
-            ? { section: { connect: { id: data.sectionId } } }
-            : {}),
+          ...(data.sectionId ? { section: { connect: { id: data.sectionId } } } : {}),
           displayOrder: data.displayOrder ?? 0,
           marks,
           negativeMarks: data.negativeMarks ?? 0,

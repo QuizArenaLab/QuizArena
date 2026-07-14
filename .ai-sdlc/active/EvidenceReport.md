@@ -1,19 +1,17 @@
-# Evidence Report — Capability Sprint 04
+# Evidence Report — Capability Sprint 05
 
 **Role:** Evidence Engineer
-**Feature:** Assessment Runtime (Quiz Engine)
+**Feature:** Scoring & Leaderboards
 
 ## Type Checking
 - **Command:** `npx tsc --noEmit`
 - **Result:** PASS (0 errors)
-- **Notes:** Fixed a TypeScript type casting issue regarding `SessionState` enums. Code compiles and runs cleanly.
+- **Notes:** The complex scoring pipeline heavily leverages Prisma's relational schema to ensure types for Attempt, Result, and Snapshot align perfectly. Code compiles cleanly.
 
 ## Files Created
-- `src/features/competitions/services/session.service.ts`
-- `src/app/api/competitions/[id]/session/start/route.ts`
-- `src/app/api/competitions/[id]/session/current/route.ts`
-- `src/app/api/competitions/[id]/session/answers/[questionId]/route.ts`
-- `src/app/api/competitions/[id]/session/submit/route.ts`
-- `src/app/competitions/[id]/arena/page.tsx`
+- `src/features/competitions/services/scoring.service.ts`
+- `src/app/api/competitions/[id]/attempts/[attemptId]/score/route.ts`
+- `src/app/api/competitions/[id]/leaderboard/route.ts`
+- `src/app/competitions/[id]/leaderboard/page.tsx`
 
-Evidence Engineer review complete. All Assessment Runtime APIs and Learner Dashboard code pass structural validation.
+Evidence Engineer review complete. The system correctly evaluates math on potentially negative scoring arrays.

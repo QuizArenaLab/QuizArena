@@ -43,9 +43,7 @@ export function toCompetitionDTO(competition: Competition): CompetitionDTO {
 
 // ─── Management Mappers ─────────────────────────────
 
-export function toCompetitionConfigDTO(
-  config: CompetitionConfig
-): CompetitionConfigDTO {
+export function toCompetitionConfigDTO(config: CompetitionConfig): CompetitionConfigDTO {
   return {
     id: config.id,
     competitionId: config.competitionId,
@@ -80,9 +78,7 @@ export function toCompetitionEligibilityDTO(
   };
 }
 
-export function toCompetitionSectionDTO(
-  section: CompetitionSection
-): CompetitionSectionDTO {
+export function toCompetitionSectionDTO(section: CompetitionSection): CompetitionSectionDTO {
   return {
     id: section.id,
     competitionId: section.competitionId,
@@ -100,9 +96,7 @@ export function toCompetitionSectionDTO(
   };
 }
 
-export function toCompetitionQuestionDTO(
-  question: CompetitionQuestion
-): CompetitionQuestionDTO {
+export function toCompetitionQuestionDTO(question: CompetitionQuestion): CompetitionQuestionDTO {
   return {
     id: question.id,
     competitionId: question.competitionId,
@@ -121,9 +115,7 @@ export function toCompetitionQuestionDTO(
 
 // ─── Lifecycle & Scheduling Mappers ──────────────────
 
-export function toScheduleDTO(
-  schedule: CompetitionSchedule
-): CompetitionScheduleDTO {
+export function toScheduleDTO(schedule: CompetitionSchedule): CompetitionScheduleDTO {
   return {
     id: schedule.id,
     competitionId: schedule.competitionId,

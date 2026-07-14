@@ -1,10 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { competitionService } from '@/features/competitions/services/competition.service';
+import { NextRequest, NextResponse } from "next/server";
+import { competitionService } from "@/features/competitions/services/competition.service";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const competition = await competitionService.publishCompetition(id);

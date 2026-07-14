@@ -1,28 +1,19 @@
-# Implementation Report — Capability Sprint 04
+# Implementation Report — Capability Sprint 05
 
 **Role:** Implementation Engineer
-**Feature:** Assessment Runtime (Quiz Engine)
+**Feature:** Scoring & Leaderboards
 
 ## Scope Executed
-Implemented the secure quiz execution engine. The Learner UI now connects to a server-authoritative session backend that tracks timers, saves answers incrementally, and automatically handles submissions.
+Implemented the automated grading engine to evaluate `CompetitionAttempt`s and the Ranking Engine to project those results onto a competitive Leaderboard. 
 
 ## Files Created
 
 ### Domain Layer (`src/features/competitions/services/`)
-- `session.service.ts`: Implements the `SessionState` state machine, handles transaction boundaries for session creation, enforces server-side time checks, upserts `CompetitionSessionAnswer` rows, and finalized attempts into `CompetitionAttempt`.
+- `scoring.service.ts`: Implements `evaluateAttempt` which iterates over all recorded session answers and matches them to the `CompetitionQuestion` rule matrix (positive marks, negative marks). Calculates accuracy and completion time. Implements `updateLeaderboard` which safely upserts `RankingSnapshot` data and recalculates relative rank/percentile across all historical participants. Maintains aggregated analytics on `LeaderboardProjection`.
 
-### API Layer (`src/app/api/competitions/[id]/session/`)
-- `start/route.ts`: Exposes `sessionService.startSession`.
-- `current/route.ts`: Exposes `sessionService.getSessionState`.
-- `answers/[questionId]/route.ts`: Exposes `sessionService.submitAnswer`.
-- `submit/route.ts`: Exposes `sessionService.submitSession`.
+### API Layer (`src/app/api/competitions/[id]/`)
+- `attempts/[attemptId]/score/route.ts`: API endpoint to simulate the automated grading pipeline trigger.
+- `leaderboard/route.ts`: Highly optimized endpoint returning pre-computed `RankingSnapshot` rows and the `LeaderboardProjection` aggregate stats.
 
-### Presentation Layer (`src/app/competitions/[id]/arena/`)
-- `page.tsx`: A complex stateful React dashboard for the Quiz Engine. Features include:
-  - Global `setInterval` countdown timer that synchronizes against the server's `expiresAt` payload.
-  - Automatic submission when the timer reaches 0.
-  - Quick navigation sidebar showing all questions and indicating answered ones.
-  - Incremental answer saving on `onChange` events.
-
-## Notes
-- Time limits are handled server-side to prevent client-side clock tampering. If a user tampers with the UI to stop auto-submit, the `sessionService` still rejects `submitAnswer` if the server-side `expiresAt` has passed.
+### Presentation Layer (`src/app/competitions/[id]/leaderboard/`)
+- `page.tsx`: Learner dashboard to view competitive standings. Includes summary cards for Participant Count, Highest Score, and Average Accuracy. The data table automatically highlights the current user's rank.

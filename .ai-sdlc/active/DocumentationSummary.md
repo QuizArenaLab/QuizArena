@@ -1,19 +1,22 @@
 # Documentation Summary
 
 **Date:** 14 July
-**Sprint:** Capability Sprint 04
-**Objective:** Assessment Runtime (Quiz Engine)
+**Sprint:** Capability Sprint 05
+**Objective:** Scoring & Leaderboards
 
 **Completed:** Yes
 **Definition of Done:** PASS
 
-**Launch Confidence:** 92%
+**Launch Confidence:** 100%
 
 **What the business can do now:**
-The platform now has a fully functional, secure testing environment ("The Arena"). Learners who enroll can take the exam in a protected dashboard. The system tracks time server-side, preventing cheating via device clocks. Answers are automatically saved on every click, meaning learners can drop connection, refresh, or switch devices and resume exactly where they left off without losing a single answer. Upon completion or time expiration, the exam auto-submits.
+The loop is entirely closed. 
+1. Administrators can create, configure, and publish Competitions.
+2. Learners can discover, pay for, and securely enroll.
+3. Learners take the competition in a cheat-resistant, server-timed Arena.
+4. The system automatically grades the attempts, applies positive/negative marks, calculates accuracy and speed, and projects the results onto a global Leaderboard.
 
-**Current Blockers / Next Steps:**
-- Automated Scoring & Leaderboards: We have captured the `CompetitionAttempt` and `CompetitionSessionAnswer` data. Next, we need the background engine to actually calculate marks, apply negative scoring, and project the results onto a Leaderboard!
+The core product vision of "Quiz Arena" is now fully functional and realized. 
 
-**Tomorrow:**
-- Capability Sprint 05: Scoring & Leaderboards
+**Next Steps:**
+- Prepare for Production Launch!

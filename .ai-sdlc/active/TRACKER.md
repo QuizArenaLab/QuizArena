@@ -1,23 +1,21 @@
 # AI SDLC Tracker
 Launch Countdown
 
-Sprint: Capability Sprint 04
+Sprint: Capability Sprint 05
 Status: COMPLETED
 
-Objective: Assessment Runtime (Quiz Engine)
+Objective: Scoring & Leaderboards
 
 Deliverables:
-- Created `session.service.ts` for Assessment Runtime.
-- Session Init API (`start`).
-- Session Context API (`current`).
-- Answer Upsert API (`answers/[questionId]`).
-- Session Lock API (`submit`).
-- Learner Arena Dashboard (`src/app/competitions/[id]/arena/page.tsx`).
+- Created `scoring.service.ts` for automated grading.
+- Score Pipeline API (`score`).
+- Leaderboard API (`leaderboard`).
+- Learner Leaderboard Dashboard (`src/app/competitions/[id]/leaderboard/page.tsx`).
 
 Definition of Done:
-- [x] Session initializes securely.
-- [x] Time limits enforced server-side.
-- [x] UI updates accurately and submits on expiry.
+- [x] Attempts are accurately graded based on positive/negative marks.
+- [x] Results are projected into `RankingSnapshot`.
+- [x] Aggregates are updated in `LeaderboardProjection`.
 - [x] TypeScript passes.
 - [x] Architecture Review = PASS.
 - [x] QA Review = PASS.

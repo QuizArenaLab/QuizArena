@@ -4,10 +4,7 @@ import { lifecycleTransitionSchema } from "@/features/competitions/validators/li
 import { competitionRepository } from "@/features/competitions/repositories/competition.repository";
 import { ZodError } from "zod";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await req.json();
@@ -15,16 +12,11 @@ export async function POST(
 
     const competition = await competitionRepository.findById(id);
     if (!competition) {
-      return NextResponse.json(
-        { error: "Competition not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Competition not found" }, { status: 404 });
     }
 
     // Return valid transitions for context
-    const validTransitions = lifecycleService.getValidTransitions(
-      competition.lifecycleState
-    );
+    const validTransitions = lifecycleService.getValidTransitions(competition.lifecycleState);
 
     const result = await lifecycleService.transitionTo(
       id,
@@ -49,23 +41,15 @@ export async function POST(
   }
 }
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const competition = await competitionRepository.findById(id);
     if (!competition) {
-      return NextResponse.json(
-        { error: "Competition not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Competition not found" }, { status: 404 });
     }
 
-    const validTransitions = lifecycleService.getValidTransitions(
-      competition.lifecycleState
-    );
+    const validTransitions = lifecycleService.getValidTransitions(competition.lifecycleState);
 
     return NextResponse.json({
       data: {

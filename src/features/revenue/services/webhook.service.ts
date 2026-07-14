@@ -1,13 +1,13 @@
-import { prisma } from '@/lib/prisma';
-import crypto from 'crypto';
-import { verifyRazorpaySignature } from '../providers/razorpay.provider';
-import { PaymentOrderStatus, RegistrationState } from '@/generated/prisma';
+import { prisma } from "@/lib/prisma";
+import crypto from "crypto";
+import { verifyRazorpaySignature } from "../providers/razorpay.provider";
+import { PaymentOrderStatus, RegistrationState } from "@/generated/prisma";
 
 export class WebhookService {
   async handleRazorpayWebhook(payload: any, signature: string) {
     const eventType = payload.event;
-    
-    if (eventType === 'payment.captured') {
+
+    if (eventType === "payment.captured") {
       const paymentEntity = payload.payload.payment.entity;
       const orderId = paymentEntity.order_id;
       const paymentId = paymentEntity.id;
@@ -17,16 +17,16 @@ export class WebhookService {
       // This requires the raw body, but assuming standard flow here for the example logic:
       // Actually, standard Razorpay webhooks use crypto.createHmac('sha256', WEBHOOK_SECRET).update(rawBody).digest('hex')
       // Let's implement that directly here.
-      
-      const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || 'dummy_webhook_secret';
-      
+
+      const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || "dummy_webhook_secret";
+
       const expectedSignature = crypto
-        .createHmac('sha256', webhookSecret)
+        .createHmac("sha256", webhookSecret)
         .update(JSON.stringify(payload)) // Note: Needs exact raw body in production
-        .digest('hex');
+        .digest("hex");
 
       if (expectedSignature !== signature) {
-        throw new Error('Invalid signature');
+        throw new Error("Invalid signature");
       }
 
       // 2. Find internal payment order
@@ -52,9 +52,9 @@ export class WebhookService {
         }),
         prisma.registration.update({
           where: { id: paymentOrder.registrationId },
-          data: { 
+          data: {
             state: RegistrationState.ENROLLED,
-            enrolledAt: new Date()
+            enrolledAt: new Date(),
           },
         }),
       ]);

@@ -1,16 +1,8 @@
 import { competitionRepository } from "../repositories/competition.repository";
 import { lifecycleRepository } from "../repositories/lifecycle.repository";
 import { prisma } from "@/lib/prisma";
-import {
-  CompetitionLifecycle,
-  CompetitionStatus,
-  LifecycleActorType,
-} from "@/generated/prisma";
-import {
-  toCompetitionDTO,
-  toScheduleDTO,
-  toLifecycleAuditDTO,
-} from "../shared/mappers";
+import { CompetitionLifecycle, CompetitionStatus, LifecycleActorType } from "@/generated/prisma";
+import { toCompetitionDTO, toScheduleDTO, toLifecycleAuditDTO } from "../shared/mappers";
 import type {
   CompetitionDTO,
   CompetitionScheduleDTO,
@@ -21,19 +13,13 @@ import type {
 // ─── State Machine Definition ──────────────────────────
 
 const VALID_TRANSITIONS: Record<CompetitionLifecycle, CompetitionLifecycle[]> = {
-  [CompetitionLifecycle.DRAFT]: [
-    CompetitionLifecycle.READY,
-    CompetitionLifecycle.CANCELLED,
-  ],
+  [CompetitionLifecycle.DRAFT]: [CompetitionLifecycle.READY, CompetitionLifecycle.CANCELLED],
   [CompetitionLifecycle.READY]: [
     CompetitionLifecycle.SCHEDULED,
     CompetitionLifecycle.LIVE,
     CompetitionLifecycle.CANCELLED,
   ],
-  [CompetitionLifecycle.SCHEDULED]: [
-    CompetitionLifecycle.LIVE,
-    CompetitionLifecycle.CANCELLED,
-  ],
+  [CompetitionLifecycle.SCHEDULED]: [CompetitionLifecycle.LIVE, CompetitionLifecycle.CANCELLED],
   [CompetitionLifecycle.LIVE]: [
     CompetitionLifecycle.PAUSED,
     CompetitionLifecycle.COMPLETED,
@@ -50,9 +36,7 @@ const VALID_TRANSITIONS: Record<CompetitionLifecycle, CompetitionLifecycle[]> = 
   [CompetitionLifecycle.CANCELLED]: [],
 };
 
-const LIFECYCLE_TO_STATUS: Partial<
-  Record<CompetitionLifecycle, CompetitionStatus>
-> = {
+const LIFECYCLE_TO_STATUS: Partial<Record<CompetitionLifecycle, CompetitionStatus>> = {
   [CompetitionLifecycle.DRAFT]: CompetitionStatus.DRAFT,
   [CompetitionLifecycle.READY]: CompetitionStatus.READY,
   [CompetitionLifecycle.SCHEDULED]: CompetitionStatus.SCHEDULED,
@@ -66,9 +50,7 @@ const LIFECYCLE_TO_STATUS: Partial<
 
 // ─── Lifecycle Timestamp Fields ─────────────────────────
 
-function getTimestampField(
-  state: CompetitionLifecycle
-): Record<string, Date> | null {
+function getTimestampField(state: CompetitionLifecycle): Record<string, Date> | null {
   const now = new Date();
   switch (state) {
     case CompetitionLifecycle.LIVE:
@@ -107,8 +89,7 @@ export class LifecycleService {
       );
     }
 
-    const newStatus =
-      LIFECYCLE_TO_STATUS[targetState] ?? competition.status;
+    const newStatus = LIFECYCLE_TO_STATUS[targetState] ?? competition.status;
     const timestamps = getTimestampField(targetState) ?? {};
 
     // Atomically: update competition + create audit entry
@@ -130,9 +111,7 @@ export class LifecycleService {
           newState: targetState,
           reason,
           performedBy,
-          performedByType: performedBy
-            ? LifecycleActorType.ADMIN
-            : LifecycleActorType.SYSTEM,
+          performedByType: performedBy ? LifecycleActorType.ADMIN : LifecycleActorType.SYSTEM,
         },
       }),
     ]);
@@ -183,23 +162,17 @@ export class LifecycleService {
     return toScheduleDTO(schedule);
   }
 
-  async getSchedule(
-    competitionId: string
-  ): Promise<CompetitionScheduleDTO | null> {
+  async getSchedule(competitionId: string): Promise<CompetitionScheduleDTO | null> {
     const schedule = await lifecycleRepository.getSchedule(competitionId);
     return schedule ? toScheduleDTO(schedule) : null;
   }
 
-  async getAuditLog(
-    competitionId: string
-  ): Promise<CompetitionLifecycleAuditDTO[]> {
+  async getAuditLog(competitionId: string): Promise<CompetitionLifecycleAuditDTO[]> {
     const audits = await lifecycleRepository.getAuditLog(competitionId);
     return audits.map(toLifecycleAuditDTO);
   }
 
-  getValidTransitions(
-    currentState: CompetitionLifecycle
-  ): CompetitionLifecycle[] {
+  getValidTransitions(currentState: CompetitionLifecycle): CompetitionLifecycle[] {
     return VALID_TRANSITIONS[currentState] ?? [];
   }
 }

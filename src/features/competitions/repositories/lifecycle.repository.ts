@@ -10,9 +10,7 @@ import {
 export class LifecycleRepository {
   // ─── Schedule ───────────────────────────────────────
 
-  async getSchedule(
-    competitionId: string
-  ): Promise<CompetitionSchedule | null> {
+  async getSchedule(competitionId: string): Promise<CompetitionSchedule | null> {
     return prisma.competitionSchedule.findUnique({
       where: { competitionId },
     });
@@ -66,9 +64,7 @@ export class LifecycleRepository {
     });
   }
 
-  async getAuditLog(
-    competitionId: string
-  ): Promise<CompetitionLifecycleAudit[]> {
+  async getAuditLog(competitionId: string): Promise<CompetitionLifecycleAudit[]> {
     return prisma.competitionLifecycleAudit.findMany({
       where: { competitionId },
       orderBy: { createdAt: "desc" },

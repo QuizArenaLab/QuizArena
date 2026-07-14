@@ -1,21 +1,18 @@
-# QA Review — Capability Sprint 04
+# QA Review — Capability Sprint 05
 
 **Role:** QA Engineer
-**Feature:** Assessment Runtime (Quiz Engine)
+**Feature:** Scoring & Leaderboards
 
 ## Checks Evaluated
 
-**1. Session Initialization:**
-- API accurately verifies enrollment before creating a session. Generates `expiresAt` based on Competition config.
+**1. Scoring Accuracy:**
+- Correct answers yield `+marks`. Incorrect answers yield `-negativeMarks`. Unanswered questions are neutral.
 
-**2. State Recovery:**
-- Refreshing the `/arena` dashboard triggers the `/current` API. The UI accurately fetches already recorded answers and correctly recalculates the remaining time down to the second.
+**2. Leaderboard Tie-Breakers:**
+- The Leaderboard accurately recalculates ranks based on an `ORDER BY score DESC, completionTime ASC`. If two users score 100, the one who submitted faster is ranked higher.
 
-**3. Timer & Expiration:**
-- The frontend `setInterval` accurately displays countdown.
-- If the countdown reaches zero, the UI automatically triggers the `submitSession` logic and gracefully kicks the user back to the competition detail page.
-
-**4. Final Lockout:**
-- Once `submitSession` is called, the `CompetitionSession` state switches to `SUBMITTED`. Attempting to answer a question after submission yields an error.
+**3. Leaderboard UI:**
+- The public `GET /leaderboard` API works flawlessly.
+- The React component maps through the participants, correctly rendering rank medals (🥇, 🥈, 🥉) for the top 3 spots, and visually highlights the current user's row so they can easily find themselves.
 
 **Verdict:** PASS

@@ -1,13 +1,9 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
-export default function LearnerCompetitionDetail({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function LearnerCompetitionDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
 
@@ -17,7 +13,7 @@ export default function LearnerCompetitionDetail({
   const [enrolling, setEnrolling] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchDetails = async () => {
+  const fetchDetails = useCallback(async () => {
     try {
       const [compRes, enrollRes] = await Promise.all([
         fetch(`/api/competitions/${id}`),
@@ -25,7 +21,7 @@ export default function LearnerCompetitionDetail({
       ]);
 
       if (!compRes.ok) throw new Error("Failed to load competition");
-      
+
       const compData = await compRes.json();
       setCompetition(compData);
 
@@ -38,11 +34,11 @@ export default function LearnerCompetitionDetail({
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchDetails();
-  }, [id]);
+  }, [fetchDetails]);
 
   const handleEnroll = async () => {
     setEnrolling(true);
@@ -52,13 +48,13 @@ export default function LearnerCompetitionDetail({
         method: "POST",
       });
       const data = await res.json();
-      
+
       if (!res.ok) throw new Error(data.error || "Enrollment failed");
 
       if (data.status === "ENROLLED") {
         setEnrollmentStatus("ENROLLED");
         // refresh comp to get updated participant count
-        fetchDetails(); 
+        fetchDetails();
       } else if (data.status === "PAYMENT_PENDING") {
         setEnrollmentStatus("PAYMENT_PENDING");
         // In a real flow, redirect to Razorpay or payment page
@@ -72,19 +68,38 @@ export default function LearnerCompetitionDetail({
   };
 
   if (loading) return <div style={{ padding: "40px" }}>Loading competition...</div>;
-  if (error || !competition) return <div style={{ padding: "40px", color: "red" }}>Error: {error || "Not found"}</div>;
+  if (error || !competition)
+    return <div style={{ padding: "40px", color: "red" }}>Error: {error || "Not found"}</div>;
 
   const isFree = competition.economics?.entryFee === 0;
-  const isFull = competition.eligibility?.maxParticipants && competition.participantCount >= competition.eligibility.maxParticipants;
+  const isFull =
+    competition.eligibility?.maxParticipants &&
+    competition.participantCount >= competition.eligibility.maxParticipants;
 
   return (
     <div style={{ maxWidth: "800px", margin: "40px auto", fontFamily: "sans-serif" }}>
-      <header style={{ borderBottom: "2px solid #eee", paddingBottom: "20px", marginBottom: "20px" }}>
+      <header
+        style={{ borderBottom: "2px solid #eee", paddingBottom: "20px", marginBottom: "20px" }}
+      >
         <h1 style={{ fontSize: "2rem", margin: "0 0 10px 0" }}>{competition.title}</h1>
         <div style={{ display: "flex", gap: "15px", color: "#666" }}>
-          <span>Status: <strong>{competition.lifecycleState}</strong></span>
-          <span>Participants: {competition.participantCount} {competition.eligibility?.maxParticipants ? `/ ${competition.eligibility.maxParticipants}` : ""}</span>
-          <span>Fee: <strong>{isFree ? "Free" : `${competition.economics?.currency || "INR"} ${competition.economics?.entryFee}`}</strong></span>
+          <span>
+            Status: <strong>{competition.lifecycleState}</strong>
+          </span>
+          <span>
+            Participants: {competition.participantCount}{" "}
+            {competition.eligibility?.maxParticipants
+              ? `/ ${competition.eligibility.maxParticipants}`
+              : ""}
+          </span>
+          <span>
+            Fee:{" "}
+            <strong>
+              {isFree
+                ? "Free"
+                : `${competition.economics?.currency || "INR"} ${competition.economics?.entryFee}`}
+            </strong>
+          </span>
         </div>
       </header>
 
@@ -98,8 +113,17 @@ export default function LearnerCompetitionDetail({
         {competition.sections?.length > 0 ? (
           <ul style={{ listStyle: "none", padding: 0 }}>
             {competition.sections.map((sec: any) => (
-              <li key={sec.id} style={{ padding: "10px", border: "1px solid #ddd", marginBottom: "10px", borderRadius: "4px" }}>
-                <strong>{sec.title}</strong> - {sec.totalQuestions} questions ({sec.totalMarks} marks)
+              <li
+                key={sec.id}
+                style={{
+                  padding: "10px",
+                  border: "1px solid #ddd",
+                  marginBottom: "10px",
+                  borderRadius: "4px",
+                }}
+              >
+                <strong>{sec.title}</strong> - {sec.totalQuestions} questions ({sec.totalMarks}{" "}
+                marks)
               </li>
             ))}
           </ul>
@@ -108,11 +132,13 @@ export default function LearnerCompetitionDetail({
         )}
       </section>
 
-      <div style={{ padding: "20px", background: "#f8fafc", borderRadius: "8px", textAlign: "center" }}>
+      <div
+        style={{ padding: "20px", background: "#f8fafc", borderRadius: "8px", textAlign: "center" }}
+      >
         {enrollmentStatus === "ENROLLED" ? (
           <div>
             <h3 style={{ color: "green" }}>You are enrolled!</h3>
-            <button 
+            <button
               disabled={competition.lifecycleState !== "LIVE"}
               style={{
                 background: competition.lifecycleState === "LIVE" ? "#10b981" : "#ccc",
@@ -121,17 +147,21 @@ export default function LearnerCompetitionDetail({
                 border: "none",
                 borderRadius: "4px",
                 fontSize: "16px",
-                cursor: competition.lifecycleState === "LIVE" ? "pointer" : "not-allowed"
+                cursor: competition.lifecycleState === "LIVE" ? "pointer" : "not-allowed",
               }}
             >
               Enter Arena
             </button>
-            {competition.lifecycleState !== "LIVE" && <p style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}>Competition is not LIVE yet.</p>}
+            {competition.lifecycleState !== "LIVE" && (
+              <p style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}>
+                Competition is not LIVE yet.
+              </p>
+            )}
           </div>
         ) : enrollmentStatus === "PAYMENT_PENDING" ? (
           <div>
             <h3 style={{ color: "#f59e0b" }}>Payment Pending</h3>
-            <button 
+            <button
               style={{
                 background: "#f59e0b",
                 color: "#fff",
@@ -139,7 +169,7 @@ export default function LearnerCompetitionDetail({
                 border: "none",
                 borderRadius: "4px",
                 fontSize: "16px",
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             >
               Complete Payment
@@ -150,7 +180,7 @@ export default function LearnerCompetitionDetail({
             {isFull ? (
               <h3 style={{ color: "red" }}>Capacity Full</h3>
             ) : (
-              <button 
+              <button
                 onClick={handleEnroll}
                 disabled={enrolling || competition.lifecycleState === "ARCHIVED"}
                 style={{
@@ -160,10 +190,17 @@ export default function LearnerCompetitionDetail({
                   border: "none",
                   borderRadius: "4px",
                   fontSize: "16px",
-                  cursor: (enrolling || competition.lifecycleState === "ARCHIVED") ? "not-allowed" : "pointer"
+                  cursor:
+                    enrolling || competition.lifecycleState === "ARCHIVED"
+                      ? "not-allowed"
+                      : "pointer",
                 }}
               >
-                {enrolling ? "Processing..." : isFree ? "Enroll for Free" : `Enroll for ${competition.economics?.currency} ${competition.economics?.entryFee}`}
+                {enrolling
+                  ? "Processing..."
+                  : isFree
+                    ? "Enroll for Free"
+                    : `Enroll for ${competition.economics?.currency} ${competition.economics?.entryFee}`}
               </button>
             )}
           </div>

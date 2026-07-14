@@ -1,11 +1,11 @@
-import { 
-  CompetitionType, 
-  CompetitionLifecycle, 
-  CompetitionStatus, 
-  CompetitionVisibility, 
-  ExamCategory, 
-  ChallengeDifficulty 
-} from '@/generated/prisma';
+import {
+  CompetitionType,
+  CompetitionLifecycle,
+  CompetitionStatus,
+  CompetitionVisibility,
+  ExamCategory,
+  ChallengeDifficulty,
+} from "@/generated/prisma";
 
 export interface CompetitionDTO {
   id: string;

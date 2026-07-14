@@ -1,13 +1,13 @@
-import { competitionRepository } from '../repositories/competition.repository';
-import { toCompetitionDTO } from '../shared/mappers';
-import { CreateCompetitionDTO, UpdateCompetitionDTO, CompetitionDTO } from '../types/dto';
-import { CompetitionLifecycle, CompetitionStatus } from '@/generated/prisma';
+import { competitionRepository } from "../repositories/competition.repository";
+import { toCompetitionDTO } from "../shared/mappers";
+import { CreateCompetitionDTO, UpdateCompetitionDTO, CompetitionDTO } from "../types/dto";
+import { CompetitionLifecycle, CompetitionStatus } from "@/generated/prisma";
 
 export class CompetitionService {
   async createCompetition(data: CreateCompetitionDTO, userId?: string): Promise<CompetitionDTO> {
     const existing = await competitionRepository.findBySlug(data.slug);
     if (existing) {
-      throw new Error('Competition with this slug already exists');
+      throw new Error("Competition with this slug already exists");
     }
 
     const competition = await competitionRepository.create({
@@ -33,7 +33,10 @@ export class CompetitionService {
     return toCompetitionDTO(competition);
   }
 
-  async getCompetitions(page: number, limit: number): Promise<{ data: CompetitionDTO[]; total: number }> {
+  async getCompetitions(
+    page: number,
+    limit: number
+  ): Promise<{ data: CompetitionDTO[]; total: number }> {
     const skip = (page - 1) * limit;
     const [competitions, total] = await competitionRepository.findAll({ skip, take: limit });
     return {
@@ -44,11 +47,11 @@ export class CompetitionService {
 
   async updateCompetition(id: string, data: UpdateCompetitionDTO): Promise<CompetitionDTO> {
     const competition = await competitionRepository.findById(id);
-    if (!competition) throw new Error('Competition not found');
+    if (!competition) throw new Error("Competition not found");
 
     if (data.slug && data.slug !== competition.slug) {
       const existing = await competitionRepository.findBySlug(data.slug);
-      if (existing) throw new Error('Slug is already in use');
+      if (existing) throw new Error("Slug is already in use");
     }
 
     const updated = await competitionRepository.update(id, data);
@@ -57,14 +60,14 @@ export class CompetitionService {
 
   async publishCompetition(id: string): Promise<CompetitionDTO> {
     const competition = await competitionRepository.findById(id);
-    if (!competition) throw new Error('Competition not found');
+    if (!competition) throw new Error("Competition not found");
 
     if (competition.lifecycleState === CompetitionLifecycle.LIVE) {
-      throw new Error('Competition is already published');
+      throw new Error("Competition is already published");
     }
 
     if (!competition.durationMinutes) {
-      throw new Error('Cannot publish competition without duration configured');
+      throw new Error("Cannot publish competition without duration configured");
     }
 
     const updated = await competitionRepository.update(id, {

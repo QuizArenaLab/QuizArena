@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
-import { use } from "react";
 import { CompetitionDTO } from "@/features/competitions/types/dto";
 import type {
   CompetitionConfigDTO,
@@ -14,13 +13,18 @@ import type {
   CompetitionLifecycleAuditDTO,
 } from "@/features/competitions/types/dto";
 
-type Tab = "overview" | "config" | "economics" | "eligibility" | "sections" | "questions" | "lifecycle" | "schedule" | "audit";
+type Tab =
+  | "overview"
+  | "config"
+  | "economics"
+  | "eligibility"
+  | "sections"
+  | "questions"
+  | "lifecycle"
+  | "schedule"
+  | "audit";
 
-export default function CompetitionDetail({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function CompetitionDetail({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { id } = use(params);
 
@@ -36,14 +40,22 @@ export default function CompetitionDetail({
   const [eligibility, setEligibility] = useState<CompetitionEligibilityDTO | null>(null);
   const [sections, setSections] = useState<CompetitionSectionDTO[]>([]);
   const [questions, setQuestions] = useState<CompetitionQuestionDTO[]>([]);
-  
-  const [lifecycleInfo, setLifecycleInfo] = useState<{ currentState: string; status: string; validTransitions: string[] } | null>(null);
+
+  const [lifecycleInfo, setLifecycleInfo] = useState<{
+    currentState: string;
+    status: string;
+    validTransitions: string[];
+  } | null>(null);
   const [schedule, setSchedule] = useState<CompetitionScheduleDTO | null>(null);
   const [auditLog, setAuditLog] = useState<CompetitionLifecycleAuditDTO[]>([]);
 
   // Form state
   const [transitionForm, setTransitionForm] = useState({ targetState: "", reason: "" });
-  const [scheduleForm, setScheduleForm] = useState({ publishAt: "", expiresAt: "", timezone: "Asia/Kolkata" });
+  const [scheduleForm, setScheduleForm] = useState({
+    publishAt: "",
+    expiresAt: "",
+    timezone: "Asia/Kolkata",
+  });
 
   const [configForm, setConfigForm] = useState({
     negativeMarkingEnabled: false,
@@ -73,9 +85,7 @@ export default function CompetitionDetail({
     marks: 1,
   });
 
-  // ─── Fetchers ────────────────────────────────────
-
-  const fetchCompetition = async () => {
+  const fetchCompetition = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/competitions/${id}`);
@@ -87,9 +97,13 @@ export default function CompetitionDetail({
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  const fetchTabData = async (tab: Tab) => {
+  useEffect(() => {
+    fetchCompetition();
+  }, [fetchCompetition]);
+
+  const fetchTabData = useCallback(async (tab: Tab) => {
     if (tab === "overview") return;
     try {
       const res = await fetch(`/api/admin/competitions/${id}/${tab}`);
@@ -137,15 +151,11 @@ export default function CompetitionDetail({
     } catch {
       /* silent */
     }
-  };
-
-  useEffect(() => {
-    fetchCompetition();
   }, [id]);
 
   useEffect(() => {
     fetchTabData(activeTab);
-  }, [activeTab, id]);
+  }, [activeTab, fetchTabData]);
 
   // ─── Handlers ────────────────────────────────────
 
@@ -272,7 +282,8 @@ export default function CompetitionDetail({
         publishAt: new Date(scheduleForm.publishAt).toISOString(),
         timezone: scheduleForm.timezone,
       };
-      if (scheduleForm.expiresAt) payload.expiresAt = new Date(scheduleForm.expiresAt).toISOString();
+      if (scheduleForm.expiresAt)
+        payload.expiresAt = new Date(scheduleForm.expiresAt).toISOString();
 
       const res = await fetch(`/api/admin/competitions/${id}/schedule`, {
         method: "PUT",
@@ -298,7 +309,7 @@ export default function CompetitionDetail({
     padding: "8px 16px",
     cursor: "pointer" as const,
     borderBottom: activeTab === tab ? "3px solid #2563eb" : "3px solid transparent",
-    fontWeight: activeTab === tab ? "bold" as const : "normal" as const,
+    fontWeight: activeTab === tab ? ("bold" as const) : ("normal" as const),
     background: "none",
     border: "none",
     borderBottomStyle: "solid" as const,
@@ -337,14 +348,42 @@ export default function CompetitionDetail({
       </p>
 
       {error && (
-        <div style={{ padding: "10px", background: "#fee2e2", color: "#991b1b", borderRadius: "4px", marginBottom: "12px" }}>
+        <div
+          style={{
+            padding: "10px",
+            background: "#fee2e2",
+            color: "#991b1b",
+            borderRadius: "4px",
+            marginBottom: "12px",
+          }}
+        >
           {error}
         </div>
       )}
 
       {/* Tab Bar */}
-      <div style={{ display: "flex", gap: "4px", borderBottom: "1px solid #ddd", marginBottom: "20px", flexWrap: "wrap" }}>
-        {(["overview", "config", "economics", "eligibility", "sections", "questions", "lifecycle", "schedule", "audit"] as Tab[]).map((tab) => (
+      <div
+        style={{
+          display: "flex",
+          gap: "4px",
+          borderBottom: "1px solid #ddd",
+          marginBottom: "20px",
+          flexWrap: "wrap",
+        }}
+      >
+        {(
+          [
+            "overview",
+            "config",
+            "economics",
+            "eligibility",
+            "sections",
+            "questions",
+            "lifecycle",
+            "schedule",
+            "audit",
+          ] as Tab[]
+        ).map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={tabStyle(tab)}>
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
@@ -354,11 +393,21 @@ export default function CompetitionDetail({
       {/* ─── Overview Tab ───────────────────────────── */}
       {activeTab === "overview" && (
         <div style={{ padding: "10px", border: "1px solid #ccc", borderRadius: "4px" }}>
-          <p><strong>ID:</strong> {competition.id}</p>
-          <p><strong>Slug:</strong> {competition.slug}</p>
-          <p><strong>Type:</strong> {competition.competitionType}</p>
-          <p><strong>Total Questions:</strong> {competition.totalQuestions}</p>
-          <p><strong>Maximum Marks:</strong> {competition.maximumMarks}</p>
+          <p>
+            <strong>ID:</strong> {competition.id}
+          </p>
+          <p>
+            <strong>Slug:</strong> {competition.slug}
+          </p>
+          <p>
+            <strong>Type:</strong> {competition.competitionType}
+          </p>
+          <p>
+            <strong>Total Questions:</strong> {competition.totalQuestions}
+          </p>
+          <p>
+            <strong>Maximum Marks:</strong> {competition.maximumMarks}
+          </p>
           <div style={{ marginTop: "12px" }}>
             {competition.lifecycleState === "DRAFT" && (
               <button onClick={handlePublish} style={{ ...btnStyle, backgroundColor: "green" }}>
@@ -373,17 +422,77 @@ export default function CompetitionDetail({
       {activeTab === "config" && (
         <div>
           <h3>Competition Configuration</h3>
-          <label><input type="checkbox" checked={configForm.negativeMarkingEnabled} onChange={(e) => setConfigForm({ ...configForm, negativeMarkingEnabled: e.target.checked })} /> Negative Marking Enabled</label>
+          <label>
+            <input
+              type="checkbox"
+              checked={configForm.negativeMarkingEnabled}
+              onChange={(e) =>
+                setConfigForm({ ...configForm, negativeMarkingEnabled: e.target.checked })
+              }
+            />{" "}
+            Negative Marking Enabled
+          </label>
           <br />
-          <label>Negative Mark Per Question: <input type="number" style={inputStyle} value={configForm.negativeMarkPerQuestion} onChange={(e) => setConfigForm({ ...configForm, negativeMarkPerQuestion: parseFloat(e.target.value) || 0 })} /></label>
-          <label>Passing Marks: <input type="number" style={inputStyle} value={configForm.passingMarks} onChange={(e) => setConfigForm({ ...configForm, passingMarks: parseInt(e.target.value) || 0 })} /></label>
-          <label><input type="checkbox" checked={configForm.allowRetake} onChange={(e) => setConfigForm({ ...configForm, allowRetake: e.target.checked })} /> Allow Retake</label>
+          <label>
+            Negative Mark Per Question:{" "}
+            <input
+              type="number"
+              style={inputStyle}
+              value={configForm.negativeMarkPerQuestion}
+              onChange={(e) =>
+                setConfigForm({
+                  ...configForm,
+                  negativeMarkPerQuestion: parseFloat(e.target.value) || 0,
+                })
+              }
+            />
+          </label>
+          <label>
+            Passing Marks:{" "}
+            <input
+              type="number"
+              style={inputStyle}
+              value={configForm.passingMarks}
+              onChange={(e) =>
+                setConfigForm({ ...configForm, passingMarks: parseInt(e.target.value) || 0 })
+              }
+            />
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={configForm.allowRetake}
+              onChange={(e) => setConfigForm({ ...configForm, allowRetake: e.target.checked })}
+            />{" "}
+            Allow Retake
+          </label>
           <br />
-          <label><input type="checkbox" checked={configForm.randomizeQuestions} onChange={(e) => setConfigForm({ ...configForm, randomizeQuestions: e.target.checked })} /> Randomize Questions</label>
+          <label>
+            <input
+              type="checkbox"
+              checked={configForm.randomizeQuestions}
+              onChange={(e) =>
+                setConfigForm({ ...configForm, randomizeQuestions: e.target.checked })
+              }
+            />{" "}
+            Randomize Questions
+          </label>
           <br />
-          <label><input type="checkbox" checked={configForm.randomizeOptions} onChange={(e) => setConfigForm({ ...configForm, randomizeOptions: e.target.checked })} /> Randomize Options</label>
-          <br /><br />
-          <button style={btnStyle} disabled={saving} onClick={() => handleSave("config", configForm)}>
+          <label>
+            <input
+              type="checkbox"
+              checked={configForm.randomizeOptions}
+              onChange={(e) => setConfigForm({ ...configForm, randomizeOptions: e.target.checked })}
+            />{" "}
+            Randomize Options
+          </label>
+          <br />
+          <br />
+          <button
+            style={btnStyle}
+            disabled={saving}
+            onClick={() => handleSave("config", configForm)}
+          >
             {saving ? "Saving..." : "Save Config"}
           </button>
         </div>
@@ -393,10 +502,42 @@ export default function CompetitionDetail({
       {activeTab === "economics" && (
         <div>
           <h3>Competition Economics</h3>
-          <label>Entry Fee: <input type="number" style={inputStyle} value={economicsForm.entryFee} onChange={(e) => setEconomicsForm({ ...economicsForm, entryFee: parseFloat(e.target.value) || 0 })} /></label>
-          <label>Reward Pool: <input type="number" style={inputStyle} value={economicsForm.rewardPool} onChange={(e) => setEconomicsForm({ ...economicsForm, rewardPool: parseFloat(e.target.value) || 0 })} /></label>
-          <label>Currency: <input type="text" style={inputStyle} value={economicsForm.currency} onChange={(e) => setEconomicsForm({ ...economicsForm, currency: e.target.value })} /></label>
-          <button style={btnStyle} disabled={saving} onClick={() => handleSave("economics", economicsForm)}>
+          <label>
+            Entry Fee:{" "}
+            <input
+              type="number"
+              style={inputStyle}
+              value={economicsForm.entryFee}
+              onChange={(e) =>
+                setEconomicsForm({ ...economicsForm, entryFee: parseFloat(e.target.value) || 0 })
+              }
+            />
+          </label>
+          <label>
+            Reward Pool:{" "}
+            <input
+              type="number"
+              style={inputStyle}
+              value={economicsForm.rewardPool}
+              onChange={(e) =>
+                setEconomicsForm({ ...economicsForm, rewardPool: parseFloat(e.target.value) || 0 })
+              }
+            />
+          </label>
+          <label>
+            Currency:{" "}
+            <input
+              type="text"
+              style={inputStyle}
+              value={economicsForm.currency}
+              onChange={(e) => setEconomicsForm({ ...economicsForm, currency: e.target.value })}
+            />
+          </label>
+          <button
+            style={btnStyle}
+            disabled={saving}
+            onClick={() => handleSave("economics", economicsForm)}
+          >
             {saving ? "Saving..." : "Save Economics"}
           </button>
         </div>
@@ -406,8 +547,29 @@ export default function CompetitionDetail({
       {activeTab === "eligibility" && (
         <div>
           <h3>Eligibility Rules</h3>
-          <label>Max Participants: <input type="number" style={inputStyle} value={eligibilityForm.maxParticipants} onChange={(e) => setEligibilityForm({ ...eligibilityForm, maxParticipants: parseInt(e.target.value) || 0 })} /></label>
-          <button style={btnStyle} disabled={saving} onClick={() => handleSave("eligibility", { maxParticipants: eligibilityForm.maxParticipants || null })}>
+          <label>
+            Max Participants:{" "}
+            <input
+              type="number"
+              style={inputStyle}
+              value={eligibilityForm.maxParticipants}
+              onChange={(e) =>
+                setEligibilityForm({
+                  ...eligibilityForm,
+                  maxParticipants: parseInt(e.target.value) || 0,
+                })
+              }
+            />
+          </label>
+          <button
+            style={btnStyle}
+            disabled={saving}
+            onClick={() =>
+              handleSave("eligibility", {
+                maxParticipants: eligibilityForm.maxParticipants || null,
+              })
+            }
+          >
             {saving ? "Saving..." : "Save Eligibility"}
           </button>
         </div>
@@ -442,10 +604,44 @@ export default function CompetitionDetail({
             <p style={{ color: "#666" }}>No sections yet.</p>
           )}
           <h4>Create Section</h4>
-          <label>Title: <input type="text" style={inputStyle} value={sectionForm.title} onChange={(e) => setSectionForm({ ...sectionForm, title: e.target.value })} /></label>
-          <label>Slug: <input type="text" style={inputStyle} value={sectionForm.slug} onChange={(e) => setSectionForm({ ...sectionForm, slug: e.target.value })} /></label>
-          <label>Description: <input type="text" style={inputStyle} value={sectionForm.description} onChange={(e) => setSectionForm({ ...sectionForm, description: e.target.value })} /></label>
-          <label>Display Order: <input type="number" style={inputStyle} value={sectionForm.displayOrder} onChange={(e) => setSectionForm({ ...sectionForm, displayOrder: parseInt(e.target.value) || 0 })} /></label>
+          <label>
+            Title:{" "}
+            <input
+              type="text"
+              style={inputStyle}
+              value={sectionForm.title}
+              onChange={(e) => setSectionForm({ ...sectionForm, title: e.target.value })}
+            />
+          </label>
+          <label>
+            Slug:{" "}
+            <input
+              type="text"
+              style={inputStyle}
+              value={sectionForm.slug}
+              onChange={(e) => setSectionForm({ ...sectionForm, slug: e.target.value })}
+            />
+          </label>
+          <label>
+            Description:{" "}
+            <input
+              type="text"
+              style={inputStyle}
+              value={sectionForm.description}
+              onChange={(e) => setSectionForm({ ...sectionForm, description: e.target.value })}
+            />
+          </label>
+          <label>
+            Display Order:{" "}
+            <input
+              type="number"
+              style={inputStyle}
+              value={sectionForm.displayOrder}
+              onChange={(e) =>
+                setSectionForm({ ...sectionForm, displayOrder: parseInt(e.target.value) || 0 })
+              }
+            />
+          </label>
           <button style={btnStyle} disabled={saving} onClick={handleCreateSection}>
             {saving ? "Creating..." : "Create Section"}
           </button>
@@ -469,7 +665,9 @@ export default function CompetitionDetail({
               <tbody>
                 {questions.map((q) => (
                   <tr key={q.id} style={{ borderBottom: "1px solid #eee" }}>
-                    <td style={{ padding: "8px", fontFamily: "monospace", fontSize: "12px" }}>{q.questionId}</td>
+                    <td style={{ padding: "8px", fontFamily: "monospace", fontSize: "12px" }}>
+                      {q.questionId}
+                    </td>
                     <td style={{ padding: "8px" }}>{q.marks}</td>
                     <td style={{ padding: "8px" }}>{q.displayOrder}</td>
                     <td style={{ padding: "8px" }}>{q.sectionId || "—"}</td>
@@ -481,9 +679,35 @@ export default function CompetitionDetail({
             <p style={{ color: "#666" }}>No questions mapped yet.</p>
           )}
           <h4>Add Question</h4>
-          <label>Question ID: <input type="text" style={inputStyle} value={questionForm.questionId} onChange={(e) => setQuestionForm({ ...questionForm, questionId: e.target.value })} /></label>
-          <label>Section ID (optional): <input type="text" style={inputStyle} value={questionForm.sectionId} onChange={(e) => setQuestionForm({ ...questionForm, sectionId: e.target.value })} /></label>
-          <label>Marks: <input type="number" style={inputStyle} value={questionForm.marks} onChange={(e) => setQuestionForm({ ...questionForm, marks: parseInt(e.target.value) || 1 })} /></label>
+          <label>
+            Question ID:{" "}
+            <input
+              type="text"
+              style={inputStyle}
+              value={questionForm.questionId}
+              onChange={(e) => setQuestionForm({ ...questionForm, questionId: e.target.value })}
+            />
+          </label>
+          <label>
+            Section ID (optional):{" "}
+            <input
+              type="text"
+              style={inputStyle}
+              value={questionForm.sectionId}
+              onChange={(e) => setQuestionForm({ ...questionForm, sectionId: e.target.value })}
+            />
+          </label>
+          <label>
+            Marks:{" "}
+            <input
+              type="number"
+              style={inputStyle}
+              value={questionForm.marks}
+              onChange={(e) =>
+                setQuestionForm({ ...questionForm, marks: parseInt(e.target.value) || 1 })
+              }
+            />
+          </label>
           <button style={btnStyle} disabled={saving} onClick={handleAddQuestion}>
             {saving ? "Adding..." : "Add Question"}
           </button>
@@ -496,25 +720,60 @@ export default function CompetitionDetail({
           <h3>Lifecycle Management</h3>
           {lifecycleInfo ? (
             <div style={{ marginBottom: "20px" }}>
-              <p><strong>Current State:</strong> {lifecycleInfo.currentState}</p>
-              <p><strong>Status:</strong> {lifecycleInfo.status}</p>
-              <p><strong>Valid Next States:</strong> {lifecycleInfo.validTransitions.join(", ") || "None"}</p>
-              
+              <p>
+                <strong>Current State:</strong> {lifecycleInfo.currentState}
+              </p>
+              <p>
+                <strong>Status:</strong> {lifecycleInfo.status}
+              </p>
+              <p>
+                <strong>Valid Next States:</strong>{" "}
+                {lifecycleInfo.validTransitions.join(", ") || "None"}
+              </p>
+
               {lifecycleInfo.validTransitions.length > 0 && (
-                <div style={{ marginTop: "16px", padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}>
+                <div
+                  style={{
+                    marginTop: "16px",
+                    padding: "10px",
+                    border: "1px solid #ddd",
+                    borderRadius: "4px",
+                  }}
+                >
                   <h4>Transition State</h4>
-                  <label>Target State: 
-                    <select 
-                      style={{ ...inputStyle, marginBottom: "12px" }} 
-                      value={transitionForm.targetState} 
-                      onChange={(e) => setTransitionForm({ ...transitionForm, targetState: e.target.value })}
+                  <label>
+                    Target State:
+                    <select
+                      style={{ ...inputStyle, marginBottom: "12px" }}
+                      value={transitionForm.targetState}
+                      onChange={(e) =>
+                        setTransitionForm({ ...transitionForm, targetState: e.target.value })
+                      }
                     >
                       <option value="">Select state...</option>
-                      {lifecycleInfo.validTransitions.map(s => <option key={s} value={s}>{s}</option>)}
+                      {lifecycleInfo.validTransitions.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
                     </select>
                   </label>
-                  <label>Reason (optional): <input type="text" style={inputStyle} value={transitionForm.reason} onChange={(e) => setTransitionForm({ ...transitionForm, reason: e.target.value })} /></label>
-                  <button style={btnStyle} disabled={saving || !transitionForm.targetState} onClick={handleTransition}>
+                  <label>
+                    Reason (optional):{" "}
+                    <input
+                      type="text"
+                      style={inputStyle}
+                      value={transitionForm.reason}
+                      onChange={(e) =>
+                        setTransitionForm({ ...transitionForm, reason: e.target.value })
+                      }
+                    />
+                  </label>
+                  <button
+                    style={btnStyle}
+                    disabled={saving || !transitionForm.targetState}
+                    onClick={handleTransition}
+                  >
                     {saving ? "Processing..." : "Transition State"}
                   </button>
                 </div>
@@ -531,18 +790,57 @@ export default function CompetitionDetail({
         <div>
           <h3>Competition Schedule</h3>
           {schedule && (
-            <div style={{ marginBottom: "20px", padding: "10px", background: "#f8fafc", borderRadius: "4px" }}>
-              <p><strong>Status:</strong> {schedule.status}</p>
-              <p><strong>Publish At:</strong> {schedule.publishAt ? new Date(schedule.publishAt).toLocaleString() : "Not set"}</p>
-              <p><strong>Expires At:</strong> {schedule.expiresAt ? new Date(schedule.expiresAt).toLocaleString() : "Not set"}</p>
+            <div
+              style={{
+                marginBottom: "20px",
+                padding: "10px",
+                background: "#f8fafc",
+                borderRadius: "4px",
+              }}
+            >
+              <p>
+                <strong>Status:</strong> {schedule.status}
+              </p>
+              <p>
+                <strong>Publish At:</strong>{" "}
+                {schedule.publishAt ? new Date(schedule.publishAt).toLocaleString() : "Not set"}
+              </p>
+              <p>
+                <strong>Expires At:</strong>{" "}
+                {schedule.expiresAt ? new Date(schedule.expiresAt).toLocaleString() : "Not set"}
+              </p>
             </div>
           )}
-          
+
           <div style={{ padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}>
             <h4>Set Schedule</h4>
-            <label>Publish At: <input type="datetime-local" style={inputStyle} value={scheduleForm.publishAt} onChange={(e) => setScheduleForm({ ...scheduleForm, publishAt: e.target.value })} /></label>
-            <label>Expires At (optional): <input type="datetime-local" style={inputStyle} value={scheduleForm.expiresAt} onChange={(e) => setScheduleForm({ ...scheduleForm, expiresAt: e.target.value })} /></label>
-            <label>Timezone: <input type="text" style={inputStyle} value={scheduleForm.timezone} onChange={(e) => setScheduleForm({ ...scheduleForm, timezone: e.target.value })} /></label>
+            <label>
+              Publish At:{" "}
+              <input
+                type="datetime-local"
+                style={inputStyle}
+                value={scheduleForm.publishAt}
+                onChange={(e) => setScheduleForm({ ...scheduleForm, publishAt: e.target.value })}
+              />
+            </label>
+            <label>
+              Expires At (optional):{" "}
+              <input
+                type="datetime-local"
+                style={inputStyle}
+                value={scheduleForm.expiresAt}
+                onChange={(e) => setScheduleForm({ ...scheduleForm, expiresAt: e.target.value })}
+              />
+            </label>
+            <label>
+              Timezone:{" "}
+              <input
+                type="text"
+                style={inputStyle}
+                value={scheduleForm.timezone}
+                onChange={(e) => setScheduleForm({ ...scheduleForm, timezone: e.target.value })}
+              />
+            </label>
             <button style={btnStyle} disabled={saving} onClick={handleSchedule}>
               {saving ? "Scheduling..." : "Save Schedule"}
             </button>
@@ -567,7 +865,9 @@ export default function CompetitionDetail({
               <tbody>
                 {auditLog.map((log) => (
                   <tr key={log.id} style={{ borderBottom: "1px solid #eee" }}>
-                    <td style={{ padding: "8px", fontSize: "14px" }}>{new Date(log.createdAt).toLocaleString()}</td>
+                    <td style={{ padding: "8px", fontSize: "14px" }}>
+                      {new Date(log.createdAt).toLocaleString()}
+                    </td>
                     <td style={{ padding: "8px", fontSize: "14px" }}>
                       {log.previousState || "NONE"} → <strong>{log.newState}</strong>
                     </td>

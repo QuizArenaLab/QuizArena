@@ -1,6 +1,6 @@
-import { prisma } from '@/lib/prisma';
-import { paymentGateway } from '../gateways/payment.gateway';
-import { RegistrationState, PaymentOrderStatus } from '@/generated/prisma';
+import { prisma } from "@/lib/prisma";
+import { paymentGateway } from "../gateways/payment.gateway";
+import { RegistrationState, PaymentOrderStatus } from "@/generated/prisma";
 
 export class RegistrationService {
   async registerForCompetition(userId: string, competitionId: string) {
@@ -11,34 +11,34 @@ export class RegistrationService {
         include: { eligibility: true },
       });
 
-      if (!competition) throw new Error('Competition not found');
+      if (!competition) throw new Error("Competition not found");
 
       // 2. Check limits
       if (competition.eligibility?.maxParticipants) {
         const currentCount = await tx.registration.count({
-          where: { competitionId }
+          where: { competitionId },
         });
         if (currentCount >= competition.eligibility.maxParticipants) {
-          throw new Error('Competition capacity is full');
+          throw new Error("Competition capacity is full");
         }
       }
 
       // 3. Get the active pricing policy
       const pricingPolicy = await tx.competitionPricingPolicy.findFirst({
         where: { competitionId, isActive: true },
-        orderBy: { version: 'desc' },
+        orderBy: { version: "desc" },
       });
 
       if (!pricingPolicy) {
-        throw new Error('No active pricing policy found for this competition.');
+        throw new Error("No active pricing policy found for this competition.");
       }
 
       // Check if already registered
       const existing = await tx.registration.findUnique({
-        where: { userId_competitionId: { userId, competitionId } }
+        where: { userId_competitionId: { userId, competitionId } },
       });
       if (existing) {
-        throw new Error('User is already registered or in-progress');
+        throw new Error("User is already registered or in-progress");
       }
 
       // 4. Handle Free vs Paid
@@ -56,7 +56,7 @@ export class RegistrationService {
 
         return {
           registrationId: registration.id,
-          status: 'ENROLLED',
+          status: "ENROLLED",
           amount: 0,
           currency: pricingPolicy.currency,
         };
@@ -97,7 +97,7 @@ export class RegistrationService {
         orderId: paymentResult.orderId,
         amount: paymentResult.amount,
         currency: paymentResult.currency,
-        status: 'PAYMENT_PENDING'
+        status: "PAYMENT_PENDING",
       };
     });
   }

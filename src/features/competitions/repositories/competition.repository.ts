@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/prisma';
-import { Competition, Prisma } from '@/generated/prisma';
+import { prisma } from "@/lib/prisma";
+import { Competition, Prisma } from "@/generated/prisma";
 
 export class CompetitionRepository {
   async create(data: Prisma.CompetitionCreateInput): Promise<Competition> {
@@ -23,7 +23,7 @@ export class CompetitionRepository {
       prisma.competition.findMany({
         skip: params.skip,
         take: params.take,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       }),
       prisma.competition.count(),
     ]);

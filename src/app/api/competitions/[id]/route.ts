@@ -1,10 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
@@ -15,13 +12,13 @@ export async function GET(
         eligibility: true,
         config: true,
         sections: {
-          orderBy: { displayOrder: 'asc' }
-        }
-      }
+          orderBy: { displayOrder: "asc" },
+        },
+      },
     });
 
     if (!competition) {
-      return NextResponse.json({ error: 'Competition not found' }, { status: 404 });
+      return NextResponse.json({ error: "Competition not found" }, { status: 404 });
     }
 
     return NextResponse.json(competition);
