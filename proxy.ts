@@ -34,6 +34,7 @@ const MODERATOR_ROUTES = [
   "/dashboard/create-challenge",
   "/dashboard/content",
   "/dashboard/questions",
+  "/api/moderator",
 ];
 
 const ADMIN_ROUTES = [
@@ -44,6 +45,7 @@ const ADMIN_ROUTES = [
   "/dashboard/performance",
   "/dashboard/approve",
   "/dashboard/reports",
+  "/api/admin",
 ];
 
 const SUPER_ADMIN_ROUTES = [
@@ -54,6 +56,7 @@ const SUPER_ADMIN_ROUTES = [
   "/dashboard/financials",
   "/dashboard/payouts",
   "/dashboard/system",
+  "/api/super-admin",
 ];
 
 const PROTECTED_ROUTES = [
@@ -65,6 +68,8 @@ const PROTECTED_ROUTES = [
   ROUTES.PROTECTED.ANALYTICS,
   ROUTES.PROTECTED.SUBSCRIPTION,
   ROUTES.ONBOARDING.ROOT,
+  "/api/competitions",
+  "/api/questions",
   ...MODERATOR_ROUTES,
   ...ADMIN_ROUTES,
   ...SUPER_ADMIN_ROUTES,
@@ -158,6 +163,9 @@ export async function proxy(request: NextRequest) {
 
   if (!isAuthenticated) {
     if (isProtectedRoute(pathname)) {
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
       const loginUrl = new URL(ROUTES.AUTH.SIGN_IN, request.url);
       const intendedDestination = pathname + request.nextUrl.search;
       loginUrl.searchParams.set("callbackUrl", getSafeRedirectUrl(request, intendedDestination));
@@ -189,6 +197,9 @@ export async function proxy(request: NextRequest) {
 
   const requiredRole = getRequiredRoleForRoute(pathname);
   if (requiredRole && !canAccessRoute(userRole, requiredRole)) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Forbidden: Insufficient Permissions" }, { status: 403 });
+    }
     const dashboardUrl = new URL(ROUTES.PROTECTED.DASHBOARD, request.url);
     dashboardUrl.searchParams.set("unauthorized", "true");
     return NextResponse.redirect(dashboardUrl);

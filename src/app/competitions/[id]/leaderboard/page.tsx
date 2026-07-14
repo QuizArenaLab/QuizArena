@@ -2,17 +2,18 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function Leaderboard({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { data: session } = useSession();
 
   const [leaderboard, setLeaderboard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // MOCK USER ID to highlight the current user in the leaderboard
-  const MOCK_USER_ID = "clzkr123dummyuser";
+  const currentUserId = session?.user?.id;
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -152,7 +153,7 @@ export default function Leaderboard({ params }: { params: Promise<{ id: string }
               </tr>
             ) : (
               snapshots.map((snap: any, index: number) => {
-                const isCurrentUser = snap.userId === MOCK_USER_ID;
+                const isCurrentUser = snap.userId === currentUserId;
                 const formatTime = (seconds: number) => {
                   const m = Math.floor(seconds / 60);
                   const s = seconds % 60;

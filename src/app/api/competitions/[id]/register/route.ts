@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { registrationService } from "@/features/revenue/services/registration.service";
-// In a real app, you would import auth to get the userId.
-// For this Day 2 sprint scope, we'll mock a userId.
-const MOCK_USER_ID = "clzkr123dummyuser";
+import { auth } from "@/auth/auth";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { id: competitionId } = await params;
-    const userId = MOCK_USER_ID; // Replace with await auth()
+    const userId = session.user.id;
 
     const result = await registrationService.registerForCompetition(userId, competitionId);
     return NextResponse.json(result, { status: 201 });

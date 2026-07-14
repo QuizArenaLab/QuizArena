@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sessionService } from "@/features/competitions/services/session.service";
-
-const MOCK_USER_ID = "clzkr123dummyuser";
+import { auth } from "@/auth/auth";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const sessionAuth = await auth();
+    if (!sessionAuth?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { id: competitionId } = await params;
-    const userId = MOCK_USER_ID;
+    const userId = sessionAuth.user.id;
 
     const session = await sessionService.startSession(userId, competitionId);
     return NextResponse.json(session, { status: 201 });

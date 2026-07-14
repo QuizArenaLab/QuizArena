@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { RegistrationState } from "@/generated/prisma";
-
-const MOCK_USER_ID = "clzkr123dummyuser";
+import { auth } from "@/auth/auth";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { id: competitionId } = await params;
-    const userId = MOCK_USER_ID;
+    const userId = session.user.id;
 
     const registration = await prisma.registration.findUnique({
       where: { userId_competitionId: { userId, competitionId } },

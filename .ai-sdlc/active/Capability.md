@@ -1,54 +1,24 @@
-# Capability Planning Template
+# Capability: Security Hardening
 
-## Capability Name
-Razorpay Commerce Integration
+## Value Proposition
+Ensure the QuizArena platform is secure by removing development mocks, protecting all API endpoints against unauthenticated and unauthorized access, and implementing baseline HTTP security headers. This is a critical P0 launch blocker.
 
-## Business Goal
-Enable learners to pay for paid competitions using Razorpay.
+## Technical Scope
+- **Proxy Authorization**: Enforce RBAC rules on `/api/admin` and `/api/super-admin` routes inside `proxy.ts`. Ensure `/api/competitions` endpoints require authentication.
+- **De-mocking Backend**: Replace `MOCK_USER_ID` and `MOCK_ADMIN_ID` placeholders with actual session `auth()` validation in all API routes.
+- **HTTP Security Headers**: Configure `next.config.ts` with standard security headers.
 
-## User Story
-As a learner, I want to securely pay the entry fee using standard payment methods so that I can enroll in premium competitions.
+## Contract
+- [ ] API routes protected by role-based auth.
+- [ ] No `MOCK_USER_ID` references remaining in production endpoints.
+- [ ] HTTP Security Headers applied via `next.config.ts`.
 
-## Launch Priority
-P0
-
-## Dependencies
-- Assessment Runtime
-- Evaluation
-
-## Definition of Done
-- Frontend initiates Razorpay modal for PAID competitions.
-- Webhook safely verifies signature via raw body and updates Registration state to ENROLLED.
-- No TypeScript or lint errors.
-
-## Capability Checklist
-- [x] Database
-- [x] API
-- [x] Repository
-- [x] Service
-- [x] Validation
-- [x] Authorization
-- [x] Frontend
-- [x] Responsive Design
-- [x] Loading States
-- [x] Error States
-- [x] Mobile Review
-- [x] Security Review
-- [x] Architecture PASS
-- [x] QA PASS
-- [x] Documentation Updated
-- [x] Git Commit
-
-## Architecture Constraints
-- Avoid JSON parsing before signature validation in webhooks.
-
-## Expected Outcomes
-- No TypeScript errors, QA PASS, Business workflow completes.
-
-## Implementation Outputs
-- razorpay.provider.ts updated
-- webhook/razorpay/route.ts updated
-- competitions/[id]/page.tsx updated
-
-## Evidence Required
-- Build outputs, UI screenshots.
+## Checklist
+- [ ] Proxy API Protection
+- [ ] Replace `MOCK_USER_ID` with `auth()` session checks
+- [ ] Replace `MOCK_ADMIN_ID` with `auth()` session checks
+- [ ] Configure `next.config.ts` headers
+- [ ] Architecture PASS
+- [ ] QA PASS
+- [ ] Documentation Updated
+- [ ] Git Commit
