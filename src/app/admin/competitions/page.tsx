@@ -140,9 +140,7 @@ export default function CompetitionsList() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="capitalize text-gray-400">{comp.competitionType}</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(comp.status)}
-                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(comp.status)}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end space-x-2">
                         <button

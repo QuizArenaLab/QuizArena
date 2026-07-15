@@ -110,9 +110,7 @@ export default function SuperAdminCompetitionsPage() {
                         {comp.competitionType}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      {getStatusBadge(comp.status)}
-                    </td>
+                    <td className="px-6 py-4">{getStatusBadge(comp.status)}</td>
                     <td className="px-6 py-4 text-gray-400">{comp.durationMinutes} min</td>
                     <td className="px-6 py-4 text-right">
                       <button className="text-gray-500 hover:text-white p-1.5 rounded bg-transparent hover:bg-gray-800 transition-colors">
