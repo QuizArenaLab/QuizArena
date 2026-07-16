@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Lock, Check } from "lucide-react";
@@ -31,6 +32,23 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  // Read NextAuth error from URL
+  const authError = searchParams?.get("error");
+  useEffect(() => {
+    if (authError) {
+      if (authError === "OAuthAccountNotLinked") {
+        setErrors({
+          general:
+            "This email is already registered via a different method. Please sign in with your original method, or try again.",
+        });
+      } else if (authError === "CredentialsSignin") {
+        setErrors({ general: "Invalid email or password. Please try again." });
+      } else {
+        setErrors({ general: "An authentication error occurred. Please try again." });
+      }
+    }
+  }, [authError]);
 
   const isEmailValid = email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 

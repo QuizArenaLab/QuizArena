@@ -97,6 +97,56 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     ...authConfig.callbacks,
+    async signIn({ user, account }) {
+      // Manually handle account linking to bypass OAuthAccountNotLinked
+      // when the existing user was created via Credentials and has emailVerified: null
+      if (account?.provider === "google" && user.email) {
+        try {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email },
+          });
+
+          if (existingUser) {
+            const existingAccount = await prisma.account.findUnique({
+              where: {
+                provider_providerAccountId: {
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                },
+              },
+            });
+
+            if (!existingAccount) {
+              await prisma.account.create({
+                data: {
+                  userId: existingUser.id,
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  access_token: account.access_token as string | undefined,
+                  refresh_token: account.refresh_token as string | undefined,
+                  expires_at: account.expires_at as number | undefined,
+                  token_type: account.token_type as string | undefined,
+                  scope: account.scope as string | undefined,
+                  id_token: account.id_token as string | undefined,
+                },
+              });
+
+              if (!existingUser.emailVerified) {
+                await prisma.user.update({
+                  where: { id: existingUser.id },
+                  data: { emailVerified: new Date() },
+                });
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error during manual account linking:", error);
+        }
+      }
+
+      return true;
+    },
   },
   trustHost: true,
   debug: process.env.NODE_ENV === "development",

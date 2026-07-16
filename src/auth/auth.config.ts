@@ -8,6 +8,8 @@ export const authConfig = {
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
+      checks: ["pkce"], // Fixes OperationProcessingError: response parameter "iss" missing
       authorization: {
         params: {
           prompt: "consent",
@@ -117,7 +119,7 @@ export const authConfig = {
       if (user) {
         token.sub = user.id;
         token.role = user.role;
-        token.onboardingCompleted = user.onboardingCompleted;
+        token.onboardingCompleted = user.onboardingCompleted ?? false;
         token.examCategory = user.examCategory;
         token.preparationLevel = user.preparationLevel;
         token.username = user.username;

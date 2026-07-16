@@ -13,7 +13,7 @@ export default async function BetaMonitoringDashboard() {
     },
     include: {
       attempts: true,
-      certificates: true,
+      certificateSnapshots: true,
     },
   });
 
@@ -68,13 +68,13 @@ export default async function BetaMonitoringDashboard() {
         <div className="bg-[#121214] border border-gray-800 rounded-xl p-5 shadow-sm">
           <div className="text-gray-400 text-sm mb-1 font-medium">Evaluated Attempts</div>
           <div className="text-3xl font-bold text-emerald-400">
-            {betaTesters.filter((t) => t.attempts.some((a) => a.status === "EVALUATED")).length}
+            {betaTesters.filter((t) => t.attempts.some((a: any) => a.status === "EVALUATED")).length}
           </div>
         </div>
         <div className="bg-[#121214] border border-gray-800 rounded-xl p-5 shadow-sm">
           <div className="text-gray-400 text-sm mb-1 font-medium">Certificates Issued</div>
           <div className="text-3xl font-bold text-yellow-400">
-            {betaTesters.filter((t) => t.certificates.length > 0).length}
+            {betaTesters.filter((t) => t.certificateSnapshots.length > 0).length}
           </div>
         </div>
       </div>
@@ -101,7 +101,7 @@ export default async function BetaMonitoringDashboard() {
             <tbody className="divide-y divide-gray-800">
               {betaTesters.map((tester) => {
                 const attempt = tester.attempts[0];
-                const cert = tester.certificates[0];
+                const cert = tester.certificateSnapshots[0];
 
                 return (
                   <tr key={tester.id} className="hover:bg-white/[0.02] transition-colors">

@@ -26,7 +26,7 @@ export default async function UserAppLayout({ children }: { children: React.Reac
   const superAdminEmail = process.env.SUPER_ADMIN_EMAIL;
   const isNotAdmin = session.user.email !== adminEmail && session.user.email !== superAdminEmail;
 
-  if (isNotAdmin && !session.user.onboardingCompleted) {
+  if (isNotAdmin && session.user.onboardingCompleted !== true) {
     redirect("/onboarding");
   }
 

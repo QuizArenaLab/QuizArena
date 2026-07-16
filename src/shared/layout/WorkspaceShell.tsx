@@ -47,7 +47,14 @@ export function WorkspaceShell({ children, freshUser, userStatsNode }: Workspace
 
   // The new NavigationRegistry uses a global manifest list.
   // We resolve the tree based on the user's role.
-  const resolvedGroups = NavigationRegistry.resolveTree([role]);
+  const permissionMap: Record<string, string> = {
+    USER: "user",
+    MODERATOR: "moderator",
+    ADMIN: "admin",
+    SUPER_ADMIN: "super-admin",
+  };
+  const permission = permissionMap[role] || "user";
+  const resolvedGroups = NavigationRegistry.resolveTree([permission]);
 
   let settingsHref = "/settings";
   if (role === ROLES.ADMIN) {
