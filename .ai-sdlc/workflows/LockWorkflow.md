@@ -2,16 +2,24 @@
 
 ## Governing Authority
 All actions are strictly governed by the AI SDLC Constitution:
-[.ai-sdlc/constitution/AI-SDLC-v1.1.md](../constitution/AI-SDLC-v1.1.md)
+[.ai-sdlc/constitution/AI-SDLC-v1.4.md](../constitution/AI-SDLC-v1.4.md)
 
 ## Workflow Definition
 The Lock Workflow is the final stage of the Sprint Lifecycle. It confirms that all work is completed, documented, and safely committed to Git.
 
 ## Mandatory Conditions
-1. All workflow stages (`PLANNING` through `DOCUMENTATION`) have successfully completed.
-2. `ArchitectureReview.md` and `QAReview.md` display a final decision of `PASS`.
-3. All required artifacts exist and conform to templates.
-4. Engineering Manager has set the state to `READY_FOR_LOCK`.
+Sprint Lock shall require ALL of the following conditions:
+1. Business Analysis = PASS
+2. Architecture = PASS
+3. Implementation = COMPLETE
+4. Evidence = COMPLETE
+5. Architecture Review = PASS
+6. QA = PASS
+7. Documentation = COMPLETE
+8. Traceability = COMPLETE
+9. Verification = COMPLETE
+
+No sprint may lock without satisfying every condition.
 
 ## Lock Procedure
 1. **Repository Updates:** The code and documentation are merged to the main branch.

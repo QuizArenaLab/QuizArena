@@ -7,11 +7,26 @@ Every future engineering artifact (Implementation Reports, Reviews, Documentatio
 
 ## AI SDLC
 
+**Status**
+PRODUCTION
+
+**Lifecycle**
+FROZEN
+
+**Execution Model**
+Requirements-to-Delivery Engineering System
+
+**Governance**
+Stable
+
+**Purpose**
+Deliver production-ready business capabilities through deterministic AI-assisted engineering.
+
 **Version**
-v1.1
+v1.4
 
 **Current Constitution**
-constitution/AI-SDLC-v1.1.md
+constitution/AI-SDLC-v1.4.md
 
 **Sprint Ledger**
 SprintLedger.md

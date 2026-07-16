@@ -19,21 +19,41 @@ The execution engine is driven by distinct rules evaluating artifact and state c
 **Then:** Engineering Manager evaluates Sprint Lock
 
 ## AUTO-005
-**When:** Capability transitions to ARCHITECTURE or IMPLEMENTATION
-**Then:** Ensure `BusinessAnalysisChecklist` = PASS
-Engineering shall never begin before BusinessAnalysisChecklist = PASS
+**When:** Capability transitions to `READY_FOR_IMPLEMENTATION`
+**Then:** Evaluate Gating Conditions
+Implementation may begin ONLY when all of the following are true:
+1. Capability Specification = APPROVED
+2. Business Analysis Checklist = PASS
+3. Architecture = APPROVED
+4. Verification Strategy = GENERATED
+
+Automation shall automatically block any attempt to begin implementation without satisfying these prerequisites.
 
 ## Capability Status Transitions
-IDEA
+`IDEA`
 ↓
-UNDER_ANALYSIS
+`UNDER_ANALYSIS`
 ↓
-READY_FOR_REVIEW
+`SPECIFICATION_READY`
 ↓
-APPROVED
+`BUSINESS_APPROVED`
 ↓
-READY_FOR_ARCHITECTURE
+`READY_FOR_ARCHITECTURE`
 ↓
-ARCHITECTURE
+`ARCHITECTURE_APPROVED`
 ↓
-IMPLEMENTATION
+`READY_FOR_IMPLEMENTATION`
+↓
+`IMPLEMENTATION_COMPLETE`
+↓
+`EVIDENCE_COMPLETE`
+↓
+`ARCHITECTURE_PASS`
+↓
+`QA_PASS`
+↓
+`DOCUMENTED`
+↓
+`LOCKED`
+↓
+`RELEASED`

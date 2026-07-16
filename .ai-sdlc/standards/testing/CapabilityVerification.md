@@ -1,28 +1,27 @@
 # Capability Verification Standard
 
 ## Governance
-[.ai-sdlc/constitution/AI-SDLC-v1.2.md](../../constitution/AI-SDLC-v1.2.md)
+[.ai-sdlc/constitution/AI-SDLC-v1.4.md](../../constitution/AI-SDLC-v1.4.md)
 
 ## Constitutional Rule
 Verification shall be planned before implementation. Every capability plan must include a Verification Strategy generated specifically for the capability being delivered.
 
 Verification planning is the responsibility of the Chief Architect. Verification execution is the responsibility of the Evidence Engineer and Quality Assurance Engineer.
 
-## Verification Catalog
-The AI SDLC supports a dynamic catalog of verification categories. The current catalog includes:
+## Verification Scope
+Verification shall validate:
+- Business Rules
+- Acceptance Criteria
+- Edge Cases
+- User Journey
+- Business Outcomes
+- Technical Quality
+- Architecture
+- Performance
+- Security
+- Regression
 
-* Static
-* Build
-* Runtime
-* Database
-* API
-* Functional
-* UI
-* Security
-* Performance
-* Regression
-* Documentation
-* Production Readiness
+Verification remains capability-aware.
 
 *(Note: Additional categories such as Accessibility, AI Model Validation, or Chaos Testing may be introduced without breaking the catalog structure).*
 

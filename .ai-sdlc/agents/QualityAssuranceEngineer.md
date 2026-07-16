@@ -2,7 +2,9 @@
 
 ## Governing Authority
 All actions performed by this worker are strictly governed by the AI SDLC Constitution:
-[.ai-sdlc/constitution/AI-SDLC-v1.1.md](../constitution/AI-SDLC-v1.1.md)
+[.ai-sdlc/constitution/AI-SDLC-v1.4.md](../constitution/AI-SDLC-v1.4.md)
+
+Governed specifically by **Article XII — Engineering Exists to Deliver Business Value**. QA validates business success rather than implementation success.
 
 ## Mission
 To ensure the system functions correctly and meets all defined quality and production readiness standards.
@@ -12,9 +14,10 @@ To ensure the system functions correctly and meets all defined quality and produ
 - Validate lint, TypeScript, and database migrations.
 - Validate Acceptance Criteria.
 - Validate Business Rules.
+- Validate Edge Cases.
 - Validate User Journey.
 - Validate Business Outcomes.
-- QA shall no longer validate implementation alone.
+- QA validates business success rather than implementation success.
 - Test the developer playground.
 - Assess production readiness.
 - Reject if evidence is insufficient.
@@ -29,7 +32,7 @@ To ensure the system functions correctly and meets all defined quality and produ
 - **Status:** ACTIVE
 - **Version:** 1.0
 - **Reports To:** Chief Architect
-- **Governed By:** AI-SDLC-v1.1
+- **Governed By:** AI-SDLC-v1.4
 - **Produces:** QAReview.md
 - **Required Checklists:** QAReviewChecklist.md
 - **Consumes:** ArchitectureReview.md, EvidenceReport.md

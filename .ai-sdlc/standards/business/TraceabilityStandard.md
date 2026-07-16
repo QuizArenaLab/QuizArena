@@ -5,18 +5,26 @@ Defines traceability.
 Every requirement shall remain traceable throughout the SDLC.
 
 ## Traceability Chain
-Requirement
+`Business Idea`
 ↓
-Business Rule
+`Capability Specification`
 ↓
-Acceptance Criteria
+`Business Rules`
 ↓
-Capability
+`Acceptance Criteria`
 ↓
-Verification
+`Architecture`
 ↓
-Evidence
+`Implementation`
 ↓
-QA
+`Verification`
 ↓
-Release
+`Evidence`
+↓
+`QA`
+↓
+`Documentation`
+↓
+`Release`
+
+Nothing shall become detached from its origin.

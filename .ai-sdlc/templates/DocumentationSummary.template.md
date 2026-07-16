@@ -1,5 +1,14 @@
 # Documentation Summary
 
+## Capability Traceability
+- **Capability ID:** [ID]
+- **Capability Name:** [Name]
+- **Acceptance Criteria:** [Link or List]
+- **Business Rules:** [Link or List]
+- **Verification Matrix:** [Link]
+- **Traceability:** [Link to origins]
+
+
 *Status:* [ ] VERIFIED | [ ] NOT VERIFIED | [ ] NOT APPLICABLE
 
 ## Sprint Summary

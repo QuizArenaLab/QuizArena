@@ -2,17 +2,26 @@
 
 ## Governing Authority
 All actions are strictly governed by the AI SDLC Constitution:
-[.ai-sdlc/constitution/AI-SDLC-v1.2.md](../constitution/AI-SDLC-v1.2.md)
+[.ai-sdlc/constitution/AI-SDLC-v1.4.md](../constitution/AI-SDLC-v1.4.md)
 
 ## Workflow Definition
 The review workflow ensures all implementation efforts are rigorously evaluated for both architectural adherence and functional quality, verifying that the entire business capability is complete.
 
-`IMPLEMENTATION` -> `EVIDENCE` -> `ARCHITECTURE REVIEW` -> `QA`
+`IMPLEMENTATION_COMPLETE` -> `EVIDENCE_COMPLETE` -> `ARCHITECTURE_PASS` -> `QA_PASS`
 
 ## Dependencies
 - **Evidence Collection** cannot begin until `ImplementationReport.md` is finalized and the `Verification Matrix` is defined. The Evidence Engineer strictly executes the Automated Verification tasks defined in the matrix.
 - **Architecture Review** cannot begin until `EvidenceReport.md` is finalized.
-- **QA** cannot begin until `ArchitectureReview.md` explicitly states `PASS` for all criteria. The QA Engineer strictly executes the Manual Verification workflows defined in the matrix.
+  - Architecture Review shall explicitly verify:
+    - Business Rules satisfied
+    - Verification Strategy sufficient
+    - Capability complete
+- **QA** cannot begin until `ArchitectureReview.md` explicitly states `PASS` for all criteria.
+  - QA shall explicitly verify:
+    - Acceptance Criteria
+    - User Journey
+    - Business Outcomes
+    - Evidence completeness
 
 ## Participating Workers
 - Evidence Engineer (Collects)
