@@ -17,3 +17,23 @@ The execution engine is driven by distinct rules evaluating artifact and state c
 ## AUTO-004
 **When:** `Documentation` PASS AND `Sprint Manifest` exists
 **Then:** Engineering Manager evaluates Sprint Lock
+
+## AUTO-005
+**When:** Capability transitions to ARCHITECTURE or IMPLEMENTATION
+**Then:** Ensure `BusinessAnalysisChecklist` = PASS
+Engineering shall never begin before BusinessAnalysisChecklist = PASS
+
+## Capability Status Transitions
+IDEA
+↓
+UNDER_ANALYSIS
+↓
+READY_FOR_REVIEW
+↓
+APPROVED
+↓
+READY_FOR_ARCHITECTURE
+↓
+ARCHITECTURE
+↓
+IMPLEMENTATION
