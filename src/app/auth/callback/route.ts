@@ -28,14 +28,14 @@ export async function GET(request: Request) {
           access_token: data.session.access_token,
           redirect: false,
         });
-        
+
         console.log("signIn completed with result:", result);
-        
+
         if (result?.error) {
           console.error("Auth.js signIn error:", result.error);
           return NextResponse.redirect(`${origin}${AuthConfig.routes.login}?error=BrokerError`);
         }
-        
+
         // Manually redirect to ensure cookies are flushed to the response
         return NextResponse.redirect(`${origin}${next}`);
       } catch (err: any) {

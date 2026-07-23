@@ -9,7 +9,12 @@ export async function GET() {
     await signIn("credentials", { email: "test@example.com", password: "wrong", redirect: false });
     return NextResponse.json({ success: true });
   } catch (err: any) {
-    if (err && typeof err === 'object' && 'digest' in err && (err.digest as string).startsWith('NEXT_REDIRECT')) {
+    if (
+      err &&
+      typeof err === "object" &&
+      "digest" in err &&
+      (err.digest as string).startsWith("NEXT_REDIRECT")
+    ) {
       return NextResponse.json({ error: "NEXT_REDIRECT", digest: err.digest });
     }
     return NextResponse.json({ error: err.message });
