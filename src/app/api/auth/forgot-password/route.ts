@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendPasswordResetEmail } from "@/lib/emails/mailer";
 import { createPasswordResetToken } from "@/lib/auth/tokens";
+import { EnvironmentService } from "@/platform/env/EnvironmentService";
 import crypto from "crypto";
 import { z } from "zod";
 
@@ -31,11 +32,11 @@ export async function POST(req: Request) {
     const token = await createPasswordResetToken(user.email);
 
     // Send email
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3004";
+    const appUrl = EnvironmentService.getOrigin();
     const resetLink = `${appUrl}/reset-password?token=${token}`;
 
     // In development, log the link to the console so you can test without SMTP working
-    if (process.env.NODE_ENV === "development") {
+    if (EnvironmentService.isDevelopment()) {
       console.log("----------------------------------------");
       console.log("PASSWORD RESET LINK (Dev Mode):");
       console.log(resetLink);

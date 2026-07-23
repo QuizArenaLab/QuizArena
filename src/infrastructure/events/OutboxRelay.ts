@@ -1,8 +1,6 @@
-import { PrismaClient } from "../../generated/prisma";
+import { prisma } from "../../lib/prisma";
 import { PlatformEventBus } from "./PlatformEventBus";
 import { PlatformEvent } from "./types";
-
-const prisma = new PrismaClient();
 
 export class OutboxRelay {
   private isRunning = false;

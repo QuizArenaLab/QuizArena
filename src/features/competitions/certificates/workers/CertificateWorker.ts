@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { EnvironmentService } from "@/platform/env/EnvironmentService";
 import crypto from "crypto";
 
 export interface CertificateEligibilityPayload {
@@ -60,7 +61,7 @@ export class CertificateWorker {
     const verificationToken = crypto.randomBytes(16).toString("hex");
 
     // Generate a QR Payload for the viewer UI to consume (could be a direct link to /verify)
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const baseUrl = EnvironmentService.getCanonicalOrigin();
     const qrPayload = `${baseUrl}/verify/certificate/${verificationToken}`;
 
     // Use transaction to ensure no duplicates

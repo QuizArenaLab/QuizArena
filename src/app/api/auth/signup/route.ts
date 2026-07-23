@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { signupRateLimiter } from "@/lib/rate-limiter";
 import { sendVerificationEmail } from "@/lib/emails/mailer";
+import { EnvironmentService } from "@/platform/env/EnvironmentService";
 import crypto from "crypto";
 
 /**
@@ -86,10 +87,10 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3004";
+      const appUrl = EnvironmentService.getOrigin();
       const verifyLink = `${appUrl}/verify-email?token=${token}&email=${encodeURIComponent(normalizedEmail)}`;
 
-      if (process.env.NODE_ENV === "development") {
+      if (EnvironmentService.isDevelopment()) {
         console.log("----------------------------------------");
         console.log("EMAIL VERIFICATION LINK (Dev Mode):");
         console.log(verifyLink);

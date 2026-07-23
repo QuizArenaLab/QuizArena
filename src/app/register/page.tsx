@@ -20,6 +20,7 @@ import {
 } from "@/features/auth/components";
 import { SecureClientAuthProvider } from "@/shared/providers/SecureClientAuthProvider";
 import { ROUTES } from "@/constants/routes";
+import { EnvironmentService } from "@/platform/env/EnvironmentService";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -197,7 +198,7 @@ function RegisterForm() {
       await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=${encodeURIComponent(ROUTES.PROTECTED.DASHBOARD)}`,
+          redirectTo: `${EnvironmentService.getOrigin()}/auth/callback?next=${encodeURIComponent(ROUTES.PROTECTED.DASHBOARD)}`,
         },
       });
     } catch {

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { PrimaryOperationalCards } from "./PrimaryOperationalCards";
 import { OperationalQueueTable } from "./OperationalQueueTable";
+import { EnvironmentService } from "@/platform/env/EnvironmentService";
 
 interface OperationsCenterClientProps {
   initialMetrics: any;
@@ -21,7 +22,7 @@ export function OperationsCenterClient({
   const fetchIssues = async (filter?: string | null) => {
     setIsLoading(true);
     try {
-      const url = new URL(window.location.origin + "/api/admin/operations/issues");
+      const url = new URL(EnvironmentService.getOrigin() + "/api/admin/operations/issues");
       if (filter) url.searchParams.set("issueType", filter);
       const res = await fetch(url.toString());
       const data = await res.json();

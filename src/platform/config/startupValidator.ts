@@ -1,5 +1,13 @@
+import { EnvironmentService } from "@/platform/env/EnvironmentService";
+
 export function validateStartupConfig() {
-  const requiredEnvVars = ["DATABASE_URL", "NEXTAUTH_SECRET", "NEXT_PUBLIC_APP_URL"];
+  const isProd = EnvironmentService.isProduction();
+  
+  const requiredEnvVars = ["DATABASE_URL", "NEXTAUTH_SECRET"];
+  
+  if (isProd) {
+    requiredEnvVars.push("NEXT_PUBLIC_APP_URL");
+  }
 
   const missingVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
 
@@ -12,11 +20,11 @@ export function validateStartupConfig() {
     console.error("===========================================================");
 
     // In production, we actually exit to prevent booting in a broken state
-    if (process.env.NODE_ENV === "production") {
+    if (isProd) {
       process.exit(1);
     } else {
       console.warn(
-        "⚠️  Running in development mode without required vars. Some features will crash."
+        "⚠️  Running in non-production mode without required vars. Some features will crash."
       );
     }
   }

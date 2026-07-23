@@ -1,5 +1,4 @@
 import { PlatformEventBus } from "./PlatformEventBus";
-import { platformOutboxRelay } from "./OutboxRelay";
 import { RankingWorker } from "../../features/competitions/submission/workers/RankingWorker";
 
 let isInitialized = false;
@@ -39,7 +38,4 @@ export function initializeEventBus() {
   });
 
   // Add more event subscriptions here as we build them out
-
-  // 2. Start the Outbox Relay
-  platformOutboxRelay.start();
 }

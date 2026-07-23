@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma";
+import { EnvironmentService } from "@/platform/env/EnvironmentService";
 
 export class CertificateVerificationService {
   /**
@@ -36,7 +37,7 @@ export class CertificateVerificationService {
    * Generates a URL for a QR code linking to the verification page.
    */
   generateQRUrl(certificateId: string): string {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const baseUrl = EnvironmentService.getOrigin();
     const verifyUrl = `${baseUrl}/verify/${certificateId}`;
 
     // Using Google Chart API for quick QR generation without external npm deps

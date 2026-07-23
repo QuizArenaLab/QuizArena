@@ -1,6 +1,6 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    const { validateStartupConfig } = await import("./platform/config/startupValidator");
-    validateStartupConfig();
+    const { InfrastructureBootstrap } = await import("./platform/bootstrap/InfrastructureBootstrap");
+    await InfrastructureBootstrap.start();
   }
 }

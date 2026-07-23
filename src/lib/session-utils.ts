@@ -1,6 +1,7 @@
 import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
+import { EnvironmentService } from "@/platform/env/EnvironmentService";
 import { cache } from "react";
 
 /**
@@ -101,7 +102,7 @@ export function validateRedirectUrl(
   if (!url) return fallback;
 
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3004";
+    const baseUrl = EnvironmentService.getOrigin();
     const baseOrigin = new URL(baseUrl).origin;
     const parsed = new URL(url, baseOrigin);
     // Allow only same-origin paths (no external domains)

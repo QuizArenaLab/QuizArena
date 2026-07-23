@@ -1,7 +1,8 @@
 import { MetadataRoute } from "next";
+import { EnvironmentService } from "@/platform/env/EnvironmentService";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://quizarena.com";
+  const baseUrl = EnvironmentService.getCanonicalOrigin();
 
   return [
     {

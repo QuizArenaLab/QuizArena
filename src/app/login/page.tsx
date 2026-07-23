@@ -18,6 +18,7 @@ import {
   AuthFooterLink,
   BrandSection,
 } from "@/features/auth/components";
+import { EnvironmentService } from "@/platform/env/EnvironmentService";
 import { ROUTES } from "@/constants/routes";
 
 function LoginForm() {
@@ -109,7 +110,7 @@ function LoginForm() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=${encodeURIComponent(callbackUrl)}`,
+        redirectTo: `${EnvironmentService.getOrigin()}/auth/callback?next=${encodeURIComponent(callbackUrl)}`,
       },
     });
   };

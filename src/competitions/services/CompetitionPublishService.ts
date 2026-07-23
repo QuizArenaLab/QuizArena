@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { CompetitionLifecycle } from "@/generated/prisma";
+import { EnvironmentService } from "@/platform/env/EnvironmentService";
 
 export interface PublishMetadata {
   shareableLink: string;
@@ -40,7 +41,7 @@ export class CompetitionPublishService {
     }
 
     // Generate Shareable Link
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://quizarena.com";
+    const baseUrl = EnvironmentService.getCanonicalOrigin();
     const shareableLink = `${baseUrl}/competitions/${competition.slug}`;
 
     // Prepare Discovery Metadata (Mock Search Index Integration)

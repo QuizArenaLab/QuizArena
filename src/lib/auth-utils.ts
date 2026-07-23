@@ -8,6 +8,7 @@
  */
 
 import { getServerSession, requireAuth, requireAdmin, AuthUser } from "./session-utils";
+import { EnvironmentService } from "@/platform/env/EnvironmentService";
 
 // ─── Authorization Result Patterns ───────────────────────────
 
@@ -142,7 +143,7 @@ export function getClientIp(request: Request): string {
  */
 export function isValidOrigin(request: Request): boolean {
   const origin = request.headers.get("Origin");
-  const host = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3004";
+  const host = EnvironmentService.getOrigin();
 
   if (!origin) return false;
 
