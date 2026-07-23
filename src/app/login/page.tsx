@@ -133,15 +133,15 @@ function LoginForm() {
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col lg:flex-row pt-[64px] sm:pt-[88px] md:pt-0">
-        <div className="hidden lg:flex lg:w-[35%] xl:w-[32%] bg-linear-to-br from-navy via-navy/95 to-navy/90 relative overflow-hidden mt-[64px] sm:mt-[88px] md:mt-[112px] lg:mt-0 pt-[112px] lg:pt-[112px]">
+      <div className="flex-1 flex flex-col lg:flex-row pt-16 sm:pt-22 md:pt-0">
+        <div className="hidden lg:flex lg:w-[35%] xl:w-[32%] bg-linear-to-br from-navy via-navy/95 to-navy/90 relative overflow-hidden mt-16 sm:mt-22 md:mt-28 lg:mt-0 pt-28 lg:pt-28">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_70%,rgba(230,112,30,0.15)_0%,transparent_50%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(37,113,231,0.1)_0%,transparent_40%)]" />
           <BrandSection />
         </div>
 
-        <div className="w-full lg:w-[65%] xl:w-[68%] flex flex-col items-center justify-center p-6 sm:p-8 lg:p-12 bg-white min-h-[calc(100vh-64px)] lg:min-h-screen pt-4 lg:pt-[112px]">
-          <AuthCard className="w-full max-w-[540px]">
+        <div className="w-full lg:w-[65%] xl:w-[68%] flex flex-col items-center justify-center p-6 sm:p-8 lg:p-12 bg-white min-h-[calc(100vh-64px)] lg:min-h-screen pt-4 lg:pt-28">
+          <AuthCard className="w-full max-w-135">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold tracking-tight text-navy">
                 Continue your preparation

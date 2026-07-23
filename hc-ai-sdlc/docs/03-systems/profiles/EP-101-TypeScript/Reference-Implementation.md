@@ -124,4 +124,4 @@ The canonical implementation is guided by the following immutable principles:
 * **Adaptability:** The boundaries MUST be clean enough to allow the replacement of any infrastructure component without impacting the domain.
 * **Composability:** The architecture MUST demonstrate how complex enterprise systems are composed of small, highly cohesive modules.
 * **Governance:** The codebase MUST be the purest physical manifestation of enterprise engineering governance.
-* **Long-Term Sustainability:** The implementation MUST prove that enterprise software can be engineered to survive, scale, and evolve over a multi-year lifecycle without degrading into legacy debt.
+* **Long-Term Sustainability:** The implementation MUST prove that enterprise software can be engineered to survive, scale, and evolve over a multi-year lifecycle without degrading into legacy debt.

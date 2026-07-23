@@ -229,7 +229,7 @@ function RegisterForm() {
       </header>
 
       <motion.div
-        className="flex-1 flex flex-col lg:flex-row pt-[64px] sm:pt-[88px] md:pt-[112px]"
+        className="flex-1 flex flex-col lg:flex-row pt-16 sm:pt-22 md:pt-28"
         variants={containerVariants}
         initial="hidden"
         animate="show"
@@ -244,7 +244,7 @@ function RegisterForm() {
         </motion.div>
 
         <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10 lg:p-16 xl:p-24 order-1 lg:order-2">
-          <motion.div variants={itemVariants} className="w-full max-w-[580px]">
+          <motion.div variants={itemVariants} className="w-full max-w-145">
             <AuthCard className="w-full shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-200/60 p-6 sm:p-8">
               <div className="mb-6">
                 <h2 className="text-3xl font-bold tracking-tight text-navy">Create your account</h2>
