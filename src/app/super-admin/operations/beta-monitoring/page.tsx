@@ -68,7 +68,10 @@ export default async function BetaMonitoringDashboard() {
         <div className="bg-[#121214] border border-gray-800 rounded-xl p-5 shadow-sm">
           <div className="text-gray-400 text-sm mb-1 font-medium">Evaluated Attempts</div>
           <div className="text-3xl font-bold text-emerald-400">
-            {betaTesters.filter((t) => t.attempts.some((a: any) => a.status === "EVALUATED")).length}
+            {
+              betaTesters.filter((t) => t.attempts.some((a: any) => a.status === "EVALUATED"))
+                .length
+            }
           </div>
         </div>
         <div className="bg-[#121214] border border-gray-800 rounded-xl p-5 shadow-sm">

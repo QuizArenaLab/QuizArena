@@ -21,7 +21,15 @@ const { auth } = NextAuth(authConfig);
  * - Deny-by-default security
  */
 
-const PUBLIC_ROUTES = ["/", "/about", "/contact", "/login", "/register", "/forgot-password", "/verify-email"];
+const PUBLIC_ROUTES = [
+  "/",
+  "/about",
+  "/contact",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/verify-email",
+];
 
 const AUTH_ONLY_ROUTES = ["/login", "/register"];
 

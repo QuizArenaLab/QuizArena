@@ -11,15 +11,17 @@ function VerifyEmailContent() {
   const token = searchParams.get("token");
   const email = searchParams.get("email");
 
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-  const [message, setMessage] = useState("Verifying your email address...");
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    !token || !email ? "error" : "loading"
+  );
+  const [message, setMessage] = useState(
+    !token || !email
+      ? "Missing verification token or email. Please check your email link."
+      : "Verifying your email address..."
+  );
 
   useEffect(() => {
-    if (!token || !email) {
-      setStatus("error");
-      setMessage("Missing verification token or email. Please check your email link.");
-      return;
-    }
+    if (!token || !email) return;
 
     const verifyEmail = async () => {
       try {
@@ -86,9 +88,7 @@ function VerifyEmailContent() {
           {status === "error" && (
             <>
               <XCircle className="h-16 w-16 text-red-500" />
-              <p className="text-slate-700 text-center font-medium text-red-600">
-                {message}
-              </p>
+              <p className="text-slate-700 text-center font-medium text-red-600">{message}</p>
               <div className="mt-6 w-full space-y-3">
                 <Link
                   href={ROUTES.AUTH.SIGN_IN}
@@ -107,11 +107,13 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <Loader2 className="h-12 w-12 text-blue-600 animate-spin" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-50">
+          <Loader2 className="h-12 w-12 text-blue-600 animate-spin" />
+        </div>
+      }
+    >
       <VerifyEmailContent />
     </Suspense>
   );

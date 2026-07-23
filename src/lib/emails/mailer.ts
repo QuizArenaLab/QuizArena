@@ -16,7 +16,13 @@ const transporter = nodemailer.createTransport({
 } as any);
 
 // Shared Email Template Wrapper
-const getHtmlTemplate = (title: string, bodyText: string, ctaLink: string, ctaText: string, footerText: string) => `
+const getHtmlTemplate = (
+  title: string,
+  bodyText: string,
+  ctaLink: string,
+  ctaText: string,
+  footerText: string
+) => `
   <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; padding: 40px 20px; background-color: #F8FAFC;">
     <div style="max-width: 520px; margin: 0 auto; background-color: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);">
       <div style="padding: 32px 32px 24px; text-align: center; border-bottom: 1px solid #F1F5F9;">
@@ -58,7 +64,9 @@ export const sendPasswordResetEmail = async (email: string, resetLink: string) =
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log(`[SES_MAILER_SUCCESS] Password reset email sent to ${email}. MessageId: ${info.messageId}`);
+    console.log(
+      `[SES_MAILER_SUCCESS] Password reset email sent to ${email}. MessageId: ${info.messageId}`
+    );
     return { success: true };
   } catch (error) {
     console.error("[SES_MAILER_ERROR] Failed to send password reset email:", error);
@@ -85,11 +93,12 @@ export const sendVerificationEmail = async (email: string, verifyLink: string) =
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log(`[SES_MAILER_SUCCESS] Verification email sent to ${email}. MessageId: ${info.messageId}`);
+    console.log(
+      `[SES_MAILER_SUCCESS] Verification email sent to ${email}. MessageId: ${info.messageId}`
+    );
     return { success: true };
   } catch (error) {
     console.error("[SES_MAILER_ERROR] Failed to send verification email:", error);
     return { success: false, error };
   }
 };
-

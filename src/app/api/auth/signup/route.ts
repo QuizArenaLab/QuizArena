@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
 
       // 6. Generate Verification Token and Send Email
       const token = crypto.randomBytes(32).toString("hex");
-      
+
       await prisma.verificationToken.create({
         data: {
           identifier: normalizedEmail,

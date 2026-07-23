@@ -28,27 +28,26 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+  // Read NextAuth error from URL
+  const authError = searchParams?.get("error");
+  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>(
+    () => {
+      if (authError === "OAuthAccountNotLinked") {
+        return {
+          general:
+            "This email is already registered via a different method. Please sign in with your original method, or try again.",
+        };
+      } else if (authError === "CredentialsSignin") {
+        return { general: "Invalid email or password. Please try again." };
+      } else if (authError) {
+        return { general: "An authentication error occurred. Please try again." };
+      }
+      return {};
+    }
+  );
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-
-  // Read NextAuth error from URL
-  const authError = searchParams?.get("error");
-  useEffect(() => {
-    if (authError) {
-      if (authError === "OAuthAccountNotLinked") {
-        setErrors({
-          general:
-            "This email is already registered via a different method. Please sign in with your original method, or try again.",
-        });
-      } else if (authError === "CredentialsSignin") {
-        setErrors({ general: "Invalid email or password. Please try again." });
-      } else {
-        setErrors({ general: "An authentication error occurred. Please try again." });
-      }
-    }
-  }, [authError]);
 
   const isEmailValid = email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 

@@ -104,16 +104,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         try {
           const { createClient } = await import("@/lib/supabase/server");
           const supabase = await createClient();
-          
-          const { data: { user }, error } = await supabase.auth.getUser(access_token);
-          
+
+          const {
+            data: { user },
+            error,
+          } = await supabase.auth.getUser(access_token);
+
           if (error || !user || !user.email) {
             console.error("Supabase token verification failed:", error);
             return null;
           }
 
           const email = user.email.toLowerCase().trim();
-          
+
           let dbUser = await prisma.user.findUnique({
             where: { email },
           });
@@ -131,42 +134,42 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               },
             });
           } else {
-             const updateData: any = {};
-             if (!dbUser.name && (user.user_metadata?.full_name || user.user_metadata?.name)) {
-                updateData.name = user.user_metadata?.full_name || user.user_metadata?.name;
-             }
-             if (!dbUser.image && (user.user_metadata?.avatar_url || user.user_metadata?.picture)) {
-                updateData.image = user.user_metadata?.avatar_url || user.user_metadata?.picture;
-             }
-             if (!dbUser.emailVerified) {
-                updateData.emailVerified = new Date();
-             }
-             
-             if (Object.keys(updateData).length > 0) {
-               dbUser = await prisma.user.update({
-                 where: { id: dbUser.id },
-                 data: updateData
-               });
-             }
+            const updateData: any = {};
+            if (!dbUser.name && (user.user_metadata?.full_name || user.user_metadata?.name)) {
+              updateData.name = user.user_metadata?.full_name || user.user_metadata?.name;
+            }
+            if (!dbUser.image && (user.user_metadata?.avatar_url || user.user_metadata?.picture)) {
+              updateData.image = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+            }
+            if (!dbUser.emailVerified) {
+              updateData.emailVerified = new Date();
+            }
+
+            if (Object.keys(updateData).length > 0) {
+              dbUser = await prisma.user.update({
+                where: { id: dbUser.id },
+                data: updateData,
+              });
+            }
           }
 
           const existingAccount = await prisma.account.findUnique({
-             where: {
-               provider_providerAccountId: {
-                 provider: "google",
-                 providerAccountId: user.id
-               }
-             }
+            where: {
+              provider_providerAccountId: {
+                provider: "google",
+                providerAccountId: user.id,
+              },
+            },
           });
-          
+
           if (!existingAccount) {
             await prisma.account.create({
-               data: {
-                 userId: dbUser.id,
-                 type: "oauth",
-                 provider: "google",
-                 providerAccountId: user.id
-               }
+              data: {
+                userId: dbUser.id,
+                type: "oauth",
+                provider: "google",
+                providerAccountId: user.id,
+              },
             });
           }
 
@@ -187,7 +190,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           console.error("Database error in supabase_broker:", dbError);
           return null;
         }
-      }
+      },
     }),
   ],
   session: {

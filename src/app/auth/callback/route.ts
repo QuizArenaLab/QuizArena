@@ -11,12 +11,12 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await createClient();
     const { error, data } = await supabase.auth.exchangeCodeForSession(code);
-    
+
     if (!error && data?.session?.access_token) {
       // Server-side handoff to NextAuth
-      await signIn("supabase_broker", { 
-        access_token: data.session.access_token, 
-        redirectTo: next 
+      await signIn("supabase_broker", {
+        access_token: data.session.access_token,
+        redirectTo: next,
       });
       // signIn throws a redirect, so execution won't reach here normally
     }
