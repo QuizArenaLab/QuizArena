@@ -7,7 +7,7 @@ export class GoogleAuthService {
       options: {
         redirectTo:
           typeof window !== "undefined"
-            ? `${window.location.origin}${AuthConfig.routes.callback}`
+            ? `${process.env.NEXT_PUBLIC_APP_URL}${AuthConfig.routes.callback}`
             : undefined,
       },
     });

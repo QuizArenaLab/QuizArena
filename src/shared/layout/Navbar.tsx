@@ -19,7 +19,7 @@ export function Navbar({ session }: { session?: Session | null }) {
     pathname?.startsWith("/register") ||
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/forgot-password") ||
-    pathname?.startsWith("/signup");
+    pathname?.startsWith("/register");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -89,7 +89,7 @@ export function Navbar({ session }: { session?: Session | null }) {
                 >
                   <Link
                     href={`#${item.toLowerCase()}`}
-                    className="text-sm font-bold text-navy/70 hover:text-primary transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-primary after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-left"
+                    className="text-sm font-bold text-navy/70 hover:text-primary transition-colors relative after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-primary after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-left"
                   >
                     {item}
                   </Link>
@@ -133,7 +133,7 @@ export function Navbar({ session }: { session?: Session | null }) {
                     transition={{ delay: 0.9, type: "spring" }}
                   >
                     <Link
-                      href="/signup"
+                      href="/register"
                       className="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5"
                     >
                       Start Free
@@ -154,10 +154,10 @@ export function Navbar({ session }: { session?: Session | null }) {
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open menu"
             >
-              <div className="flex flex-col justify-center items-end gap-[5px] w-5 h-4">
-                <span className="block h-[2px] w-full bg-navy rounded-full group-active:translate-x-1 transition-all duration-300" />
-                <span className="block h-[2px] w-[70%] bg-navy rounded-full group-hover:w-full transition-all duration-300" />
-                <span className="block h-[2px] w-[40%] bg-navy rounded-full group-hover:w-full transition-all duration-300" />
+              <div className="flex flex-col justify-center items-end gap-1.25 w-5 h-4">
+                <span className="block h-0.5 w-full bg-navy rounded-full group-active:translate-x-1 transition-all duration-300" />
+                <span className="block h-0.5 w-[70%] bg-navy rounded-full group-hover:w-full transition-all duration-300" />
+                <span className="block h-0.5 w-[40%] bg-navy rounded-full group-hover:w-full transition-all duration-300" />
               </div>
             </motion.button>
           )}
@@ -183,7 +183,7 @@ export function Navbar({ session }: { session?: Session | null }) {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 right-0 w-[85vw] max-w-[360px] bg-white z-50 shadow-2xl flex flex-col pointer-events-auto md:hidden"
+              className="fixed inset-y-0 right-0 w-[85vw] max-w-90 bg-white z-50 shadow-2xl flex flex-col pointer-events-auto md:hidden"
             >
               <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
                 <Link href="/" onClick={() => setMobileMenuOpen(false)}>
@@ -237,7 +237,7 @@ export function Navbar({ session }: { session?: Session | null }) {
 
               <div className="p-6 bg-gray-50/80 backdrop-blur-sm border-t border-gray-200 flex flex-col gap-3 mt-auto shadow-[0_-10px_40px_rgba(0,0,0,0.04)]">
                 <Link
-                  href="/signup"
+                  href="/register"
                   onClick={() => setMobileMenuOpen(false)}
                   className="group w-full py-4 rounded-xl bg-primary hover:bg-primary/90 text-white text-center font-bold text-lg shadow-lg shadow-primary/30 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2"
                 >

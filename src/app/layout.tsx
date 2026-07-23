@@ -76,7 +76,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     fullPath.startsWith("/register") ||
     fullPath.startsWith("/login") ||
     fullPath.startsWith("/forgot-password") ||
-    fullPath.startsWith("/signup");
+    fullPath.startsWith("/register");
   const isLoggedIn = !!session;
 
   return (

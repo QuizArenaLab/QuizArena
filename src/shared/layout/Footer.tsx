@@ -12,7 +12,7 @@ export function Footer() {
     pathname?.startsWith("/register") ||
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/forgot-password") ||
-    pathname?.startsWith("/signup");
+    pathname?.startsWith("/register");
 
   if (isOnboarding) return null;
 

@@ -29,6 +29,7 @@ const PUBLIC_ROUTES = [
   "/register",
   "/forgot-password",
   "/verify-email",
+  "/auth/callback",
 ];
 
 const AUTH_ONLY_ROUTES = ["/login", "/register"];
@@ -149,7 +150,7 @@ function getSafeRedirectUrl(request: NextRequest, defaultRoute: string): string 
   return defaultRoute;
 }
 
-export async function proxy(request: NextRequest) {
+export async function authMiddleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (isStaticAsset(pathname)) {
@@ -227,8 +228,4 @@ export async function proxy(request: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
-};
-
-export default proxy;
+export default authMiddleware;

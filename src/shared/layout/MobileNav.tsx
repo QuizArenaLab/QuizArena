@@ -22,7 +22,7 @@ export function MobileNav({ session }: { session: Session | null }) {
     pathname?.startsWith("/register") ||
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/forgot-password") ||
-    pathname?.startsWith("/signup");
+    pathname?.startsWith("/register");
 
   const NAV_ITEMS = [
     { label: "Dashboard", href: "/dashboard", icon: Layout },
@@ -117,7 +117,7 @@ export function MobileNav({ session }: { session: Session | null }) {
                       <p className="text-sm font-semibold text-gray-900">
                         {session.user?.name || "User"}
                       </p>
-                      <p className="text-xs text-gray-500 truncate max-w-[150px]">
+                      <p className="text-xs text-gray-500 truncate max-w-37.5">
                         {session.user?.email}
                       </p>
                     </div>

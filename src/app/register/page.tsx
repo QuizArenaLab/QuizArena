@@ -197,7 +197,7 @@ function RegisterForm() {
       await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(ROUTES.PROTECTED.DASHBOARD)}`,
+          redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=${encodeURIComponent(ROUTES.PROTECTED.DASHBOARD)}`,
         },
       });
     } catch {

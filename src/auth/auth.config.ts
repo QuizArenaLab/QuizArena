@@ -121,4 +121,5 @@ export const authConfig = {
       return token;
     },
   },
+  trustHost: true,
 } satisfies NextAuthConfig;
