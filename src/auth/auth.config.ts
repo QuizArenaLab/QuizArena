@@ -8,6 +8,11 @@ export const authConfig = {
     signIn: "/login",
     error: "/register", // Redirect auth errors (like Google OAuth cancel/config errors) to register instead of the default /api/auth/error page
   },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours (rolling session)
+  },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;

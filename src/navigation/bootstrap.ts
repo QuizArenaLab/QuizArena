@@ -4,7 +4,7 @@ import { DefaultPermissions } from "./NavigationPermissions";
 // Legacy Workspaces Ported to Navigation Manifests
 NavigationRegistry.register({
   id: "user-home",
-  title: "Workspace",
+  title: "Dashboard",
   icon: "LayoutDashboard",
   route: "/dashboard/home",
   permissions: [DefaultPermissions.USER],
@@ -22,6 +22,50 @@ NavigationRegistry.register({
   version: "1.0",
   registryVersion: "1.0",
   order: 20,
+});
+
+NavigationRegistry.register({
+  id: "user-intelligence",
+  title: "Intelligence",
+  icon: "Brain",
+  route: "/dashboard/intelligence",
+  permissions: [DefaultPermissions.USER],
+  version: "1.0",
+  registryVersion: "1.0",
+  order: 30,
+});
+
+NavigationRegistry.register({
+  id: "user-leaderboards",
+  title: "Leaderboards",
+  icon: "BarChart3",
+  route: "/dashboard/leaderboards",
+  permissions: [DefaultPermissions.USER],
+  version: "1.0",
+  registryVersion: "1.0",
+  order: 40,
+});
+
+NavigationRegistry.register({
+  id: "user-results",
+  title: "Results History",
+  icon: "History",
+  route: "/dashboard/results",
+  permissions: [DefaultPermissions.USER],
+  version: "1.0",
+  registryVersion: "1.0",
+  order: 50,
+});
+
+NavigationRegistry.register({
+  id: "user-rewards",
+  title: "Rewards",
+  icon: "Award",
+  route: "/dashboard/rewards",
+  permissions: [DefaultPermissions.USER],
+  version: "1.0",
+  registryVersion: "1.0",
+  order: 60,
 });
 
 NavigationRegistry.register({

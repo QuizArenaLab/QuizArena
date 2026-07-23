@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendPasswordResetEmail } from "@/lib/emails/mailer";
+import { createPasswordResetToken } from "@/lib/auth/tokens";
 import crypto from "crypto";
 import { z } from "zod";
 
@@ -27,25 +28,7 @@ export async function POST(req: Request) {
       return successResponse;
     }
 
-    // Generate cryptographically secure token
-    const token = crypto.randomBytes(32).toString("hex");
-
-    // Hash token using SHA256 for storage
-    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
-
-    // Delete any previous active tokens for this email to ensure single active token
-    await prisma.passwordResetToken.deleteMany({
-      where: { email: user.email },
-    });
-
-    // Create new token (expires in 5 minutes)
-    await prisma.passwordResetToken.create({
-      data: {
-        email: user.email,
-        tokenHash,
-        expires: new Date(Date.now() + 5 * 60 * 1000), // 5 mins
-      },
-    });
+    const token = await createPasswordResetToken(user.email);
 
     // Send email
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3004";

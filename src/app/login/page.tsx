@@ -39,6 +39,8 @@ function LoginForm() {
         };
       } else if (authError === "CredentialsSignin") {
         return { general: "Invalid email or password. Please try again." };
+      } else if (authError === "SessionRequired") {
+        return { general: "Please sign in to continue." };
       } else if (authError) {
         return { general: "An authentication error occurred. Please try again." };
       }

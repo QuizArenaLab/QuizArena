@@ -85,7 +85,7 @@ export function useHeaderActions() {
 export function useHeaderResponsive() {
   const context = useContext(HeaderResponsiveContext);
   if (!context) {
-    throw new Error("useHeaderResponsive must be used within HeaderProvider");
+    return { isCompact: false, setCompact: () => {} };
   }
   return context;
 }

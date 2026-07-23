@@ -11,6 +11,7 @@ import { ResponsiveSidebar } from "@/components/navigation";
 import { NavigationProvider } from "@/providers/NavigationProvider";
 import { useLayout } from "@/providers/LayoutProvider";
 import { useWorkspace } from "@/providers/WorkspaceProvider";
+import { UserProfileMenu } from "@/components/header/UserProfileMenu";
 
 interface WorkspaceShellProps {
   children: React.ReactNode;
@@ -137,12 +138,20 @@ export function WorkspaceShell({ children, freshUser, userStatsNode }: Workspace
           groups={resolvedGroups}
           currentRoute={pathname}
           headerNode={null}
-          footerNode={null}
+          footerNode={
+            <div className="p-4 border-t border-gray-100 flex items-center justify-center">
+              <UserProfileMenu
+                avatarUrl={mergedUser.image || undefined}
+                displayName={mergedUser.name || "User"}
+                role={getRoleLabel(mergedUser.role)}
+              />
+            </div>
+          }
         />
 
         <main
           className={`flex-1 flex flex-col transition-[margin] duration-220 ease-out ${
-            responsiveState === "desktop" ? (isSidebarCollapsed ? "ml-20" : "ml-[280px]") : "ml-0"
+            responsiveState === "desktop" ? (isSidebarCollapsed ? "ml-20" : "ml-70") : "ml-0"
           }`}
         >
           <div className="flex-1 w-full px-4 md:px-8 py-6 md:py-8 flex flex-col">{children}</div>

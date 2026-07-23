@@ -193,10 +193,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  session: {
-    strategy: "jwt",
-    maxAge: 100 * 365 * 24 * 60 * 60,
-  },
   callbacks: {
     ...authConfig.callbacks,
     async signIn({ user, account }) {

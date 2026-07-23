@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import crypto from "crypto";
+import { validatePasswordResetToken, consumePasswordResetToken } from "@/lib/auth/tokens";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1, "Token is required"),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters long")
+    .max(64, "Password cannot exceed 64 characters"),
 });
 
 export async function POST(req: Request) {
@@ -14,26 +17,16 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { token, password } = resetPasswordSchema.parse(body);
 
-    // Hash the incoming token
-    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    // Validate the token using the shared service
+    const validation = await validatePasswordResetToken(token);
 
-    // Find the token in the database
-    const resetToken = await prisma.passwordResetToken.findUnique({
-      where: { tokenHash },
-    });
-
-    if (!resetToken) {
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 400 });
-    }
-
-    // Check if token is expired or used
-    if (resetToken.used || resetToken.expires < new Date()) {
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 400 });
+    if (!validation.success) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
     // Find the user
     const user = await prisma.user.findUnique({
-      where: { email: resetToken.email },
+      where: { email: validation.email },
     });
 
     if (!user) {
@@ -43,7 +36,7 @@ export async function POST(req: Request) {
     // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Update the user's password and delete their sessions to force a re-login
+    // Update the user's password, consume token, and delete their sessions to force a re-login
     await prisma.$transaction([
       prisma.user.update({
         where: { id: user.id },
@@ -51,7 +44,7 @@ export async function POST(req: Request) {
       }),
       // Mark token as used
       prisma.passwordResetToken.update({
-        where: { id: resetToken.id },
+        where: { id: validation.tokenId },
         data: { used: true },
       }),
       // Invalidate all existing sessions

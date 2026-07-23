@@ -161,7 +161,9 @@ export async function authMiddleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (isPublicRoute(pathname)) {
+  // Fast path: Only invoke auth() if the route requires a check
+  const needsAuthCheck = pathname === "/" || isAuthOnlyRoute(pathname) || !isPublicRoute(pathname);
+  if (!needsAuthCheck) {
     return NextResponse.next();
   }
 
@@ -171,12 +173,26 @@ export async function authMiddleware(request: NextRequest) {
   const isOnboardingCompleted = session?.user?.onboardingCompleted ?? false;
   const userRole = toRole(session?.user?.role ?? "USER");
 
+  // Smart Root Routing: Redirect authenticated users away from landing page
+  if (pathname === "/") {
+    if (isAuthenticated) {
+      let dashboardRoute: string = ROUTES.PROTECTED.DASHBOARD;
+      if (userRole === ROLE.SUPER_ADMIN) dashboardRoute = "/super-admin";
+      else if (userRole === ROLE.ADMIN) dashboardRoute = "/admin";
+      else if (userRole === ROLE.MODERATOR) dashboardRoute = "/moderator";
+
+      return NextResponse.redirect(new URL(dashboardRoute, request.url));
+    }
+    return NextResponse.next();
+  }
+
   if (!isAuthenticated) {
     if (isProtectedRoute(pathname)) {
       if (pathname.startsWith("/api/")) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
       const loginUrl = new URL(ROUTES.AUTH.SIGN_IN, request.url);
+      loginUrl.searchParams.set("error", "SessionRequired");
       const intendedDestination = pathname + request.nextUrl.search;
       loginUrl.searchParams.set("callbackUrl", getSafeRedirectUrl(request, intendedDestination));
       return NextResponse.redirect(loginUrl);
