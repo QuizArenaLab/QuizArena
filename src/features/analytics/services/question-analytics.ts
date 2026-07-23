@@ -189,14 +189,17 @@ export const getCategoryPerformance = unstable_cache(
         { category: string; questionCount: bigint; totalAccuracy: number; totalAttempts: bigint }[]
       >`
         SELECT 
-          q.category, 
+          s.name as "category", 
           COUNT(qa."questionId") as "questionCount", 
           SUM(qa."accuracyRate") as "totalAccuracy", 
           SUM(qa."totalAttempts") as "totalAttempts"
         FROM question_analytics qa
         JOIN questions q ON qa."questionId" = q.id
-        WHERE q.category IS NOT NULL
-        GROUP BY q.category
+        JOIN question_revisions qr ON q."currentRevisionId" = qr.id
+        JOIN chapters c ON qr."chapterId" = c.id
+        JOIN topics t ON c."topicId" = t.id
+        JOIN subjects s ON t."subjectId" = s.id
+        GROUP BY s.name
       `;
 
       return results

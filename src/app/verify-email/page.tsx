@@ -77,7 +77,7 @@ function VerifyEmailContent() {
               <div className="mt-6 w-full">
                 <Link
                   href={ROUTES.AUTH.SIGN_IN}
-                  className="flex w-full justify-center rounded-md bg-slate-900 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+                  className="flex w-full justify-center rounded-md bg-slate-900 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
                 >
                   Continue to Login
                 </Link>
@@ -88,7 +88,7 @@ function VerifyEmailContent() {
           {status === "error" && (
             <>
               <XCircle className="h-16 w-16 text-red-500" />
-              <p className="text-slate-700 text-center font-medium text-red-600">{message}</p>
+              <p className="text-center font-medium text-red-600">{message}</p>
               <div className="mt-6 w-full space-y-3">
                 <Link
                   href={ROUTES.AUTH.SIGN_IN}
