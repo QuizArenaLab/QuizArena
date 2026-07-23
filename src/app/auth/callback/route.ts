@@ -24,22 +24,23 @@ export async function GET(request: Request) {
       console.log("access_token exists");
       console.log('Calling signIn("supabase_broker")');
       try {
-        await signIn("supabase_broker", {
+        const result = await signIn("supabase_broker", {
           access_token: data.session.access_token,
-          redirectTo: next,
+          redirect: false,
         });
-        console.log("signIn completed");
-      } catch (err: any) {
-        if (
-          err &&
-          typeof err === "object" &&
-          "digest" in err &&
-          (err.digest as string).startsWith("NEXT_REDIRECT")
-        ) {
-          console.log("Redirect thrown");
-          throw err;
+        
+        console.log("signIn completed with result:", result);
+        
+        if (result?.error) {
+          console.error("Auth.js signIn error:", result.error);
+          return NextResponse.redirect(`${origin}${AuthConfig.routes.login}?error=BrokerError`);
         }
-        console.log("Caught error from signIn:", err);
+        
+        // Manually redirect to ensure cookies are flushed to the response
+        return NextResponse.redirect(`${origin}${next}`);
+      } catch (err: any) {
+        console.log("Caught unexpected error from signIn:", err);
+        return NextResponse.redirect(`${origin}${AuthConfig.routes.login}?error=AuthCallbackError`);
       }
     }
   } else {
